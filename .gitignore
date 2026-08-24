@@ -1,0 +1,28 @@
+# PocketBase runtime data (never commit this — contains user data & secrets)
+pocketbase/pb_data/
+
+# PocketBase binary (downloaded in Dockerfile)
+pocketbase/pocketbase
+
+# Logs
+pocketbase/*.log
+pocketbase/r2_presign.log
+pocketbase/recurring_cron.log
+pocketbase/pb.log
+
+# Python cache
+pocketbase/__pycache__/
+**/__pycache__/
+*.pyc
+
+# Test artifacts / screenshots
+pwa/e2e_test/node_modules/
+pwa/e2e_test/shots/
+pwa/e2e_test/*.png
+pwa/server.log
+
+# Stitch design files (internal only)
+stitch_design/
+
+# Local start script (has secrets baked in)
+pocketbase/start.sh

@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html class="h-full" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EWNexus Invoice</title>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#004ac6"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="EWNexus"/>
+<link rel="apple-touch-icon" href="/icon-192.png"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "error": "#ba1a1a","primary": "#004ac6","surface": "#f8f9ff","error-container": "#ffdad6",
+        "on-error": "#ffffff","on-tertiary-fixed-variant": "#005236","primary-fixed": "#dbe1ff",
+        "outline": "#737686","surface-tint": "#0053db","on-secondary-fixed-variant": "#3f465c",
+        "outline-variant": "#c3c6d7","secondary-fixed-dim": "#bec6e0","on-background": "#0b1c30",
+        "on-tertiary": "#ffffff","surface-dim": "#cbdbf5","secondary-fixed": "#dae2fd",
+        "inverse-primary": "#b4c5ff","on-secondary-container": "#5c647a","secondary-container": "#dae2fd",
+        "on-primary-fixed": "#00174b","primary-container": "#2563eb","on-tertiary-fixed": "#002113",
+        "on-surface": "#0b1c30","on-secondary-fixed": "#131b2e","surface-container-high": "#dce9ff",
+        "primary-fixed-dim": "#b4c5ff","on-error-container": "#93000a","secondary": "#565e74",
+        "on-primary-container": "#eeefff","surface-container-lowest": "#ffffff","on-primary-fixed-variant": "#003ea8",
+        "on-surface-variant": "#434655","surface-container-highest": "#d3e4fe","inverse-on-surface": "#eaf1ff",
+        "on-primary": "#ffffff","surface-bright": "#f8f9ff","on-tertiary-container": "#bdffdb",
+        "on-secondary": "#ffffff","tertiary-container": "#007d55","inverse-surface": "#213145",
+        "surface-container-low": "#eff4ff","tertiary": "#006242","tertiary-fixed": "#6ffbbe",
+        "background": "#f8f9ff","surface-variant": "#d3e4fe","surface-container": "#e5eeff",
+        "tertiary-fixed-dim": "#4edea3"
+      },
+      "borderRadius": {"DEFAULT": "0.25rem","lg": "0.5rem","xl": "0.75rem","full": "9999px"},
+      "spacing": {"margin-mobile": "1.25rem","touch-target-min": "44px","gutter": "1rem","stack-sm": "0.5rem","stack-md": "1rem","stack-lg": "1.5rem"},
+      "fontFamily": {"numeric-xl": ["Inter"],"headline-lg": ["Inter"],"headline-md": ["Inter"],"body-md": ["Inter"],"headline-lg-mobile": ["Inter"],"body-lg": ["Inter"],"label-md": ["Inter"]},
+      "fontSize": {
+        "numeric-xl": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "400"}],
+        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { min-height: max(884px, 100dvh); }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .step-section { display: none; }
+  .step-section.active { display: flex; }
+  .nav-btn.bg-secondary-container .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+  @media (min-width: 768px) {
+    main { margin-left: 16rem; max-width: calc(100% - 16rem); }
+    .fixed.bottom-\[72px\] { bottom: 0; left: 16rem; width: calc(100% - 16rem); }
+    #sidenav-web { display: flex !important; }
+  }
+  @media print {
+    body * { visibility: hidden; }
+    #print-area, #print-area * { visibility: visible; }
+    #print-area { position: absolute; top: 0; left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body class="h-full bg-background text-on-surface">
+
+<!-- ============ LOGIN SCREEN ============ -->
+<section id="screen-login" class="screen active">
+  <main class="w-full max-w-md mx-auto bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-6 md:p-8 flex flex-col gap-stack-lg mt-16">
+    <header class="flex flex-col items-center gap-stack-md text-center">
+      <div class="w-16 h-16 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container mb-2">
+        <span class="material-symbols-outlined text-4xl">business_center</span>
+      </div>
+      <div>
+        <h1 class="text-headline-lg-mobile md:text-headline-lg text-primary font-bold">EWNexus</h1>
+        <p class="text-body-md text-on-surface-variant mt-1">Sign in to your account</p>
+      </div>
+    </header>
+    <form id="login-form" class="flex flex-col gap-stack-md mt-4">
+      <div class="flex flex-col gap-stack-sm">
+        <label class="text-label-md text-on-surface" for="email">Email Address</label>
+        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="email" placeholder="name@company.com" required type="email" value="testworker@example.com"/>
+      </div>
+      <div class="flex flex-col gap-stack-sm">
+        <label class="text-label-md text-on-surface" for="password">Password</label>
+        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="password" placeholder="••••••••" required type="password" value="TestPass123!"/>
+      </div>
+      <button class="w-full h-[56px] mt-4 bg-primary text-on-primary rounded-lg text-label-md flex items-center justify-center gap-2 active:scale-[0.98]" type="submit">
+        Sign In <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+      <div id="login-error" class="text-error text-body-md text-center"></div>
+    </form>
+  </main>
+</section>
+
+<!-- ============ ONBOARDING (first-run, no template set yet) ============ -->
+<section id="screen-onboarding" class="screen">
+  <header class="w-full bg-surface h-14 px-margin-mobile flex flex-col justify-center z-50 relative sticky top-0">
+    <div class="flex justify-between items-center w-full">
+      <span class="text-headline-md font-bold text-primary">EWNexus</span>
+      <span class="text-label-md text-on-surface-variant" id="ob-progress-text">Step 1 of 4</span>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-[2px] bg-surface-variant">
+      <div class="h-full bg-primary transition-all duration-300 ease-out w-1/4" id="ob-progress-fill"></div>
+    </div>
+  </header>
+  <main class="flex flex-col relative min-h-[80vh]">
+    <!-- STEP 1 -->
+    <section class="step-section active flex-col justify-center items-center px-margin-mobile py-8 max-w-2xl mx-auto w-full flex-grow text-center" id="ob-step-1">
+      <div class="mb-stack-lg w-24 h-24 rounded-full bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container !text-5xl">handshake</span>
+      </div>
+      <h1 class="text-headline-lg-mobile md:text-headline-lg text-on-surface mb-stack-sm">Welcome to EWNexus</h1>
+      <p class="text-body-lg text-on-surface-variant mb-stack-lg max-w-md">Your business infrastructure, invisible but unbreakable. Let's configure your workspace in a few quick steps.</p>
+      <button class="w-full md:w-auto md:px-12 h-[56px] rounded-lg bg-primary text-on-primary text-label-md flex items-center justify-center active:scale-[0.98]" onclick="obGoToStep(2)">Get Started</button>
+    </section>
+    <!-- STEP 2: Template Store -->
+    <section class="step-section flex-col px-margin-mobile py-8 w-full max-w-4xl mx-auto flex-grow" id="ob-step-2">
+      <div class="mb-stack-lg">
+        <h2 class="text-headline-md text-on-surface mb-1">Select Your Trade</h2>
+        <p class="text-body-md text-on-surface-variant">We'll pre-load your catalog and terms to match your industry.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter flex-grow content-start" id="ob-template-grid"></div>
+      <div class="w-full mt-auto pt-8 flex gap-gutter">
+        <button class="flex-1 h-[56px] rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface text-label-md flex items-center justify-center" onclick="obGoToStep(1)">Back</button>
+        <button class="flex-[2] h-[56px] rounded-lg bg-primary text-on-primary text-label-md flex items-center justify-center disabled:opacity-50" disabled id="ob-btn-next2" onclick="obGoToStep(3)">Continue</button>
+      </div>
+    </section>
+    <!-- STEP 3: Company setup -->
+    <section class="step-section flex-col px-margin-mobile py-8 w-full max-w-2xl mx-auto flex-grow" id="ob-step-3">
+      <div class="mb-stack-lg">
+        <h2 class="text-headline-md text-on-surface mb-1">Company Setup</h2>
+        <p class="text-body-md text-on-surface-variant">Enter your business details to personalize your documents.</p>
+      </div>
+      <div class="flex flex-col gap-stack-lg flex-grow">
+        <div class="flex flex-col gap-1">
+          <label class="text-label-md text-on-surface" for="ob-company-name">Company Name</label>
+          <input class="w-full h-[56px] rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-body-md outline-none" id="ob-company-name" placeholder="e.g. Joe's Plumbing Co" type="text"/>
+        </div>
+        <div class="flex flex-col gap-1 flex-grow">
+          <label class="text-label-md text-on-surface" for="ob-tos">Default Terms of Service</label>
+          <textarea class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-body-md outline-none resize-none" id="ob-tos" rows="6"></textarea>
+        </div>
+      </div>
+      <div class="w-full mt-auto pt-8 flex gap-gutter">
+        <button class="flex-1 h-[56px] rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface text-label-md flex items-center justify-center" onclick="obGoToStep(2)">Back</button>
+        <button class="flex-[2] h-[56px] rounded-lg bg-primary text-on-primary text-label-md flex items-center justify-center" onclick="finishOnboarding()">Finalize Setup</button>
+      </div>
+      <div id="ob-result" class="text-body-md text-center text-on-surface-variant mt-2"></div>
+    </section>
+    <!-- STEP 4 -->
+    <section class="step-section flex-col justify-center items-center px-margin-mobile py-8 max-w-2xl mx-auto w-full flex-grow text-center" id="ob-step-4">
+      <div class="relative w-32 h-32 mb-stack-lg flex items-center justify-center">
+        <div class="relative w-16 h-16 rounded-full bg-tertiary flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-tertiary !text-4xl">check</span>
+        </div>
+      </div>
+      <h1 class="text-headline-lg-mobile md:text-headline-lg text-on-surface mb-stack-sm">You're Ready to Go</h1>
+      <p class="text-body-lg text-on-surface-variant mb-stack-lg max-w-md">Your workspace is configured. You can always adjust these settings later.</p>
+      <button class="w-full md:w-auto md:px-12 h-[56px] rounded-lg bg-on-background text-surface text-label-md flex items-center justify-center gap-2" onclick="enterApp()">Go to Dashboard <span class="material-symbols-outlined !text-[20px]">arrow_forward</span></button>
+    </section>
+  </main>
+</section>
+
+<!-- ============ MAIN APP (post-login) ============ -->
+<div id="app-shell" class="hidden">
+  <header class="fixed top-0 left-0 w-full z-40 bg-surface flex justify-between items-center h-14 px-margin-mobile">
+    <button aria-label="Menu" onclick="switchScreen('invoice')" class="w-[44px] h-[44px] flex items-center justify-center rounded-full text-primary">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <div class="text-headline-md font-bold text-primary text-center" id="brand-name">EWNexus</div>
+    <button aria-label="Settings" onclick="switchScreen('settings')" class="w-[44px] h-[44px] flex items-center justify-center rounded-full text-primary">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+  </header>
+
+  <!-- SideNav (desktop) -->
+  <nav id="sidenav-web" class="hidden fixed top-14 left-0 h-[calc(100vh-56px)] w-64 bg-surface border-r border-outline-variant/20 flex-col py-4 z-30">
+    <button onclick="switchScreen('invoice')" data-nav="invoice" class="nav-btn flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-on-surface-variant mb-1 text-left">
+      <span class="material-symbols-outlined">receipt_long</span><span class="text-label-md">Invoices</span>
+    </button>
+    <button onclick="switchScreen('report')" data-nav="report" class="nav-btn flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-on-surface-variant mb-1 text-left">
+      <span class="material-symbols-outlined">assignment</span><span class="text-label-md">Jobs</span>
+    </button>
+    <button onclick="switchScreen('history')" data-nav="history" class="nav-btn flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-on-surface-variant mb-1 text-left">
+      <span class="material-symbols-outlined">history</span><span class="text-label-md">History</span>
+    </button>
+    <button onclick="switchScreen('customers')" data-nav="customers" class="nav-btn flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-on-surface-variant mb-1 text-left">
+      <span class="material-symbols-outlined">group</span><span class="text-label-md">Clients</span>
+    </button>
+    <button onclick="switchScreen('finances')" data-nav="finances" class="nav-btn flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-on-surface-variant mb-1 text-left">
+      <span class="material-symbols-outlined">payments</span><span class="text-label-md">Money</span>
+    </button>
+  </nav>
+
+  <!-- ============ INVOICE SCREEN ============ -->
+  <section id="screen-invoice" class="screen">
+    <main class="pt-[72px] pb-[220px] px-margin-mobile max-w-3xl mx-auto space-y-stack-lg">
+      <div class="flex items-center justify-between mb-stack-md">
+        <h1 class="text-headline-lg-mobile md:text-headline-lg text-on-surface" id="invoice-number">Invoice #new</h1>
+      </div>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <h2 class="text-headline-md text-on-surface mb-stack-sm">Customer</h2>
+        <select id="customer-select" class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface"></select>
+        <div class="mt-stack-sm flex justify-end">
+          <button onclick="openSheet('sheet-customer')" class="text-primary text-label-md flex items-center gap-1 min-h-[44px] px-2">
+            <span class="material-symbols-outlined text-[18px]">add</span> Add new customer
+          </button>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <h2 class="text-headline-md text-on-surface mb-stack-md">Service Items</h2>
+        <div id="service-items-list" class="space-y-3"></div>
+        <p class="text-on-surface-variant text-body-md mt-stack-sm">Manage service items in Settings.</p>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30" id="bundles-section">
+        <h2 class="text-headline-md text-on-surface mb-stack-md">Bundles</h2>
+        <div id="bundles-list" class="space-y-3"></div>
+        <p class="text-on-surface-variant text-body-md mt-stack-sm">Manage bundles in Settings.</p>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 hidden" id="asset-fields-section">
+        <h2 class="text-headline-md text-on-surface mb-stack-md" id="asset-fields-title">Service Target Info</h2>
+        <div id="asset-fields-list" class="space-y-3"></div>
+      </section>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 flex flex-col gap-stack-md">
+          <div>
+            <label class="block text-label-md text-on-surface mb-2" for="invoice-date">Invoice Date (optional)</label>
+            <input class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" id="invoice-date" type="date"/>
+          </div>
+          <div>
+            <label class="block text-label-md text-on-surface mb-2" for="payment-status">Payment Status</label>
+            <select class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" id="payment-status">
+              <option value="unpaid">Unpaid</option><option value="cash">Cash</option>
+              <option value="zelle">Zelle</option><option value="card">Credit Card</option>
+              <option value="estimate">Estimate (planned, not billed yet)</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 flex flex-col">
+          <h2 class="text-headline-md text-on-surface mb-stack-sm">Discount</h2>
+          <div id="discount-list" class="space-y-3 flex-1"></div>
+          <p class="text-on-surface-variant text-body-md mt-stack-sm">Manage discounts in Settings.</p>
+        </section>
+      </div>
+    </main>
+
+    <div class="fixed bottom-[72px] left-0 w-full z-40 bg-surface-container-lowest shadow-[0px_-4px_12px_rgba(0,0,0,0.06)] border-t border-outline-variant/20">
+      <div class="max-w-3xl mx-auto px-margin-mobile py-3">
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <div class="text-label-md text-on-surface-variant">Total</div>
+            <div class="text-headline-md text-primary font-bold">$<span id="total">0.00</span></div>
+          </div>
+          <button onclick="showPreview()" aria-label="Preview" class="w-[48px] h-[48px] rounded-xl border border-outline flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">visibility</span>
+          </button>
+          <button onclick="createWorkOrder()" class="flex-[2] min-h-[48px] rounded-xl bg-primary text-on-primary text-label-md flex items-center justify-center gap-2 shadow-sm">
+            <span class="material-symbols-outlined text-[20px]">send</span> Save &amp; Send
+          </button>
+        </div>
+        <div id="wo-result" class="text-body-md text-center mt-2 text-on-surface-variant"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ JOB REPORT SCREEN ============ -->
+  <section id="screen-report" class="screen">
+    <main class="pt-[72px] pb-[140px] px-margin-mobile max-w-3xl mx-auto space-y-stack-lg">
+      <h1 class="text-headline-lg-mobile text-on-surface">Job Reports</h1>
+      <div>
+        <div class="flex bg-surface-container-high rounded-lg p-1">
+          <button class="flex-1 py-2 text-center rounded-md bg-surface text-primary shadow-sm text-label-md" id="btn-report-new" onclick="switchReportView('new')">New Report</button>
+          <button class="flex-1 py-2 text-center rounded-md text-on-surface-variant text-label-md" id="btn-report-hist" onclick="switchReportView('history')">History</button>
+        </div>
+      </div>
+
+      <div id="view-report-new" class="space-y-stack-lg">
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-stack-md">
+          <div>
+            <label class="block text-label-md text-on-surface mb-2">Customer</label>
+            <select id="report-customer-select" class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" onchange="onReportCustomerChange()"></select>
+          </div>
+          <div>
+            <label class="block text-label-md text-on-surface mb-2">Linked Invoice (optional)</label>
+            <select id="report-invoice-select" class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface"><option value="">None</option></select>
+          </div>
+        </section>
+
+        <!-- ③ Service Target Info (always editable, pre-filled from invoice if linked) -->
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30" id="report-asset-fields-section">
+          <h2 class="text-headline-md text-on-surface mb-1">Service Target Info</h2>
+          <p class="text-body-sm text-on-surface-variant mb-3">Describe what was serviced — free text or use the fields set in Settings.</p>
+          <div id="report-asset-fields-list" class="space-y-3"></div>
+          <textarea id="report-asset-freeform" rows="3" class="w-full mt-3 p-3 border border-outline-variant rounded-lg bg-surface text-body-md resize-y" placeholder="Additional notes about the target (e.g. 2nd floor bathroom, north wing AC unit, etc.)"></textarea>
+        </section>
+
+        <!-- ④ Objective / Scope of Work -->
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+          <h2 class="text-headline-md text-on-surface mb-1">Objective / Scope of Work</h2>
+          <p class="text-body-sm text-on-surface-variant mb-3">What was the customer requesting? What is this job supposed to accomplish?</p>
+          <textarea id="report-objective" rows="3" class="w-full p-4 border border-outline-variant rounded-lg bg-surface resize-y" placeholder="e.g. Repair leaking kitchen drain and inspect water pressure throughout property..."></textarea>
+        </section>
+
+        <!-- ⑤ Findings -->
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+          <h2 class="text-headline-md text-on-surface mb-1">Findings</h2>
+          <p class="text-body-sm text-on-surface-variant mb-3">What did you discover on-site? (factual, neutral)</p>
+          <textarea id="report-findings" rows="3" class="w-full p-4 border border-outline-variant rounded-lg bg-surface resize-y" placeholder="e.g. Found corroded joint at P-trap, water pressure at 90 PSI (above normal), minor rust on valve seat..."></textarea>
+        </section>
+
+        <!-- Work Time -->
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-3">
+          <h2 class="text-headline-md text-on-surface">Work Time <span class="text-body-sm text-on-surface-variant font-normal">(optional)</span></h2>
+          <div class="flex gap-3 items-center">
+            <div class="flex-1">
+              <label class="block text-label-sm text-on-surface-variant mb-1">Start</label>
+              <input type="time" id="report-start-time" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" oninput="calcWorkDuration()">
+            </div>
+            <div class="flex-1">
+              <label class="block text-label-sm text-on-surface-variant mb-1">End</label>
+              <input type="time" id="report-end-time" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" oninput="calcWorkDuration()">
+            </div>
+          </div>
+          <div id="work-duration" class="text-body-md text-primary font-semibold hidden"></div>
+        </section>
+
+        <!-- ⑥ Work Groups (Before/After photos) -->
+        <div id="report-groups-container" class="space-y-4"></div>
+        <button onclick="addReportGroup()" id="add-group-btn" class="w-full border-2 border-dashed border-outline-variant rounded-xl py-4 flex items-center justify-center gap-2 text-primary text-label-md min-h-[56px]">
+          <span class="material-symbols-outlined text-[20px]">add_circle</span>
+          <span id="add-group-label">Add Work Group (0 / 10)</span>
+        </button>
+        <input type="file" id="group-photo-input" accept="image/*" capture="environment" class="hidden" onchange="onGroupPhotoSelected(this.files[0]); this.value='';">
+
+        <!-- ⑦ Materials Used -->
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+          <h2 class="text-headline-md text-on-surface mb-1">Materials Used <span class="text-body-sm text-on-surface-variant font-normal">(optional)</span></h2>
+          <textarea id="report-materials" rows="3" class="w-full p-4 border border-outline-variant rounded-lg bg-surface resize-y" placeholder="e.g. 1x P-trap 1.5&quot; PVC, Teflon tape, pipe sealant, pressure regulator valve..."></textarea>
+        </section>
+
+        <!-- ⑧ Recommendations -->
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+          <h2 class="text-headline-md text-on-surface mb-1">Recommendations</h2>
+          <p class="text-body-sm text-on-surface-variant mb-3">Suggested follow-up work for the customer.</p>
+          <textarea id="report-recommendations" rows="3" class="w-full p-4 border border-outline-variant rounded-lg bg-surface resize-y" placeholder="e.g. Replace water heater within 6 months, install PRV to reduce pressure to 60 PSI..."></textarea>
+        </section>
+
+        <!-- ⑨ Summary -->
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+          <h2 class="text-headline-md text-on-surface mb-1">Summary / Conclusion</h2>
+          <textarea id="report-summary" class="w-full min-h-[80px] p-4 border border-outline-variant rounded-lg bg-surface resize-y" placeholder="Brief overall conclusion..."></textarea>
+        </section>
+
+        <!-- ⑩ Signature -->
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+          <h2 class="text-headline-md text-on-surface mb-3">Customer Signature</h2>
+          <input id="report-signature" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" placeholder="Customer printed name / confirmation">
+          <p class="text-body-sm text-on-surface-variant mt-2" id="report-tier-note"></p>
+        </section>
+      </div>
+
+      <div id="view-report-history" class="hidden space-y-stack-md"></div>
+    </main>
+    <div class="fixed bottom-[72px] left-0 w-full z-40 bg-surface-container-lowest shadow-[0px_-4px_12px_rgba(0,0,0,0.06)] border-t border-outline-variant/20" id="report-save-bar">
+      <div class="max-w-3xl mx-auto px-margin-mobile py-3 flex gap-3">
+        <button onclick="submitReport()" class="flex-1 h-[56px] bg-primary text-on-primary text-label-md rounded-xl">Save Report</button>
+        <button onclick="generateReportPDF()" class="h-[56px] px-5 border-2 border-primary text-primary text-label-md rounded-xl flex items-center gap-1">
+          <span class="material-symbols-outlined text-[20px]">print</span> PDF
+        </button>
+      </div>
+      <div id="report-result" class="text-body-md text-center pb-2 text-on-surface-variant"></div>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY SCREEN ============ -->
+  <section id="screen-history" class="screen">
+    <main class="pt-[72px] pb-[100px] px-margin-mobile max-w-3xl mx-auto">
+      <h1 class="text-headline-lg-mobile text-on-surface mb-stack-md">History</h1>
+      <div class="mb-6">
+        <div class="flex bg-surface-container-high rounded-lg p-1">
+          <button class="flex-1 py-2 text-center rounded-md bg-surface text-primary shadow-sm text-label-md" id="btn-hist-list" onclick="switchHistoryView('list')">List</button>
+          <button class="flex-1 py-2 text-center rounded-md text-on-surface-variant text-label-md" id="btn-hist-cal" onclick="switchHistoryView('calendar')">Calendar</button>
+        </div>
+      </div>
+      <div id="view-hist-list">
+        <div class="flex flex-col gap-2 mb-stack-md">
+          <select id="hist-filter-customer" onchange="renderHistoryList()" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface text-body-md"></select>
+          <select id="hist-filter-status" onchange="renderHistoryList()" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface text-body-md">
+            <option value="">All statuses</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="estimate">Estimate</option>
+            <option value="void">Void</option>
+          </select>
+          <div class="flex gap-2 items-center">
+            <input type="date" id="hist-filter-from" onchange="renderHistoryList()" class="flex-1 py-2 px-3 border border-outline-variant rounded-lg bg-surface text-body-md">
+            <span class="text-on-surface-variant text-label-md">to</span>
+            <input type="date" id="hist-filter-to" onchange="renderHistoryList()" class="flex-1 py-2 px-3 border border-outline-variant rounded-lg bg-surface text-body-md">
+          </div>
+          <button onclick="clearHistoryFilters()" class="text-primary text-label-md self-start min-h-[36px]">Clear filters</button>
+        </div>
+        <div id="view-hist-list-cards" class="flex flex-col gap-stack-md"></div>
+      </div>
+      <div id="view-hist-cal" class="hidden">
+        <button onclick="openAppointmentSheet()" class="w-full h-[48px] mb-stack-md bg-primary text-on-primary rounded-xl text-label-md flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">add</span> New Appointment
+        </button>
+        <div class="bg-surface rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant p-5">
+          <div class="flex justify-between items-center mb-6">
+            <button class="material-symbols-outlined text-on-surface-variant rounded-full p-2" onclick="calShiftMonth(-1)">chevron_left</button>
+            <h2 class="text-headline-md text-on-surface" id="cal-month-label"></h2>
+            <button class="material-symbols-outlined text-on-surface-variant rounded-full p-2" onclick="calShiftMonth(1)">chevron_right</button>
+          </div>
+          <div class="grid grid-cols-7 gap-2 text-center mb-4 border-b border-surface-variant pb-2 text-label-md text-on-surface-variant">
+            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+          </div>
+          <div class="grid grid-cols-7 gap-y-2 gap-x-1 text-center" id="cal-grid"></div>
+        </div>
+        <div id="cal-day-detail" class="mt-stack-md flex flex-col gap-stack-sm"></div>
+      </div>
+    </main>
+  </section>
+
+  <!-- ============ CUSTOMERS (CRM) SCREEN ============ -->
+  <section id="screen-customers" class="screen">
+    <main class="pt-[72px] pb-[100px] px-margin-mobile max-w-4xl mx-auto">
+      <h1 class="text-headline-lg-mobile text-on-surface mb-stack-md">Clients</h1>
+      <input id="crm-search" oninput="renderCustomersScreen()" class="w-full h-14 px-4 rounded-xl border border-outline-variant bg-surface mb-stack-md" placeholder="Search customers (name, phone...)"/>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-sm" id="crm-list"></div>
+    </main>
+    <button aria-label="Add new customer" onclick="openSheet('sheet-customer')" class="fixed bottom-24 right-4 w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-[0px_8px_24px_rgba(0,0,0,0.15)] flex items-center justify-center z-40">
+      <span class="material-symbols-outlined">add</span>
+    </button>
+
+    <div id="customerDetailPanel" class="fixed inset-0 z-[70] hidden">
+      <div class="absolute inset-0 bg-black/40" onclick="closeDetailPanel()"></div>
+      <div class="absolute bottom-0 left-0 w-full max-w-2xl mx-auto right-0 bg-surface rounded-t-2xl p-6 max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-stack-md">
+          <h2 class="text-headline-lg-mobile text-on-surface" id="detailName"></h2>
+          <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant" onclick="closeDetailPanel()"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div id="detailContact" class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/50 space-y-2 mb-stack-md"></div>
+        <div class="grid grid-cols-2 gap-4 mb-stack-lg">
+          <div class="bg-surface-container-low p-4 rounded-xl">
+            <div class="text-label-md text-secondary mb-1">Total Revenue</div>
+            <div class="text-headline-md text-on-surface" id="detailRevenue">$0.00</div>
+          </div>
+          <div class="bg-surface-container-low p-4 rounded-xl">
+            <div class="text-label-md text-secondary mb-1">Open Balance</div>
+            <div class="text-headline-md text-on-surface" id="detailBalance">$0.00</div>
+          </div>
+        </div>
+        <button class="w-full h-[56px] bg-primary text-on-primary rounded-xl text-label-md flex items-center justify-center" onclick="newInvoiceForDetailCustomer()">
+          <span class="material-symbols-outlined mr-2">add</span> New Invoice
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FINANCES SCREEN ============ -->
+  <section id="screen-finances" class="screen">
+    <main class="pt-[72px] pb-[100px] px-margin-mobile max-w-3xl mx-auto">
+      <h1 class="text-headline-lg-mobile text-on-surface mb-stack-md">Finances</h1>
+      <div class="bg-surface-container-lowest p-5 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant mb-6">
+        <p class="text-body-md text-on-surface-variant mb-1">Net Income</p>
+        <p class="text-numeric-xl text-on-surface mb-6" id="fin-net">$0.00</p>
+        <div class="flex flex-col gap-3 border-t border-outline-variant pt-4">
+          <div class="flex justify-between"><span class="text-on-surface-variant">Total Income</span><span class="text-tertiary font-semibold" id="fin-income">+$0.00</span></div>
+          <div class="flex justify-between"><span class="text-on-surface-variant">Total Expenses</span><span class="text-error font-semibold" id="fin-expenses">-$0.00</span></div>
+        </div>
+      </div>
+      <button onclick="openExpenseSheet()" class="w-full h-[56px] bg-primary text-on-primary rounded-xl text-label-md flex items-center justify-center gap-2 mb-8">
+        <span class="material-symbols-outlined">add</span> Add Expense
+      </button>
+      <h3 class="text-headline-md text-on-surface mb-4">Expense Breakdown</h3>
+      <div class="flex flex-col gap-3 mb-8" id="fin-breakdown"></div>
+      <div class="bg-surface-container p-5 rounded-xl mb-8 border border-outline-variant/30">
+        <h4 class="text-body-md text-on-surface font-semibold mb-4">Sales Tax Collected</h4>
+        <p class="text-body-md text-on-surface-variant mb-3">Tax you charged customers on invoices — this isn't your income, it's owed to the state.</p>
+        <div class="flex justify-between items-center pt-2">
+          <span class="text-on-surface-variant" id="fin-tax-label">Total collected</span><span class="text-on-surface font-semibold" id="fin-tax">$0.00</span>
+        </div>
+      </div>
+      <button onclick="exportFinancesCSV()" class="w-full h-[48px] border border-outline text-on-surface rounded-xl text-label-md flex items-center justify-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-[20px]">download</span> Export CSV
+      </button>
+      <p class="text-body-md text-on-surface-variant text-center">This is a bookkeeping helper, not a tax filing tool.</p>
+    </main>
+
+    <div id="expense-sheet-backdrop" class="hidden fixed inset-0 bg-black/40 z-[60]" onclick="closeExpenseSheet()"></div>
+    <div id="expense-sheet" class="hidden fixed bottom-0 left-0 w-full bg-surface rounded-t-2xl p-6 z-[70] max-w-md mx-auto right-0">
+      <h3 class="text-headline-md mb-stack-md">Log Expense</h3>
+      <select id="exp-category" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+        <option>Materials</option><option>Fuel/Vehicle</option><option>Tools</option><option>Other</option>
+      </select>
+      <input id="exp-vendor" placeholder="Vendor" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+      <input id="exp-amount" type="number" step="0.01" placeholder="Amount" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+      <input id="exp-receipt" type="file" accept="image/*" class="w-full mb-4">
+      <button onclick="createExpense()" class="w-full h-[56px] bg-primary text-on-primary rounded-lg">Save Expense</button>
+      <div id="exp-result" class="text-body-md text-center text-on-surface-variant mt-2"></div>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS SCREEN ============ -->
+  <!-- ============ TEMPLATE MARKETPLACE MODAL ============ -->
+  <div id="modal-template-marketplace" class="fixed inset-0 z-[200] bg-black/50 flex flex-col hidden">
+    <div class="bg-surface flex-1 flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between px-5 pt-safe-top pt-5 pb-4 border-b border-outline-variant">
+        <h2 class="text-headline-md text-on-surface">Choose Industry Template</h2>
+        <button onclick="closeTemplateMarketplace()" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto px-5 py-4">
+        <p class="text-body-md text-on-surface-variant mb-4">Switching templates will load new default service items. Your existing items won't be deleted unless you choose to replace them.</p>
+        <div id="marketplace-template-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+      <div class="px-5 py-4 border-t border-outline-variant bg-surface space-y-2">
+        <div id="marketplace-replace-row" class="hidden flex items-center gap-3 px-1">
+          <input type="checkbox" id="marketplace-replace-items" class="w-5 h-5 accent-primary">
+          <label for="marketplace-replace-items" class="text-body-md text-on-surface">Replace my existing service items with template defaults</label>
+        </div>
+        <button id="marketplace-apply-btn" onclick="applySelectedTemplate()" disabled class="w-full h-[56px] bg-primary text-on-primary rounded-lg text-label-md disabled:opacity-40">Apply Template</button>
+        <div id="marketplace-result" class="text-body-sm text-center text-on-surface-variant"></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="screen-settings" class="screen">
+    <main class="pt-[72px] pb-[100px] px-margin-mobile max-w-3xl mx-auto space-y-stack-lg">
+      <h1 class="text-headline-lg-mobile text-on-surface">Settings</h1>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-headline-md text-on-surface">Industry Template</h2>
+            <p id="settings-current-template" class="text-body-md text-on-surface-variant mt-0.5">—</p>
+          </div>
+          <button onclick="openTemplateMarketplace()" class="flex items-center gap-1.5 px-4 h-10 rounded-full border border-primary text-primary text-label-md">
+            <span class="material-symbols-outlined text-[18px]">swap_horiz</span> Change
+          </button>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-stack-md">
+        <div>
+          <label class="block text-label-md mb-2">Logo</label>
+          <input type="file" id="logo-input" accept="image/*" onchange="uploadLogo()">
+        </div>
+        <div>
+          <label class="block text-label-md mb-2">Company name</label>
+          <input id="settings-company-name" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+        </div>
+        <div>
+          <label class="block text-label-md mb-2">Sales tax rate (%)</label>
+          <input id="settings-tax-rate" type="number" step="0.01" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+        </div>
+        <div>
+          <label class="block text-label-md mb-2">Terms of service</label>
+          <textarea id="settings-tos" rows="4" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface break-words" style="word-break:break-word;overflow-wrap:break-word;white-space:pre-wrap;resize:vertical"></textarea>
+        </div>
+        <div>
+          <label class="block text-label-md mb-2">Payment link <span class="text-on-surface-variant font-normal">(Venmo / Zelle / CashApp / PayPal.Me)</span></label>
+          <input id="settings-payment-link" type="url" placeholder="https://venmo.com/u/yourname" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+          <p class="text-body-sm text-on-surface-variant mt-1">Shown as a "Pay Now" button on every invoice.</p>
+        </div>
+        <button onclick="saveSettings()" class="w-full h-[56px] bg-primary text-on-primary rounded-lg text-label-md">Save Settings</button>
+        <div id="settings-result" class="text-body-md text-center text-on-surface-variant"></div>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <h2 class="text-headline-md text-on-surface mb-1">Service Target Fields</h2>
+        <p class="text-body-sm text-on-surface-variant mb-3">Define what info to record per job (e.g. address, vehicle, AC unit). Main = top-level, Detail = sub-info. Optional fields default to shown but not required.</p>
+        <div id="settings-asset-schema-list" class="space-y-2 mb-3"></div>
+        <div class="flex gap-2">
+          <button onclick="addAssetField('main')" class="flex-1 border-2 border-dashed border-outline-variant rounded-lg py-3 flex items-center justify-center gap-1 text-primary text-label-md min-h-[48px]">
+            <span class="material-symbols-outlined text-[18px]">add_circle</span> Main field
+          </button>
+          <button onclick="addAssetField('detail')" class="flex-1 border-2 border-dashed border-outline-variant rounded-lg py-3 flex items-center justify-center gap-1 text-primary text-label-md min-h-[48px] opacity-70">
+            <span class="material-symbols-outlined text-[18px]">subdirectory_arrow_right</span> Detail field
+          </button>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <h2 class="text-headline-md text-on-surface mb-stack-md">Service Items</h2>
+        <div id="settings-service-items-list" class="space-y-3"></div>
+        <div class="mt-stack-md">
+          <button onclick="openSheet('sheet-service-item')" class="w-full border-2 border-dashed border-outline-variant rounded-lg py-3 flex items-center justify-center gap-2 text-primary text-label-md min-h-[56px]">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span> Add new item
+          </button>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <h2 class="text-headline-md text-on-surface mb-stack-md">Discounts</h2>
+        <div id="settings-discounts-list" class="space-y-3"></div>
+        <div class="mt-stack-md">
+          <button onclick="openSheet('sheet-discount')" class="w-full border-2 border-dashed border-outline-variant rounded-lg py-3 flex items-center justify-center gap-2 text-primary text-label-md min-h-[56px]">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span> Add new discount
+          </button>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <h2 class="text-headline-md text-on-surface mb-stack-md">Bundles</h2>
+        <div id="settings-bundles-list" class="space-y-3"></div>
+        <div class="mt-stack-md">
+          <button onclick="openSheet('sheet-bundle')" class="w-full border-2 border-dashed border-outline-variant rounded-lg py-3 flex items-center justify-center gap-2 text-primary text-label-md min-h-[56px]">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span> Add new bundle
+          </button>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <h2 class="text-headline-md text-on-surface mb-stack-md">Recurring Invoices</h2>
+        <div id="settings-recurring-list" class="space-y-3"></div>
+        <div class="mt-stack-md">
+          <button onclick="openSheet('sheet-recurring')" class="w-full border-2 border-dashed border-outline-variant rounded-lg py-3 flex items-center justify-center gap-2 text-primary text-label-md min-h-[56px]">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span> Add new recurring invoice
+          </button>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <!-- BottomNavBar -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-[72px] px-2 bg-surface shadow-[0px_-4px_12px_rgba(0,0,0,0.05)] md:hidden">
+    <button onclick="switchScreen('invoice')" data-nav="invoice" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
+      <span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="text-[11px] mt-1">Invoices</span>
+    </button>
+    <button onclick="switchScreen('report')" data-nav="report" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
+      <span class="material-symbols-outlined text-[22px]">assignment</span><span class="text-[11px] mt-1">Jobs</span>
+    </button>
+    <button onclick="switchScreen('history')" data-nav="history" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
+      <span class="material-symbols-outlined text-[22px]">history</span><span class="text-[11px] mt-1">History</span>
+    </button>
+    <button onclick="switchScreen('customers')" data-nav="customers" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
+      <span class="material-symbols-outlined text-[22px]">group</span><span class="text-[11px] mt-1">Clients</span>
+    </button>
+    <button onclick="switchScreen('finances')" data-nav="finances" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
+      <span class="material-symbols-outlined text-[22px]">payments</span><span class="text-[11px] mt-1">Money</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ============ BOTTOM SHEETS ============ -->
+<div id="sheet-backdrop" class="hidden fixed inset-0 bg-black/40 z-[60]" onclick="closeSheets()"></div>
+
+<div id="sheet-customer" class="hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest rounded-t-2xl p-6 z-[70] max-w-md mx-auto right-0">
+  <h3 class="text-headline-md mb-stack-md">New Customer</h3>
+  <input id="nc-name" placeholder="Customer name" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="nc-phone" placeholder="Phone" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="nc-email" placeholder="Email" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="nc-address" placeholder="Address" class="w-full mb-4 py-3 px-3 border border-outline-variant rounded-lg">
+  <button onclick="createCustomer()" class="w-full h-[56px] bg-primary text-on-primary rounded-lg">Save</button>
+</div>
+
+<div id="sheet-service-item" class="hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest rounded-t-2xl p-6 z-[70] max-w-md mx-auto right-0">
+  <h3 class="text-headline-md mb-stack-md">New Service Item</h3>
+  <input id="si-name" placeholder="Item name" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="si-price" type="number" placeholder="Price" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="si-description" placeholder="Description (optional)" class="w-full mb-4 py-3 px-3 border border-outline-variant rounded-lg text-body-sm">
+  <button onclick="createServiceItem()" class="w-full h-[56px] bg-primary text-on-primary rounded-lg">Save</button>
+</div>
+
+<div id="sheet-discount" class="hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest rounded-t-2xl p-6 z-[70] max-w-md mx-auto right-0">
+  <h3 class="text-headline-md mb-stack-md">New Discount</h3>
+  <input id="disc-name" placeholder="Discount name" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <select id="disc-type" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+    <option value="percentage">Percentage (%)</option><option value="flat_amount">Flat amount ($)</option>
+  </select>
+  <input id="disc-value" type="number" placeholder="Value" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="disc-description" placeholder="Description (optional)" class="w-full mb-4 py-3 px-3 border border-outline-variant rounded-lg text-body-sm">
+  <button onclick="createDiscount()" class="w-full h-[56px] bg-primary text-on-primary rounded-lg">Save</button>
+</div>
+
+<div id="sheet-bundle" class="hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest rounded-t-2xl p-6 z-[70] max-w-md mx-auto right-0 max-h-[85vh] overflow-y-auto">
+  <h3 class="text-headline-md mb-stack-md">New Bundle</h3>
+  <input id="bd-name" placeholder="Bundle name (e.g. AC Tune-up Combo)" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="bd-price" type="number" step="0.01" placeholder="Bundle price" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="bd-description" placeholder="Description (optional)" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <label class="block text-label-md mb-2">Included service items</label>
+  <div id="bd-items-list" class="space-y-2 mb-4"></div>
+  <button onclick="createBundle()" class="w-full h-[56px] bg-primary text-on-primary rounded-lg">Save</button>
+</div>
+
+<div id="sheet-appointment" class="hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest rounded-t-2xl p-6 z-[70] max-w-md mx-auto right-0 max-h-[85vh] overflow-y-auto">
+  <h3 class="text-headline-md mb-stack-md">New Appointment</h3>
+  <select id="appt-customer" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg bg-surface"></select>
+  <label class="block text-label-md mb-1 text-on-surface-variant">Date &amp; time</label>
+  <input id="appt-datetime" type="datetime-local" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="appt-summary" placeholder="What's this visit for? (e.g. Fix kitchen sink leak)" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg">
+  <input id="appt-address" placeholder="Address (optional — leave blank to use customer's address)" class="w-full mb-4 py-3 px-3 border border-outline-variant rounded-lg">
+  <button onclick="createAppointment()" class="w-full h-[56px] bg-primary text-on-primary rounded-lg">Save</button>
+  <div id="appt-result" class="text-body-md text-center text-on-surface-variant mt-2"></div>
+</div>
+
+<div id="sheet-recurring" class="hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest rounded-t-2xl p-6 z-[70] max-w-md mx-auto right-0 max-h-[85vh] overflow-y-auto">
+  <h3 class="text-headline-md mb-stack-md">New Recurring Invoice</h3>
+  <select id="rec-customer" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg bg-surface"></select>
+  <label class="block text-label-md mb-2">Service items</label>
+  <div id="rec-items-list" class="space-y-2 mb-2"></div>
+  <div class="text-right text-label-md text-on-surface-variant mb-2">Total: $<span id="rec-total">0.00</span></div>
+  <select id="rec-frequency" class="w-full mb-2 py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+    <option value="weekly">Weekly</option><option value="biweekly">Biweekly</option>
+    <option value="monthly" selected>Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option>
+  </select>
+  <label class="block text-label-md mb-2">First invoice date</label>
+  <input id="rec-start-date" type="date" class="w-full mb-4 py-3 px-3 border border-outline-variant rounded-lg">
+  <button onclick="createRecurring()" class="w-full h-[56px] bg-primary text-on-primary rounded-lg">Save</button>
+  <div id="rec-result" class="text-body-md text-center text-on-surface-variant mt-2"></div>
+</div>
+
+<!-- ============ A4 PREVIEW MODAL ============ -->
+<div id="modal-preview" class="hidden fixed inset-0 bg-black/50 z-[80] flex items-start justify-center overflow-y-auto py-6">
+  <div class="bg-white w-full max-w-[210mm] mx-4 rounded-lg shadow-2xl">
+    <div id="print-area" class="p-5 md:p-12 text-[#0b1c30] w-full overflow-x-hidden">
+      <div id="preview-content"></div>
+    </div>
+    <div class="flex gap-3 p-4 border-t border-outline-variant no-print">
+      <button onclick="closePreview()" class="flex-1 h-[48px] border border-outline rounded-lg">Close</button>
+      <button onclick="window.print()" class="flex-1 h-[48px] bg-primary text-on-primary rounded-lg flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">print</span> Print / Save PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=4"></script>
+</body>
+</html>
