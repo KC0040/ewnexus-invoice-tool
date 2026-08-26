@@ -103,6 +103,8 @@ async function refreshAll() {
   document.getElementById('settings-payment-link').value = COMPANY.payment_link || '';
   initAssetSchema();
   renderSettingsTemplateName();
+  loadPaymentSettings();
+  loadBlockOrder();
 }
 
 function stripHtml(html) { const d = document.createElement('div'); d.innerHTML = html; return d.textContent || ''; }
@@ -576,14 +578,46 @@ function showPreview() {
     <div class="flex justify-between text-lg font-bold border-t border-[#0b1c30] pt-2 mt-2"><span>Total</span><span>$${total.toFixed(2)}</span></div>
   </div></div>`;
 
+  const invoiceColor = COMPANY.invoice_color || '#004ac6';
+
   if (COMPANY.payment_link) {
     html += `<div class="mt-8 text-center">
       <a href="${COMPANY.payment_link}" target="_blank" rel="noopener noreferrer"
-         class="inline-block bg-[#004ac6] text-white font-semibold text-sm px-8 py-3 rounded-lg no-underline">
+         style="background:${invoiceColor}"
+         class="inline-block text-white font-semibold text-sm px-8 py-3 rounded-lg no-underline">
         Pay Now
       </a>
       <div class="text-xs text-[#737686] mt-2">Tap to pay via Venmo / Zelle / CashApp / PayPal</div>
     </div>`;
+  }
+
+  // Payment methods block
+  const hasZelle = COMPANY.zelle_email || COMPANY.zelle_phone;
+  const hasAch = COMPANY.ach_routing && COMPANY.ach_account;
+  if (hasZelle || hasAch) {
+    html += `<div class="mt-8 border border-[#c3c6d7] rounded-lg p-4 bg-[#f8f9ff]">
+      <div class="font-semibold text-sm mb-3" style="color:${invoiceColor}">How to Pay</div>`;
+    if (hasZelle) {
+      const zelleQrUrl = COMPANY.zelle_qr ? `${PB}/api/files/companies/${COMPANY.id}/${COMPANY.zelle_qr}` : null;
+      html += `<div class="flex items-start gap-4 mb-3">
+        ${zelleQrUrl ? `<img src="${zelleQrUrl}" class="w-20 h-20 object-contain rounded border border-[#c3c6d7]" alt="Zelle QR">` : ''}
+        <div>
+          <div class="font-medium text-sm text-[#0b1c30] mb-1">Zelle</div>
+          ${COMPANY.zelle_email ? `<div class="text-xs text-[#434655]">Email: ${COMPANY.zelle_email}</div>` : ''}
+          ${COMPANY.zelle_phone ? `<div class="text-xs text-[#434655]">Phone: ${COMPANY.zelle_phone}</div>` : ''}
+          <div class="text-xs text-[#737686] mt-1">Instant transfer — no fees</div>
+        </div>
+      </div>`;
+    }
+    if (hasAch) {
+      html += `<div class="border-t border-[#c3c6d7] pt-3">
+        <div class="font-medium text-sm text-[#0b1c30] mb-1">ACH Bank Transfer${COMPANY.ach_bank_name ? ` — ${COMPANY.ach_bank_name}` : ''}</div>
+        <div class="text-xs text-[#434655] font-mono">Routing: ${COMPANY.ach_routing}</div>
+        <div class="text-xs text-[#434655] font-mono">Account: ${COMPANY.ach_account}</div>
+        <div class="text-xs text-[#737686] mt-1">1–3 business days</div>
+      </div>`;
+    }
+    html += `</div>`;
   }
 
   const tos = stripHtml(COMPANY.terms_of_service || '');
@@ -1397,6 +1431,141 @@ async function uploadLogo() {
   const data = await res.json();
   if (data.id) { COMPANY = data; document.getElementById('settings-result').innerText = 'Logo uploaded.'; }
   else { document.getElementById('settings-result').innerText = 'ERROR: ' + JSON.stringify(data); }
+}
+
+// ---------- invoice color ----------
+const DEFAULT_BLOCKS = ['company','client','assets','items','totals','payment','notes','signature'];
+
+function pickColor(hex) {
+  document.getElementById('settings-invoice-color').value = hex;
+  document.getElementById('color-preview-hex').innerText = hex;
+  document.querySelectorAll('.swatch').forEach(s => {
+    s.style.borderColor = s.style.background.toLowerCase() === hex.toLowerCase() ? '#000' : 'transparent';
+  });
+}
+
+function applyInvoiceColor(hex) {
+  if (!hex) return;
+  const root = document.documentElement;
+  root.style.setProperty('--tw-color-primary', hex);
+  document.querySelectorAll('[class*="bg-primary"]:not([class*="bg-primary-"])').forEach(el => {
+    el.style.backgroundColor = hex;
+  });
+  document.querySelectorAll('[class*="text-primary"]:not([class*="text-primary-"])').forEach(el => {
+    el.style.color = hex;
+  });
+  document.querySelectorAll('[class*="border-primary"]:not([class*="border-primary-"])').forEach(el => {
+    el.style.borderColor = hex;
+  });
+  document.querySelectorAll('[class*="accent-primary"]').forEach(el => {
+    el.style.accentColor = hex;
+  });
+}
+
+async function saveInvoiceColor() {
+  const hex = document.getElementById('settings-invoice-color').value;
+  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', body: JSON.stringify({invoice_color: hex})});
+  if (data.id) { COMPANY = data; applyInvoiceColor(hex); document.getElementById('settings-result').innerText = 'Color saved.'; }
+  else { document.getElementById('settings-result').innerText = 'ERROR: ' + JSON.stringify(data); }
+}
+
+// ---------- payment methods ----------
+async function savePaymentMethods() {
+  const body = {
+    zelle_email: document.getElementById('settings-zelle-email').value.trim(),
+    zelle_phone: document.getElementById('settings-zelle-phone').value.trim(),
+    ach_bank_name: document.getElementById('settings-ach-bank').value.trim(),
+    ach_routing: document.getElementById('settings-ach-routing').value.trim(),
+    ach_account: document.getElementById('settings-ach-account').value.trim(),
+  };
+  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', body: JSON.stringify(body)});
+  if (data.id) {
+    COMPANY = data;
+    const qrFile = document.getElementById('settings-zelle-qr').files[0];
+    if (qrFile) {
+      const form = new FormData();
+      form.append('zelle_qr', qrFile);
+      const res2 = await fetch(`${PB}/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', headers:{'Authorization':TOKEN}, body: form});
+      const d2 = await res2.json();
+      if (d2.id) COMPANY = d2;
+    }
+    document.getElementById('payment-settings-result').innerText = 'Saved.';
+    loadZelleQrPreview();
+  } else {
+    document.getElementById('payment-settings-result').innerText = 'ERROR: ' + JSON.stringify(data);
+  }
+}
+
+function loadZelleQrPreview() {
+  if (COMPANY.zelle_qr) {
+    const url = `${PB}/api/files/companies/${COMPANY.id}/${COMPANY.zelle_qr}`;
+    document.getElementById('zelle-qr-img').src = url;
+    document.getElementById('zelle-qr-preview').classList.remove('hidden');
+  }
+}
+
+function loadPaymentSettings() {
+  document.getElementById('settings-zelle-email').value = COMPANY.zelle_email || '';
+  document.getElementById('settings-zelle-phone').value = COMPANY.zelle_phone || '';
+  document.getElementById('settings-ach-bank').value = COMPANY.ach_bank_name || '';
+  document.getElementById('settings-ach-routing').value = COMPANY.ach_routing || '';
+  document.getElementById('settings-ach-account').value = COMPANY.ach_account || '';
+  if (COMPANY.invoice_color) {
+    pickColor(COMPANY.invoice_color);
+    applyInvoiceColor(COMPANY.invoice_color);
+  }
+  loadZelleQrPreview();
+}
+
+// ---------- invoice block order ----------
+let BLOCK_ORDER = [...DEFAULT_BLOCKS];
+const BLOCK_LABELS = {
+  company: 'Your Company Info',
+  client: 'Client Info',
+  assets: 'Job / Asset Details',
+  items: 'Service Items & Line Items',
+  totals: 'Subtotal · Tax · Total',
+  payment: 'Payment Methods (Zelle / ACH)',
+  notes: 'Terms & Notes',
+  signature: 'Signature Line',
+};
+
+function renderBlockOrderList() {
+  const list = document.getElementById('block-order-list');
+  list.innerHTML = BLOCK_ORDER.map((key, idx) => `
+    <div class="flex items-center gap-3 bg-surface-container p-3 rounded-lg border border-outline-variant/40" data-block="${key}">
+      <span class="material-symbols-outlined text-on-surface-variant cursor-grab drag-handle">drag_indicator</span>
+      <span class="flex-1 text-body-md text-on-surface">${BLOCK_LABELS[key] || key}</span>
+      <div class="flex gap-1">
+        <button onclick="moveBlock(${idx},-1)" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant disabled:opacity-30" ${idx===0?'disabled':''}>
+          <span class="material-symbols-outlined text-[18px]">keyboard_arrow_up</span>
+        </button>
+        <button onclick="moveBlock(${idx},1)" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant disabled:opacity-30" ${idx===BLOCK_ORDER.length-1?'disabled':''}>
+          <span class="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+function moveBlock(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= BLOCK_ORDER.length) return;
+  [BLOCK_ORDER[idx], BLOCK_ORDER[newIdx]] = [BLOCK_ORDER[newIdx], BLOCK_ORDER[idx]];
+  renderBlockOrderList();
+}
+
+async function saveBlockOrder() {
+  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', body: JSON.stringify({invoice_block_order: JSON.stringify(BLOCK_ORDER)})});
+  if (data.id) { COMPANY = data; document.getElementById('block-order-result').innerText = 'Layout saved.'; }
+  else { document.getElementById('block-order-result').innerText = 'ERROR: ' + JSON.stringify(data); }
+}
+
+function loadBlockOrder() {
+  try {
+    const saved = COMPANY.invoice_block_order ? JSON.parse(COMPANY.invoice_block_order) : null;
+    BLOCK_ORDER = (saved && saved.length) ? saved : [...DEFAULT_BLOCKS];
+  } catch { BLOCK_ORDER = [...DEFAULT_BLOCKS]; }
+  renderBlockOrderList();
 }
 
 // ---------- default logo ----------

@@ -651,6 +651,68 @@ tailwind.config = {
         <div id="settings-result" class="text-body-md text-center text-on-surface-variant"></div>
       </section>
 
+      <!-- ====== INVOICE COLOR & BRANDING ====== -->
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-stack-md">
+        <h2 class="text-headline-md text-on-surface">Invoice Color</h2>
+        <p class="text-body-sm text-on-surface-variant -mt-2">Your brand color — used on invoice header, buttons, and accents.</p>
+        <div class="flex flex-wrap gap-2" id="color-swatches">
+          <button onclick="pickColor('#004ac6')" class="swatch w-9 h-9 rounded-lg border-2 border-transparent" style="background:#004ac6" title="Blue"></button>
+          <button onclick="pickColor('#1a7a4a')" class="swatch w-9 h-9 rounded-lg border-2 border-transparent" style="background:#1a7a4a" title="Green"></button>
+          <button onclick="pickColor('#b91c1c')" class="swatch w-9 h-9 rounded-lg border-2 border-transparent" style="background:#b91c1c" title="Red"></button>
+          <button onclick="pickColor('#92400e')" class="swatch w-9 h-9 rounded-lg border-2 border-transparent" style="background:#92400e" title="Brown"></button>
+          <button onclick="pickColor('#0e7490')" class="swatch w-9 h-9 rounded-lg border-2 border-transparent" style="background:#0e7490" title="Teal"></button>
+          <button onclick="pickColor('#7c3aed')" class="swatch w-9 h-9 rounded-lg border-2 border-transparent" style="background:#7c3aed" title="Purple"></button>
+          <button onclick="pickColor('#374151')" class="swatch w-9 h-9 rounded-lg border-2 border-transparent" style="background:#374151" title="Charcoal"></button>
+          <button onclick="pickColor('#0f172a')" class="swatch w-9 h-9 rounded-lg border-2 border-transparent" style="background:#0f172a" title="Black"></button>
+        </div>
+        <div class="flex items-center gap-3">
+          <input type="color" id="settings-invoice-color" value="#004ac6" class="w-12 h-10 rounded border border-outline-variant cursor-pointer" oninput="pickColor(this.value)">
+          <span class="text-body-md text-on-surface-variant">Custom color</span>
+          <span id="color-preview-hex" class="text-label-md text-on-surface font-mono">#004ac6</span>
+        </div>
+        <button onclick="saveInvoiceColor()" class="w-full h-[48px] bg-primary text-on-primary rounded-lg text-label-md">Save Color</button>
+      </section>
+
+      <!-- ====== PAYMENT METHODS ====== -->
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-stack-md">
+        <h2 class="text-headline-md text-on-surface">Payment Methods on Invoice</h2>
+        <p class="text-body-sm text-on-surface-variant -mt-2">Customers see this at the bottom of every invoice so they know how to pay you.</p>
+
+        <div class="border-t border-outline-variant/30 pt-4">
+          <h3 class="text-body-md font-semibold text-on-surface mb-3">Zelle</h3>
+          <div class="space-y-2">
+            <input id="settings-zelle-email" type="email" placeholder="Your Zelle email (e.g. yourname@gmail.com)" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+            <input id="settings-zelle-phone" type="tel" placeholder="Your Zelle phone (e.g. +19099083995)" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+            <div>
+              <label class="block text-label-md mb-1 text-on-surface-variant">Zelle QR Code (optional)</label>
+              <input type="file" id="settings-zelle-qr" accept="image/*" class="w-full text-body-sm">
+              <div id="zelle-qr-preview" class="mt-2 hidden"><img id="zelle-qr-img" src="" class="h-24 w-24 object-contain rounded-lg border border-outline-variant"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-outline-variant/30 pt-4">
+          <h3 class="text-body-md font-semibold text-on-surface mb-3">ACH Bank Transfer</h3>
+          <div class="space-y-2">
+            <input id="settings-ach-bank" placeholder="Bank name (e.g. Chase Business)" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+            <input id="settings-ach-routing" placeholder="Routing number" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface font-mono">
+            <input id="settings-ach-account" placeholder="Account number" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface font-mono">
+          </div>
+        </div>
+
+        <button onclick="savePaymentMethods()" class="w-full h-[48px] bg-primary text-on-primary rounded-lg text-label-md">Save Payment Methods</button>
+        <div id="payment-settings-result" class="text-body-sm text-center text-on-surface-variant"></div>
+      </section>
+
+      <!-- ====== INVOICE BLOCK ORDER ====== -->
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+        <h2 class="text-headline-md text-on-surface mb-1">Invoice Layout</h2>
+        <p class="text-body-sm text-on-surface-variant mb-4">Drag blocks to reorder how they appear on the invoice. Use ↑↓ on mobile.</p>
+        <div id="block-order-list" class="space-y-2"></div>
+        <button onclick="saveBlockOrder()" class="mt-4 w-full h-[48px] bg-primary text-on-primary rounded-lg text-label-md">Save Layout</button>
+        <div id="block-order-result" class="text-body-sm text-center text-on-surface-variant mt-1"></div>
+      </section>
+
       <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
         <h2 class="text-headline-md text-on-surface mb-1">Service Target Fields</h2>
         <p class="text-body-sm text-on-surface-variant mb-3">Define what info to record per job (e.g. address, vehicle, AC unit). Main = top-level, Detail = sub-info. Optional fields default to shown but not required.</p>
