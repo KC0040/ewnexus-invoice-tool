@@ -689,6 +689,34 @@ tailwind.config = {
         <div id="settings-result" class="text-body-md text-center text-on-surface-variant"></div>
       </section>
 
+      <!-- ====== LANGUAGE ====== -->
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-4">
+        <h2 class="text-headline-md text-on-surface" data-i18n="settings.language">Language</h2>
+
+        <div>
+          <label class="block text-label-md mb-2 text-on-surface-variant" data-i18n="settings.appLanguage">App interface language</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="pickAppLang('en', this)" class="app-lang-btn py-3 border-2 border-outline-variant rounded-lg text-body-md bg-surface">🇺🇸 English</button>
+            <button onclick="pickAppLang('es', this)" class="app-lang-btn py-3 border-2 border-outline-variant rounded-lg text-body-md bg-surface">🇲🇽 Español</button>
+            <button onclick="pickAppLang('zh', this)" class="app-lang-btn py-3 border-2 border-outline-variant rounded-lg text-body-md bg-surface">🇹🇼 中文</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-label-md mb-2 text-on-surface-variant" data-i18n="settings.invoiceLanguage">Invoice output language</label>
+          <div class="grid grid-cols-1 gap-2">
+            <button onclick="pickInvoiceLang('en', this)" class="inv-lang-btn py-3 px-4 border-2 border-outline-variant rounded-lg text-body-md bg-surface text-left">🇺🇸 English only</button>
+            <button onclick="pickInvoiceLang('es', this)" class="inv-lang-btn py-3 px-4 border-2 border-outline-variant rounded-lg text-body-md bg-surface text-left">🇲🇽 Español only</button>
+            <button onclick="pickInvoiceLang('zh', this)" class="inv-lang-btn py-3 px-4 border-2 border-outline-variant rounded-lg text-body-md bg-surface text-left">🇹🇼 中文 only</button>
+            <button onclick="pickInvoiceLang('en+es', this)" class="inv-lang-btn py-3 px-4 border-2 border-outline-variant rounded-lg text-body-md bg-surface text-left">🇺🇸+🇲🇽 English / Español <span class="text-xs text-on-surface-variant ml-1">(bilingual)</span></button>
+            <button onclick="pickInvoiceLang('en+zh', this)" class="inv-lang-btn py-3 px-4 border-2 border-outline-variant rounded-lg text-body-md bg-surface text-left">🇺🇸+🇹🇼 English / 中文 <span class="text-xs text-on-surface-variant ml-1">(bilingual)</span></button>
+          </div>
+        </div>
+
+        <button onclick="saveLanguageSettings()" class="w-full h-[48px] bg-primary text-on-primary rounded-lg text-label-md" data-i18n="btn.save">Save Language</button>
+        <div id="lang-result" class="text-body-sm text-center text-on-surface-variant"></div>
+      </section>
+
       <!-- ====== INVOICE COLOR & BRANDING ====== -->
       <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-stack-md">
         <h2 class="text-headline-md text-on-surface">Invoice Color</h2>
@@ -858,19 +886,19 @@ tailwind.config = {
   <!-- BottomNavBar -->
   <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-[72px] px-2 bg-surface shadow-[0px_-4px_12px_rgba(0,0,0,0.05)] md:hidden">
     <button onclick="switchScreen('invoice')" data-nav="invoice" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
-      <span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="text-[11px] mt-1">Invoices</span>
+      <span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="text-[11px] mt-1" data-i18n="nav.invoices">Invoices</span>
     </button>
     <button onclick="switchScreen('report')" data-nav="report" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
-      <span class="material-symbols-outlined text-[22px]">assignment</span><span class="text-[11px] mt-1">Jobs</span>
+      <span class="material-symbols-outlined text-[22px]">assignment</span><span class="text-[11px] mt-1" data-i18n="nav.jobs">Jobs</span>
     </button>
     <button onclick="switchScreen('history')" data-nav="history" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
-      <span class="material-symbols-outlined text-[22px]">history</span><span class="text-[11px] mt-1">History</span>
+      <span class="material-symbols-outlined text-[22px]">history</span><span class="text-[11px] mt-1" data-i18n="nav.history">History</span>
     </button>
     <button onclick="switchScreen('customers')" data-nav="customers" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
-      <span class="material-symbols-outlined text-[22px]">group</span><span class="text-[11px] mt-1">Clients</span>
+      <span class="material-symbols-outlined text-[22px]">group</span><span class="text-[11px] mt-1" data-i18n="nav.clients">Clients</span>
     </button>
     <button onclick="switchScreen('finances')" data-nav="finances" class="nav-btn flex flex-col items-center justify-center px-2 py-1 rounded-xl">
-      <span class="material-symbols-outlined text-[22px]">payments</span><span class="text-[11px] mt-1">Money</span>
+      <span class="material-symbols-outlined text-[22px]">payments</span><span class="text-[11px] mt-1" data-i18n="nav.money">Money</span>
     </button>
   </nav>
 </div>

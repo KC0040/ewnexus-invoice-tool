@@ -106,6 +106,7 @@ async function refreshAll() {
   loadPaymentSettings();
   loadBlockOrder();
   loadBrandingSettings();
+  loadLanguageSettings();
 }
 
 function stripHtml(html) { const d = document.createElement('div'); d.innerHTML = html; return d.textContent || ''; }
@@ -543,6 +544,8 @@ function showPreview() {
   const dateFmt       = COMPANY.invoice_date_format || 'MM/DD/YYYY';
   const formattedDate = formatInvoiceDate(dateVal, dateFmt);
   const hidden        = new Set(COMPANY.invoice_hidden_blocks ? JSON.parse(COMPANY.invoice_hidden_blocks) : []);
+  const iLang         = COMPANY.invoice_language || 'en';
+  const L             = getLabelSet(iLang); // label set — bilingual aware
 
   // Invoice number (sequential from work orders count + prefix)
   const invoiceNum = `${numPrefix}${String((workOrders.length || 0) + 1).padStart(4, '0')}`;
@@ -593,7 +596,7 @@ function showPreview() {
   // CLIENT block
   if (!hidden.has('client')) {
     html += `<div class="mb-6">
-      <div class="text-xs uppercase tracking-wide text-[#434655] mb-1">Bill To</div>
+      <div class="text-xs uppercase tracking-wide text-[#434655] mb-1">${L.billTo}</div>
       <div class="font-semibold">${cust ? cust.customer_name : '(no customer selected)'}</div>
       ${cust && cust.phone ? `<div class="text-sm">${cust.phone}</div>` : ''}
       ${cust && cust.email ? `<div class="text-sm">${cust.email}</div>` : ''}
@@ -611,7 +614,7 @@ function showPreview() {
     html += `<div class="mb-6 text-sm border border-[#c3c6d7] rounded-lg p-3">${assetRows}</div>`;
   }
 
-  html += `<table class="w-full mb-6 text-sm"><thead><tr class="border-b border-[#c3c6d7] text-left text-[#434655]"><th class="py-2">Description</th><th class="py-2 text-right">Amount</th></tr></thead><tbody>`;
+  html += `<table class="w-full mb-6 text-sm"><thead><tr class="border-b border-[#c3c6d7] text-left text-[#434655]"><th class="py-2">${L.description}</th><th class="py-2 text-right">${L.amount}</th></tr></thead><tbody>`;
   items.forEach(i => {
     const descRow = i.description ? `<div class="text-xs text-[#737686] mt-0.5">${i.description}</div>` : '';
     html += `<tr class="border-b border-[#e5eeff]"><td class="py-2"><div class="font-medium">${i.name}</div>${descRow}</td><td class="py-2 text-right align-top">$${i.price.toFixed(2)}</td></tr>`;
@@ -622,65 +625,64 @@ function showPreview() {
   html += `</tbody></table>`;
 
   html += `<div class="flex justify-end mb-6"><div class="w-full max-w-[280px] space-y-1 text-sm">
-    <div class="flex justify-between"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>`;
+    <div class="flex justify-between"><span>${L.subtotal}</span><span>$${subtotal.toFixed(2)}</span></div>`;
   if (discount) html += `<div class="flex justify-between text-[#ba1a1a]"><span>${discount.discount_name}</span><span>-$${discountAmount.toFixed(2)}</span></div>`;
-  html += `<div class="flex justify-between"><span>Tax</span><span>$${taxAmount.toFixed(2)}</span></div>
-    <div class="flex justify-between text-lg font-bold border-t border-[#0b1c30] pt-2 mt-2"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+  html += `<div class="flex justify-between"><span>${L.tax}</span><span>$${taxAmount.toFixed(2)}</span></div>
+    <div class="flex justify-between text-lg font-bold border-t border-[#0b1c30] pt-2 mt-2"><span>${L.total}</span><span>$${total.toFixed(2)}</span></div>
   </div></div>`;
-
-  const invoiceColor = COMPANY.invoice_color || '#004ac6';
 
   if (COMPANY.payment_link) {
     html += `<div class="mt-8 text-center">
       <a href="${COMPANY.payment_link}" target="_blank" rel="noopener noreferrer"
          style="background:${invoiceColor}"
          class="inline-block text-white font-semibold text-sm px-8 py-3 rounded-lg no-underline">
-        Pay Now
+        ${L.payNow}
       </a>
-      <div class="text-xs text-[#737686] mt-2">Tap to pay via Venmo / Zelle / CashApp / PayPal</div>
     </div>`;
   }
 
-  // Payment methods block
-  const hasZelle = COMPANY.zelle_email || COMPANY.zelle_phone;
-  const hasAch = COMPANY.ach_routing && COMPANY.ach_account;
-  if (hasZelle || hasAch) {
-    html += `<div class="mt-8 border border-[#c3c6d7] rounded-lg p-4 bg-[#f8f9ff]">
-      <div class="font-semibold text-sm mb-3" style="color:${invoiceColor}">How to Pay</div>`;
-    if (hasZelle) {
-      const zelleQrUrl = COMPANY.zelle_qr ? `${PB}/api/files/companies/${COMPANY.id}/${COMPANY.zelle_qr}` : null;
-      html += `<div class="flex items-start gap-4 mb-3">
-        ${zelleQrUrl ? `<img src="${zelleQrUrl}" class="w-20 h-20 object-contain rounded border border-[#c3c6d7]" alt="Zelle QR">` : ''}
-        <div>
-          <div class="font-medium text-sm text-[#0b1c30] mb-1">Zelle</div>
-          ${COMPANY.zelle_email ? `<div class="text-xs text-[#434655]">Email: ${COMPANY.zelle_email}</div>` : ''}
-          ${COMPANY.zelle_phone ? `<div class="text-xs text-[#434655]">Phone: ${COMPANY.zelle_phone}</div>` : ''}
-          <div class="text-xs text-[#737686] mt-1">Instant transfer — no fees</div>
-        </div>
-      </div>`;
+  // PAYMENT methods block
+  if (!hidden.has('payment')) {
+    const hasZelle = COMPANY.zelle_email || COMPANY.zelle_phone;
+    const hasAch = COMPANY.ach_routing && COMPANY.ach_account;
+    if (hasZelle || hasAch) {
+      html += `<div class="mt-8 border border-[#c3c6d7] rounded-lg p-4 bg-[#f8f9ff]">
+        <div class="font-semibold text-sm mb-3" style="color:${invoiceColor}">${L.howToPay}</div>`;
+      if (hasZelle) {
+        const zelleQrUrl = COMPANY.zelle_qr ? `${PB}/api/files/companies/${COMPANY.id}/${COMPANY.zelle_qr}` : null;
+        html += `<div class="flex items-start gap-4 mb-3">
+          ${zelleQrUrl ? `<img src="${zelleQrUrl}" class="w-20 h-20 object-contain rounded border border-[#c3c6d7]" alt="Zelle QR">` : ''}
+          <div>
+            <div class="font-medium text-sm text-[#0b1c30] mb-1">Zelle</div>
+            ${COMPANY.zelle_email ? `<div class="text-xs text-[#434655]">Email: ${COMPANY.zelle_email}</div>` : ''}
+            ${COMPANY.zelle_phone ? `<div class="text-xs text-[#434655]">Phone: ${COMPANY.zelle_phone}</div>` : ''}
+            <div class="text-xs text-[#737686] mt-1">${L.zelleInstant}</div>
+          </div>
+        </div>`;
+      }
+      if (hasAch) {
+        html += `<div class="border-t border-[#c3c6d7] pt-3">
+          <div class="font-medium text-sm text-[#0b1c30] mb-1">${L.achDays.includes('días') ? 'ACH / Transferencia Bancaria' : (L.achDays.includes('工作天') ? 'ACH 銀行轉帳' : 'ACH Bank Transfer')}${COMPANY.ach_bank_name ? ` — ${COMPANY.ach_bank_name}` : ''}</div>
+          <div class="text-xs text-[#434655] font-mono">Routing: ${COMPANY.ach_routing}</div>
+          <div class="text-xs text-[#434655] font-mono">Account: ${COMPANY.ach_account}</div>
+          <div class="text-xs text-[#737686] mt-1">${L.achDays}</div>
+        </div>`;
+      }
+      html += `</div>`;
     }
-    if (hasAch) {
-      html += `<div class="border-t border-[#c3c6d7] pt-3">
-        <div class="font-medium text-sm text-[#0b1c30] mb-1">ACH Bank Transfer${COMPANY.ach_bank_name ? ` — ${COMPANY.ach_bank_name}` : ''}</div>
-        <div class="text-xs text-[#434655] font-mono">Routing: ${COMPANY.ach_routing}</div>
-        <div class="text-xs text-[#434655] font-mono">Account: ${COMPANY.ach_account}</div>
-        <div class="text-xs text-[#737686] mt-1">1–3 business days</div>
-      </div>`;
-    }
-    html += `</div>`;
   }
 
   // NOTES / TOS block
   if (!hidden.has('notes')) {
     const tos = stripHtml(COMPANY.terms_of_service || '');
-    if (tos) html += `<div class="text-xs text-[#737686] border-t border-[#c3c6d7] pt-4 mt-8 whitespace-pre-wrap break-words overflow-wrap-anywhere">${tos}</div>`;
+    if (tos) html += `<div class="text-xs text-[#737686] border-t border-[#c3c6d7] pt-4 mt-8 whitespace-pre-wrap break-words overflow-wrap-anywhere"><strong>${L.terms}</strong><br>${tos}</div>`;
   }
 
   // SIGNATURE block
   if (!hidden.has('signature')) {
     html += `<div class="mt-8 pt-4 border-t border-[#c3c6d7] flex justify-between text-xs text-[#737686]">
-      <div>Customer signature: _______________________</div>
-      <div>Date: ___________</div>
+      <div>${L.signatureLine} _______________________</div>
+      <div>${L.dateLine} ___________</div>
     </div>`;
   }
 
@@ -1765,6 +1767,136 @@ function loadBrandingSettings() {
   if (prefixEl) prefixEl.value = COMPANY.invoice_number_prefix || '';
   const footerEl = document.getElementById('settings-footer-msg');
   if (footerEl) footerEl.value = COMPANY.invoice_footer_msg || '';
+}
+
+// ---------- i18n translations ----------
+const TRANSLATIONS = {
+  en: {
+    'nav.invoices':'Invoices','nav.jobs':'Jobs','nav.history':'History','nav.clients':'Clients','nav.money':'Money',
+    'settings.language':'Language','settings.appLanguage':'App interface language','settings.invoiceLanguage':'Invoice output language',
+    'btn.save':'Save','btn.cancel':'Cancel','btn.addItem':'Add new item','btn.addCustomer':'New Customer',
+    'screen.invoices':'Invoices','screen.jobs':'Job Reports','screen.history':'History','screen.clients':'Clients',
+    'screen.finances':'Finances','screen.settings':'Settings',
+    'label.customer':'Customer','label.date':'Date','label.total':'Total','label.status':'Status',
+    'status.paid':'Paid','status.unpaid':'Unpaid','status.estimate':'Estimate','status.void':'Void',
+    'invoice.saveAndSend':'Save & Send Invoice','invoice.preview':'Preview Invoice',
+    'report.save':'Save Report',
+  },
+  es: {
+    'nav.invoices':'Facturas','nav.jobs':'Trabajos','nav.history':'Historial','nav.clients':'Clientes','nav.money':'Dinero',
+    'settings.language':'Idioma','settings.appLanguage':'Idioma de la aplicación','settings.invoiceLanguage':'Idioma de la factura',
+    'btn.save':'Guardar','btn.cancel':'Cancelar','btn.addItem':'Agregar artículo','btn.addCustomer':'Nuevo Cliente',
+    'screen.invoices':'Facturas','screen.jobs':'Reportes de Trabajo','screen.history':'Historial','screen.clients':'Clientes',
+    'screen.finances':'Finanzas','screen.settings':'Configuración',
+    'label.customer':'Cliente','label.date':'Fecha','label.total':'Total','label.status':'Estado',
+    'status.paid':'Pagado','status.unpaid':'Pendiente','status.estimate':'Cotización','status.void':'Anulado',
+    'invoice.saveAndSend':'Guardar y Enviar Factura','invoice.preview':'Vista Previa',
+    'report.save':'Guardar Reporte',
+  },
+  zh: {
+    'nav.invoices':'發票','nav.jobs':'工作','nav.history':'記錄','nav.clients':'客戶','nav.money':'財務',
+    'settings.language':'語言設定','settings.appLanguage':'App 介面語言','settings.invoiceLanguage':'發票輸出語言',
+    'btn.save':'儲存','btn.cancel':'取消','btn.addItem':'新增項目','btn.addCustomer':'新增客戶',
+    'screen.invoices':'發票','screen.jobs':'工作報告','screen.history':'歷史記錄','screen.clients':'客戶',
+    'screen.finances':'財務','screen.settings':'設定',
+    'label.customer':'客戶','label.date':'日期','label.total':'總計','label.status':'狀態',
+    'status.paid':'已付款','status.unpaid':'未付款','status.estimate':'估價單','status.void':'作廢',
+    'invoice.saveAndSend':'儲存並發送發票','invoice.preview':'預覽發票',
+    'report.save':'儲存報告',
+  }
+};
+
+// Invoice field label translations
+const INVOICE_LABELS = {
+  en: {
+    billTo:'Bill To', description:'Description', amount:'Amount', subtotal:'Subtotal',
+    discount:'Discount', tax:'Tax', total:'Total', terms:'Terms & Conditions',
+    signatureLine:'Customer signature:', dateLine:'Date:', howToPay:'How to Pay',
+    zelleInstant:'Instant transfer — no fees', achDays:'1–3 business days', payNow:'Pay Now',
+    jobDetails:'Job Details',
+  },
+  es: {
+    billTo:'Facturar a', description:'Descripción', amount:'Monto', subtotal:'Subtotal',
+    discount:'Descuento', tax:'Impuesto', total:'Total', terms:'Términos y Condiciones',
+    signatureLine:'Firma del cliente:', dateLine:'Fecha:', howToPay:'Cómo Pagar',
+    zelleInstant:'Transferencia instantánea — sin cargos', achDays:'1–3 días hábiles', payNow:'Pagar Ahora',
+    jobDetails:'Detalles del Trabajo',
+  },
+  zh: {
+    billTo:'收件人', description:'項目說明', amount:'金額', subtotal:'小計',
+    discount:'折扣', tax:'稅金', total:'總計', terms:'條款與細則',
+    signatureLine:'客戶簽名：', dateLine:'日期：', howToPay:'付款方式',
+    zelleInstant:'即時到帳，無手續費', achDays:'1–3 個工作天', payNow:'立即付款',
+    jobDetails:'工作詳情',
+  }
+};
+
+function getLabelSet(lang) {
+  // For bilingual: returns a proxy that renders "EN / Other"
+  if (lang === 'en+es') return new Proxy({}, { get: (_, k) => `${INVOICE_LABELS.en[k]} / ${INVOICE_LABELS.es[k]}` });
+  if (lang === 'en+zh') return new Proxy({}, { get: (_, k) => `${INVOICE_LABELS.en[k]} / ${INVOICE_LABELS.zh[k]}` });
+  return INVOICE_LABELS[lang] || INVOICE_LABELS.en;
+}
+
+let APP_LANGUAGE = 'en';
+let INVOICE_LANGUAGE = 'en';
+
+function applyAppLanguage(lang) {
+  APP_LANGUAGE = lang || 'en';
+  const t = TRANSLATIONS[APP_LANGUAGE] || TRANSLATIONS.en;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
+}
+
+function pickAppLang(lang, btn) {
+  APP_LANGUAGE = lang;
+  document.querySelectorAll('.app-lang-btn').forEach(b => {
+    b.classList.toggle('border-primary', b === btn);
+    b.classList.toggle('border-outline-variant', b !== btn);
+  });
+  applyAppLanguage(lang);
+}
+
+function pickInvoiceLang(lang, btn) {
+  INVOICE_LANGUAGE = lang;
+  document.querySelectorAll('.inv-lang-btn').forEach(b => {
+    b.classList.toggle('border-primary', b === btn);
+    b.classList.toggle('border-outline-variant', b !== btn);
+  });
+}
+
+async function saveLanguageSettings() {
+  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ app_language: APP_LANGUAGE, invoice_language: INVOICE_LANGUAGE })
+  });
+  if (data.id) {
+    COMPANY = data;
+    document.getElementById('lang-result').innerText = TRANSLATIONS[APP_LANGUAGE]?.['btn.save'] === 'Guardar' ? 'Guardado.' : (APP_LANGUAGE === 'zh' ? '已儲存。' : 'Saved.');
+    setTimeout(() => { document.getElementById('lang-result').innerText = ''; }, 2000);
+  } else {
+    document.getElementById('lang-result').innerText = 'ERROR: ' + JSON.stringify(data);
+  }
+}
+
+function loadLanguageSettings() {
+  APP_LANGUAGE = COMPANY.app_language || 'en';
+  INVOICE_LANGUAGE = COMPANY.invoice_language || 'en';
+  applyAppLanguage(APP_LANGUAGE);
+  // highlight app lang buttons
+  document.querySelectorAll('.app-lang-btn').forEach(btn => {
+    const lang = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    btn.classList.toggle('border-primary', lang === APP_LANGUAGE);
+    btn.classList.toggle('border-outline-variant', lang !== APP_LANGUAGE);
+  });
+  // highlight invoice lang buttons
+  document.querySelectorAll('.inv-lang-btn').forEach(btn => {
+    const lang = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    btn.classList.toggle('border-primary', lang === INVOICE_LANGUAGE);
+    btn.classList.toggle('border-outline-variant', lang !== INVOICE_LANGUAGE);
+  });
 }
 
 // ---------- default logo ----------
