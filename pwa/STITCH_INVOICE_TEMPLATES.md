@@ -5,6 +5,10 @@ Design **8 printable invoice layouts** for independent tradespeople (plumbers, m
 HVAC techs, handymen). These are PDF/print documents — NOT app screens.
 Rendered as A4 / Letter HTML, printed from the browser.
 
+**Pricing tiers**:
+- **Base ($5.99/mo)**: Templates 1–3 unlocked. Color picker available.
+- **Pro ($8.99/mo)**: All 8 templates unlocked. Color picker available.
+
 **Primary constraint**: Each template must work well both printed in black & white
 AND viewed on screen with a brand color applied. The brand color is user-configurable
 (stored separately), so every template must be designed with a color variable in mind —
