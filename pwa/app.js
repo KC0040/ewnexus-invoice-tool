@@ -105,6 +105,7 @@ async function refreshAll() {
   renderSettingsTemplateName();
   loadPaymentSettings();
   loadBlockOrder();
+  loadBrandingSettings();
 }
 
 function stripHtml(html) { const d = document.createElement('div'); d.innerHTML = html; return d.textContent || ''; }
@@ -533,26 +534,75 @@ function showPreview() {
   const logoUrl = COMPANY.logo ? `${PB}/api/files/${COMPANY.collectionId}/${COMPANY.id}/${COMPANY.logo}` : '';
   const dateVal = document.getElementById('invoice-date').value || new Date().toISOString().slice(0,10);
 
-  let html = `
-    <div class="flex justify-between items-start border-b-2 border-[#0b1c30] pb-6 mb-6">
-      <div class="flex items-center gap-3">
-        ${logoUrl ? `<img src="${logoUrl}" class="w-14 h-14 object-contain">` : getDefaultLogoHtml(false)}
-        <div class="text-xl font-bold">${COMPANY.company_name || 'Your Company'}</div>
-      </div>
+  // Branding settings
+  const invoiceColor  = COMPANY.invoice_color || '#004ac6';
+  const fontStyle     = getFontStyle(COMPANY.invoice_font || 'inter');
+  const titleLabel    = COMPANY.invoice_title_label || 'INVOICE';
+  const numPrefix     = COMPANY.invoice_number_prefix || '';
+  const footerMsg     = COMPANY.invoice_footer_msg || '';
+  const dateFmt       = COMPANY.invoice_date_format || 'MM/DD/YYYY';
+  const formattedDate = formatInvoiceDate(dateVal, dateFmt);
+  const hidden        = new Set(COMPANY.invoice_hidden_blocks ? JSON.parse(COMPANY.invoice_hidden_blocks) : []);
+
+  // Invoice number (sequential from work orders count + prefix)
+  const invoiceNum = `${numPrefix}${String((workOrders.length || 0) + 1).padStart(4, '0')}`;
+
+  // Header block
+  const bannerUrl = COMPANY.invoice_header_banner
+    ? `${PB}/api/files/${COMPANY.collectionId}/${COMPANY.id}/${COMPANY.invoice_header_banner}` : null;
+
+  let html = `<div style="${fontStyle}">`;
+
+  // HEADER (always shown)
+  if (bannerUrl) {
+    html += `<div style="margin:-0px 0 24px;border-radius:8px 8px 0 0;overflow:hidden;height:80px;">
+      <img src="${bannerUrl}" style="width:100%;height:80px;object-fit:cover;">
+    </div>`;
+    html += `<div class="flex justify-between items-start pb-6 mb-6 border-b-2 border-[#0b1c30]">
+      <div class="font-bold text-xl">${COMPANY.company_name || 'Your Company'}</div>
       <div class="text-right">
-        <div class="text-2xl font-bold text-[#004ac6]">INVOICE</div>
-        <div class="text-sm text-[#434655]">Date: ${dateVal}</div>
+        <div class="text-2xl font-bold" style="color:${invoiceColor}">${titleLabel}</div>
+        <div class="text-xs text-[#434655] font-mono">#${invoiceNum}</div>
+        <div class="text-sm text-[#434655]">${formattedDate}</div>
+      </div>
+    </div>`;
+  } else {
+    html += `<div style="background:${invoiceColor};color:#fff;margin:-0px 0 0;padding:20px 24px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        ${logoUrl ? `<img src="${logoUrl}" style="width:48px;height:48px;object-fit:contain;border-radius:6px;background:rgba(255,255,255,.15);">` : getDefaultLogoHtml(true)}
+        <div style="font-weight:700;font-size:18px;">${COMPANY.company_name || 'Your Company'}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:22px;font-weight:800;">${titleLabel}</div>
+        <div style="font-size:12px;opacity:.8;font-family:monospace;">#${invoiceNum}</div>
+        <div style="font-size:13px;opacity:.85;margin-top:2px;">${formattedDate}</div>
       </div>
     </div>
-    <div class="mb-6">
+    <div style="margin-bottom:24px;"></div>`;
+  }
+
+  // COMPANY block
+  if (!hidden.has('company') && (COMPANY.phone || COMPANY.email || COMPANY.address)) {
+    html += `<div class="text-xs text-[#434655] mb-6">
+      ${COMPANY.phone ? `<span>${COMPANY.phone}</span>` : ''}
+      ${COMPANY.email ? `<span class="ml-3">${COMPANY.email}</span>` : ''}
+      ${COMPANY.address ? `<span class="ml-3">${COMPANY.address}</span>` : ''}
+    </div>`;
+  }
+
+  // CLIENT block
+  if (!hidden.has('client')) {
+    html += `<div class="mb-6">
       <div class="text-xs uppercase tracking-wide text-[#434655] mb-1">Bill To</div>
       <div class="font-semibold">${cust ? cust.customer_name : '(no customer selected)'}</div>
       ${cust && cust.phone ? `<div class="text-sm">${cust.phone}</div>` : ''}
       ${cust && cust.email ? `<div class="text-sm">${cust.email}</div>` : ''}
       ${cust && cust.address ? `<div class="text-sm">${cust.address}</div>` : ''}
     </div>`;
+  }
 
-  if (Object.keys(assetDetails).length) {
+  // ASSETS block
+  if (!hidden.has('assets') && Object.keys(assetDetails).length) {
     const assetRows = ASSET_SCHEMA.filter(f => assetDetails[f.label]).map(f =>
       f.level === 'detail'
         ? `<div class="pl-4 border-l-2 border-[#c3c6d7] mt-1"><span class="text-[#434655] text-xs">${f.label}:</span> <span class="text-xs">${assetDetails[f.label]}</span></div>`
@@ -620,8 +670,26 @@ function showPreview() {
     html += `</div>`;
   }
 
-  const tos = stripHtml(COMPANY.terms_of_service || '');
-  if (tos) html += `<div class="text-xs text-[#737686] border-t border-[#c3c6d7] pt-4 mt-8 whitespace-pre-wrap break-words overflow-wrap-anywhere">${tos}</div>`;
+  // NOTES / TOS block
+  if (!hidden.has('notes')) {
+    const tos = stripHtml(COMPANY.terms_of_service || '');
+    if (tos) html += `<div class="text-xs text-[#737686] border-t border-[#c3c6d7] pt-4 mt-8 whitespace-pre-wrap break-words overflow-wrap-anywhere">${tos}</div>`;
+  }
+
+  // SIGNATURE block
+  if (!hidden.has('signature')) {
+    html += `<div class="mt-8 pt-4 border-t border-[#c3c6d7] flex justify-between text-xs text-[#737686]">
+      <div>Customer signature: _______________________</div>
+      <div>Date: ___________</div>
+    </div>`;
+  }
+
+  // Footer message
+  if (footerMsg) {
+    html += `<div class="mt-6 text-center text-xs text-[#737686] italic">${footerMsg}</div>`;
+  }
+
+  html += `</div>`; // close font wrapper
 
   document.getElementById('preview-content').innerHTML = html;
   document.getElementById('modal-preview').classList.remove('hidden');
@@ -1433,6 +1501,70 @@ async function uploadLogo() {
   else { document.getElementById('settings-result').innerText = 'ERROR: ' + JSON.stringify(data); }
 }
 
+// ---------- fonts ----------
+const FONTS_BASE = [
+  { key: 'inter',   label: 'Inter',    sample: 'Modern Clean',   style: 'font-family:Inter,sans-serif' },
+  { key: 'poppins', label: 'Poppins',  sample: 'Friendly Round', style: "font-family:'Poppins',sans-serif" },
+  { key: 'oswald',  label: 'Oswald',   sample: 'Bold Strong',    style: "font-family:'Oswald',sans-serif" },
+];
+const FONTS_PRO = [
+  { key: 'georgia',  label: 'Georgia',          sample: 'Classic Formal',  style: "font-family:Georgia,'Times New Roman',serif" },
+  { key: 'roboto-mono', label: 'Roboto Mono',   sample: 'Technical',       style: "font-family:'Roboto Mono',monospace" },
+  { key: 'playfair', label: 'Playfair Display', sample: 'Elegant Premium', style: "font-family:'Playfair Display',serif" },
+];
+const ALL_FONTS = [...FONTS_BASE, ...FONTS_PRO];
+let SELECTED_FONT = 'inter';
+
+function getFontStyle(key) {
+  return (ALL_FONTS.find(f => f.key === key) || ALL_FONTS[0]).style;
+}
+
+function renderFontPicker() {
+  const el = document.getElementById('font-picker');
+  if (!el) return;
+  el.innerHTML = ALL_FONTS.map(f => `
+    <button onclick="pickFont('${f.key}', this)"
+      class="font-btn py-3 px-3 border-2 rounded-lg text-left transition-colors ${SELECTED_FONT === f.key ? 'border-primary bg-primary-container/20' : 'border-outline-variant bg-surface'}"
+      style="${f.style}">
+      <div class="text-body-md font-semibold text-on-surface">${f.label}</div>
+      <div class="text-xs text-on-surface-variant">${f.sample}</div>
+    </button>`).join('');
+}
+
+function pickFont(key, btn) {
+  SELECTED_FONT = key;
+  document.querySelectorAll('.font-btn').forEach(b => {
+    b.classList.toggle('border-primary', b === btn);
+    b.classList.toggle('bg-primary-container/20', b === btn);
+    b.classList.toggle('border-outline-variant', b !== btn);
+  });
+}
+
+// ---------- date format ----------
+let SELECTED_DATE_FORMAT = 'MM/DD/YYYY';
+
+function pickDateFormat(fmt, btn) {
+  SELECTED_DATE_FORMAT = fmt;
+  document.querySelectorAll('.date-fmt-btn').forEach(b => {
+    b.classList.toggle('border-primary', b === btn);
+    b.classList.toggle('border-outline-variant', b !== btn);
+  });
+}
+
+function formatInvoiceDate(dateStr, fmt) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr.includes('T') ? dateStr : dateStr + 'T12:00:00');
+  const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONTHS_LONG  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  if (fmt === 'MMM DD YYYY')  return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}, ${yyyy}`;
+  if (fmt === 'MMMM DD YYYY') return `${MONTHS_LONG[d.getMonth()]} ${d.getDate()}, ${yyyy}`;
+  if (fmt === 'YYYY-MM-DD')   return `${yyyy}-${mm}-${dd}`;
+  return `${mm}/${dd}/${yyyy}`;
+}
+
 // ---------- invoice color ----------
 const DEFAULT_BLOCKS = ['company','client','assets','items','totals','payment','notes','signature'];
 
@@ -1517,34 +1649,49 @@ function loadPaymentSettings() {
   loadZelleQrPreview();
 }
 
-// ---------- invoice block order ----------
+// ---------- invoice block order + visibility ----------
 let BLOCK_ORDER = [...DEFAULT_BLOCKS];
+let HIDDEN_BLOCKS = new Set();
 const BLOCK_LABELS = {
-  company: 'Your Company Info',
-  client: 'Client Info',
-  assets: 'Job / Asset Details',
-  items: 'Service Items & Line Items',
-  totals: 'Subtotal · Tax · Total',
-  payment: 'Payment Methods (Zelle / ACH)',
-  notes: 'Terms & Notes',
+  company:   'Your Company Info',
+  client:    'Client Info',
+  assets:    'Job / Asset Details',
+  items:     'Service Items & Line Items',
+  totals:    'Subtotal · Tax · Total',
+  payment:   'Payment Methods (Zelle / ACH)',
+  notes:     'Terms & Notes',
   signature: 'Signature Line',
 };
+const BLOCK_REQUIRED = new Set(['items','totals']); // cannot be hidden
 
 function renderBlockOrderList() {
   const list = document.getElementById('block-order-list');
-  list.innerHTML = BLOCK_ORDER.map((key, idx) => `
-    <div class="flex items-center gap-3 bg-surface-container p-3 rounded-lg border border-outline-variant/40" data-block="${key}">
-      <span class="material-symbols-outlined text-on-surface-variant cursor-grab drag-handle">drag_indicator</span>
+  if (!list) return;
+  list.innerHTML = BLOCK_ORDER.map((key, idx) => {
+    const hidden = HIDDEN_BLOCKS.has(key);
+    const required = BLOCK_REQUIRED.has(key);
+    return `
+    <div class="flex items-center gap-2 p-3 rounded-lg border ${hidden ? 'border-outline-variant/20 bg-surface opacity-50' : 'bg-surface-container border-outline-variant/40'}" data-block="${key}">
+      <button onclick="toggleBlock('${key}')" class="flex-shrink-0 w-10 h-6 rounded-full transition-colors ${hidden ? 'bg-outline-variant' : 'bg-primary'} relative ${required ? 'opacity-30 pointer-events-none' : ''}" title="${required ? 'Required' : (hidden ? 'Show' : 'Hide')}">
+        <span class="absolute top-0.5 ${hidden ? 'left-0.5' : 'left-[18px]'} w-5 h-5 bg-white rounded-full shadow transition-all"></span>
+      </button>
       <span class="flex-1 text-body-md text-on-surface">${BLOCK_LABELS[key] || key}</span>
       <div class="flex gap-1">
-        <button onclick="moveBlock(${idx},-1)" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant disabled:opacity-30" ${idx===0?'disabled':''}>
+        <button onclick="moveBlock(${idx},-1)" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant" ${idx===0?'disabled style="opacity:.3"':''}>
           <span class="material-symbols-outlined text-[18px]">keyboard_arrow_up</span>
         </button>
-        <button onclick="moveBlock(${idx},1)" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant disabled:opacity-30" ${idx===BLOCK_ORDER.length-1?'disabled':''}>
+        <button onclick="moveBlock(${idx},1)" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant" ${idx===BLOCK_ORDER.length-1?'disabled style="opacity:.3"':''}>
           <span class="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
         </button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function toggleBlock(key) {
+  if (BLOCK_REQUIRED.has(key)) return;
+  HIDDEN_BLOCKS.has(key) ? HIDDEN_BLOCKS.delete(key) : HIDDEN_BLOCKS.add(key);
+  renderBlockOrderList();
 }
 
 function moveBlock(idx, dir) {
@@ -1555,7 +1702,11 @@ function moveBlock(idx, dir) {
 }
 
 async function saveBlockOrder() {
-  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', body: JSON.stringify({invoice_block_order: JSON.stringify(BLOCK_ORDER)})});
+  const body = {
+    invoice_block_order:  JSON.stringify(BLOCK_ORDER),
+    invoice_hidden_blocks: JSON.stringify([...HIDDEN_BLOCKS]),
+  };
+  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', body: JSON.stringify(body)});
   if (data.id) { COMPANY = data; document.getElementById('block-order-result').innerText = 'Layout saved.'; }
   else { document.getElementById('block-order-result').innerText = 'ERROR: ' + JSON.stringify(data); }
 }
@@ -1564,8 +1715,56 @@ function loadBlockOrder() {
   try {
     const saved = COMPANY.invoice_block_order ? JSON.parse(COMPANY.invoice_block_order) : null;
     BLOCK_ORDER = (saved && saved.length) ? saved : [...DEFAULT_BLOCKS];
-  } catch { BLOCK_ORDER = [...DEFAULT_BLOCKS]; }
+    const hiddenArr = COMPANY.invoice_hidden_blocks ? JSON.parse(COMPANY.invoice_hidden_blocks) : [];
+    HIDDEN_BLOCKS = new Set(hiddenArr);
+  } catch { BLOCK_ORDER = [...DEFAULT_BLOCKS]; HIDDEN_BLOCKS = new Set(); }
   renderBlockOrderList();
+}
+
+// ---------- branding settings (font, format, footer) ----------
+async function saveBrandingSettings() {
+  // banner image upload first if provided
+  const bannerFile = document.getElementById('settings-header-banner')?.files[0];
+  if (bannerFile) {
+    const form = new FormData();
+    form.append('invoice_header_banner', bannerFile);
+    const res = await fetch(`${PB}/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', headers:{'Authorization':TOKEN}, body: form});
+    const d = await res.json();
+    if (d.id) COMPANY = d;
+  }
+  const body = {
+    invoice_font:          SELECTED_FONT,
+    invoice_title_label:   document.getElementById('settings-title-label')?.value || 'INVOICE',
+    invoice_number_prefix: document.getElementById('settings-num-prefix')?.value.trim() || '',
+    invoice_footer_msg:    document.getElementById('settings-footer-msg')?.value.trim() || '',
+    invoice_date_format:   SELECTED_DATE_FORMAT,
+  };
+  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', body: JSON.stringify(body)});
+  if (data.id) {
+    COMPANY = data;
+    document.getElementById('branding-result').innerText = 'Saved.';
+    setTimeout(() => { document.getElementById('branding-result').innerText = ''; }, 2000);
+  } else {
+    document.getElementById('branding-result').innerText = 'ERROR: ' + JSON.stringify(data);
+  }
+}
+
+function loadBrandingSettings() {
+  SELECTED_FONT = COMPANY.invoice_font || 'inter';
+  SELECTED_DATE_FORMAT = COMPANY.invoice_date_format || 'MM/DD/YYYY';
+  renderFontPicker();
+  // highlight saved date format button
+  document.querySelectorAll('.date-fmt-btn').forEach(btn => {
+    const fmt = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    btn.classList.toggle('border-primary', fmt === SELECTED_DATE_FORMAT);
+    btn.classList.toggle('border-outline-variant', fmt !== SELECTED_DATE_FORMAT);
+  });
+  const titleEl = document.getElementById('settings-title-label');
+  if (titleEl && COMPANY.invoice_title_label) titleEl.value = COMPANY.invoice_title_label;
+  const prefixEl = document.getElementById('settings-num-prefix');
+  if (prefixEl) prefixEl.value = COMPANY.invoice_number_prefix || '';
+  const footerEl = document.getElementById('settings-footer-msg');
+  if (footerEl) footerEl.value = COMPANY.invoice_footer_msg || '';
 }
 
 // ---------- default logo ----------

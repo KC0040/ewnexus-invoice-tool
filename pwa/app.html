@@ -711,6 +711,54 @@ tailwind.config = {
         <button onclick="saveInvoiceColor()" class="w-full h-[48px] bg-primary text-on-primary rounded-lg text-label-md">Save Color</button>
       </section>
 
+      <!-- ====== FONT ====== -->
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-3">
+        <h2 class="text-headline-md text-on-surface">Invoice Font</h2>
+        <div id="font-picker" class="grid grid-cols-2 gap-2"></div>
+        <button onclick="saveBrandingSettings()" class="w-full h-[48px] bg-primary text-on-primary rounded-lg text-label-md">Save Font</button>
+      </section>
+
+      <!-- ====== INVOICE FORMAT ====== -->
+      <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-3">
+        <h2 class="text-headline-md text-on-surface">Invoice Format</h2>
+
+        <div>
+          <label class="block text-label-md mb-1 text-on-surface-variant">Document title</label>
+          <select id="settings-title-label" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface text-body-md">
+            <option value="INVOICE">INVOICE</option>
+            <option value="QUOTE">QUOTE</option>
+            <option value="ESTIMATE">ESTIMATE</option>
+            <option value="WORK ORDER">WORK ORDER</option>
+            <option value="RECEIPT">RECEIPT</option>
+            <option value="SERVICE INVOICE">SERVICE INVOICE</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-label-md mb-1 text-on-surface-variant">Invoice number prefix <span class="font-normal text-on-surface-variant">(optional)</span></label>
+          <input id="settings-num-prefix" placeholder="e.g. HVAC- or INV-" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface font-mono">
+          <p class="text-xs text-on-surface-variant mt-1">Result: HVAC-0042</p>
+        </div>
+
+        <div>
+          <label class="block text-label-md mb-1 text-on-surface-variant">Date format</label>
+          <div class="grid grid-cols-2 gap-2" id="date-format-picker">
+            <button onclick="pickDateFormat('MM/DD/YYYY', this)" class="date-fmt-btn py-3 px-3 border-2 border-outline-variant rounded-lg text-body-md font-mono bg-surface">08/07/2026</button>
+            <button onclick="pickDateFormat('MMM DD YYYY', this)" class="date-fmt-btn py-3 px-3 border-2 border-outline-variant rounded-lg text-body-md bg-surface">Aug 7, 2026</button>
+            <button onclick="pickDateFormat('MMMM DD YYYY', this)" class="date-fmt-btn py-3 px-3 border-2 border-outline-variant rounded-lg text-body-md bg-surface">August 7, 2026</button>
+            <button onclick="pickDateFormat('YYYY-MM-DD', this)" class="date-fmt-btn py-3 px-3 border-2 border-outline-variant rounded-lg text-body-md font-mono bg-surface">2026-08-07</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-label-md mb-1 text-on-surface-variant">Footer message <span class="font-normal">(optional)</span></label>
+          <input id="settings-footer-msg" placeholder="e.g. Thank you for your business!" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface">
+        </div>
+
+        <button onclick="saveBrandingSettings()" class="w-full h-[48px] bg-primary text-on-primary rounded-lg text-label-md">Save Format</button>
+        <div id="branding-result" class="text-body-sm text-center text-on-surface-variant"></div>
+      </section>
+
       <!-- ====== PAYMENT METHODS ====== -->
       <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-stack-md">
         <h2 class="text-headline-md text-on-surface">Payment Methods on Invoice</h2>
@@ -742,10 +790,10 @@ tailwind.config = {
         <div id="payment-settings-result" class="text-body-sm text-center text-on-surface-variant"></div>
       </section>
 
-      <!-- ====== INVOICE BLOCK ORDER ====== -->
+      <!-- ====== INVOICE BLOCK ORDER + VISIBILITY ====== -->
       <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
         <h2 class="text-headline-md text-on-surface mb-1">Invoice Layout</h2>
-        <p class="text-body-sm text-on-surface-variant mb-4">Drag blocks to reorder how they appear on the invoice. Use ↑↓ on mobile.</p>
+        <p class="text-body-sm text-on-surface-variant mb-4">Toggle blocks on/off and use ↑↓ to reorder.</p>
         <div id="block-order-list" class="space-y-2"></div>
         <button onclick="saveBlockOrder()" class="mt-4 w-full h-[48px] bg-primary text-on-primary rounded-lg text-label-md">Save Layout</button>
         <div id="block-order-result" class="text-body-sm text-center text-on-surface-variant mt-1"></div>
