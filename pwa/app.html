@@ -81,24 +81,88 @@ tailwind.config = {
         <span class="material-symbols-outlined text-4xl">business_center</span>
       </div>
       <div>
-        <h1 class="text-headline-lg-mobile md:text-headline-lg text-primary font-bold">EWNexus</h1>
+        <h1 class="text-headline-lg-mobile md:text-headline-lg text-primary font-bold">EWNexus Invoice</h1>
         <p class="text-body-md text-on-surface-variant mt-1">Sign in to your account</p>
       </div>
     </header>
     <form id="login-form" class="flex flex-col gap-stack-md mt-4">
       <div class="flex flex-col gap-stack-sm">
         <label class="text-label-md text-on-surface" for="email">Email Address</label>
-        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="email" placeholder="name@company.com" required type="email" value="testworker@example.com"/>
+        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="email" placeholder="name@company.com" required type="email"/>
       </div>
       <div class="flex flex-col gap-stack-sm">
         <label class="text-label-md text-on-surface" for="password">Password</label>
-        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="password" placeholder="••••••••" required type="password" value="TestPass123!"/>
+        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="password" placeholder="••••••••" required type="password"/>
       </div>
       <button class="w-full h-[56px] mt-4 bg-primary text-on-primary rounded-lg text-label-md flex items-center justify-center gap-2 active:scale-[0.98]" type="submit">
         Sign In <span class="material-symbols-outlined">arrow_forward</span>
       </button>
       <div id="login-error" class="text-error text-body-md text-center"></div>
     </form>
+    <p class="text-center text-body-md text-on-surface-variant">
+      Don't have an account?
+      <button class="text-primary font-semibold underline" onclick="showScreen('screen-register')">Create free account</button>
+    </p>
+  </main>
+</section>
+
+<!-- ============ REGISTER ============ -->
+<section id="screen-register" class="screen">
+  <main class="w-full max-w-md mx-auto bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-6 md:p-8 flex flex-col gap-stack-lg mt-16">
+    <header class="flex flex-col items-center gap-stack-md text-center">
+      <div class="w-16 h-16 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container mb-2">
+        <span class="material-symbols-outlined text-4xl">assignment_add</span>
+      </div>
+      <div>
+        <h1 class="text-headline-lg-mobile md:text-headline-lg text-primary font-bold">Start Free</h1>
+        <p class="text-body-md text-on-surface-variant mt-1">First 5 invoices free — no credit card required</p>
+      </div>
+    </header>
+    <form id="register-form" class="flex flex-col gap-stack-md mt-2">
+      <div class="flex flex-col gap-stack-sm">
+        <label class="text-label-md text-on-surface" for="reg-company">Business Name</label>
+        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="reg-company" placeholder="ABC Plumbing LLC" required type="text"/>
+      </div>
+      <div class="flex flex-col gap-stack-sm">
+        <label class="text-label-md text-on-surface" for="reg-email">Email Address</label>
+        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="reg-email" placeholder="you@company.com" required type="email"/>
+      </div>
+      <div class="flex flex-col gap-stack-sm">
+        <label class="text-label-md text-on-surface" for="reg-password">Password</label>
+        <input class="w-full h-[56px] px-4 border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="reg-password" placeholder="Min 8 characters" required type="password" minlength="8"/>
+      </div>
+      <button class="w-full h-[56px] mt-2 bg-primary text-on-primary rounded-lg text-label-md flex items-center justify-center gap-2 active:scale-[0.98]" type="submit">
+        Create Account <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+      <div id="register-error" class="text-error text-body-md text-center"></div>
+    </form>
+    <p class="text-center text-body-md text-on-surface-variant">
+      Already have an account?
+      <button class="text-primary font-semibold underline" onclick="showScreen('screen-login')">Sign in</button>
+    </p>
+  </main>
+</section>
+
+<!-- ============ PAYWALL ============ -->
+<section id="screen-paywall" class="screen">
+  <main class="w-full max-w-md mx-auto bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-6 md:p-8 flex flex-col gap-stack-lg mt-16 text-center">
+    <div class="w-16 h-16 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container mx-auto">
+      <span class="material-symbols-outlined text-4xl">workspace_premium</span>
+    </div>
+    <div>
+      <h2 class="text-headline-md text-on-surface font-bold">Trial Complete</h2>
+      <p class="text-body-md text-on-surface-variant mt-2">You've used your 5 free invoices.<br>Upgrade to keep growing your business.</p>
+    </div>
+    <div class="bg-surface-container rounded-xl p-5 text-left flex flex-col gap-3">
+      <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span class="text-body-md">Unlimited invoices & work orders</span></div>
+      <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span class="text-body-md">PDF export & SMS notifications</span></div>
+      <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span class="text-body-md">Customer management & history</span></div>
+      <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span class="text-body-md">Recurring invoices & reports</span></div>
+    </div>
+    <a id="upgrade-btn" href="#" target="_blank" class="w-full h-[56px] bg-primary text-on-primary rounded-lg text-label-md flex items-center justify-center gap-2 active:scale-[0.98]">
+      Upgrade Now — $19/mo <span class="material-symbols-outlined">open_in_new</span>
+    </a>
+    <button onclick="showScreen('screen-login')" class="text-body-md text-on-surface-variant underline">Back to app</button>
   </main>
 </section>
 
@@ -177,7 +241,10 @@ tailwind.config = {
     <button aria-label="Menu" onclick="switchScreen('invoice')" class="w-[44px] h-[44px] flex items-center justify-center rounded-full text-primary">
       <span class="material-symbols-outlined">menu</span>
     </button>
-    <div class="text-headline-md font-bold text-primary text-center" id="brand-name">EWNexus</div>
+    <div class="flex flex-col items-center">
+      <div class="text-headline-md font-bold text-primary text-center" id="brand-name">EWNexus</div>
+      <div id="trial-badge" class="hidden text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full"></div>
+    </div>
     <button aria-label="Settings" onclick="switchScreen('settings')" class="w-[44px] h-[44px] flex items-center justify-center rounded-full text-primary">
       <span class="material-symbols-outlined">settings</span>
     </button>

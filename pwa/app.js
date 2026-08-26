@@ -5,7 +5,46 @@ let ONBOARDING_TEMPLATES = [], selectedOnboardingTemplateId = null;
 let calMonthOffset = 0;
 let reportPhotos = {before: [], after: []};
 
+// ---------- screen helpers ----------
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
 // ---------- auth ----------
+function updateTrialBadge() {
+  const badge = document.getElementById('trial-badge');
+  if (!badge || !COMPANY) return;
+  if (COMPANY.is_paid) { badge.classList.add('hidden'); return; }
+  const left = COMPANY.trial_invoices_left ?? 5;
+  if (left > 0) {
+    badge.textContent = `${left} free invoice${left===1?'':'s'} left`;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+async function doPostLogin() {
+  document.getElementById('brand-name').innerText = COMPANY.company_name || 'EWNexus';
+  // Check paywall
+  if (!COMPANY.is_paid && (COMPANY.trial_invoices_left ?? 5) <= 0) {
+    showScreen('screen-paywall');
+    return;
+  }
+  updateTrialBadge();
+  if (!COMPANY.template) {
+    await loadOnboardingTemplates();
+    document.getElementById('ob-company-name').value = COMPANY.company_name || '';
+    showScreen('screen-onboarding');
+  } else {
+    CURRENT_TEMPLATE = await authedFetch(`/api/collections/templates/records/${COMPANY.template}`);
+    document.getElementById('app-shell').classList.remove('hidden');
+    switchScreen('invoice');
+    await refreshAll();
+  }
+}
+
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('email').value;
@@ -18,19 +57,33 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   if (!res.ok) { document.getElementById('login-error').innerText = 'Login failed: ' + (data.message||''); return; }
   TOKEN = data.token;
   COMPANY = data.record;
-  document.getElementById('brand-name').innerText = COMPANY.company_name || 'EWNexus';
-  document.getElementById('screen-login').classList.remove('active');
+  await doPostLogin();
+});
 
-  if (!COMPANY.template) {
-    await loadOnboardingTemplates();
-    document.getElementById('ob-company-name').value = COMPANY.company_name || '';
-    document.getElementById('screen-onboarding').classList.add('active');
-  } else {
-    CURRENT_TEMPLATE = await authedFetch(`/api/collections/templates/records/${COMPANY.template}`);
-    document.getElementById('app-shell').classList.remove('hidden');
-    switchScreen('invoice');
-    await refreshAll();
-  }
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('register-error');
+  errEl.innerText = '';
+  const company_name = document.getElementById('reg-company').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  // Create company account (trial_invoices_left set by server hook)
+  const res = await fetch(`${PB}/api/collections/companies/records`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({company_name, email, password, passwordConfirm: password})
+  });
+  const data = await res.json();
+  if (!res.ok) { errEl.innerText = data.message || 'Registration failed'; return; }
+  // Auto login
+  const authRes = await fetch(`${PB}/api/collections/companies/auth-with-password`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({identity: email, password})
+  });
+  const authData = await authRes.json();
+  if (!authRes.ok) { errEl.innerText = 'Account created — please sign in'; showScreen('screen-login'); return; }
+  TOKEN = authData.token;
+  COMPANY = authData.record;
+  await doPostLogin();
 });
 
 async function authedFetch(path, opts={}) {
