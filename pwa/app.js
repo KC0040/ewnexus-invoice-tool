@@ -38,7 +38,10 @@ async function doPostLogin() {
     document.getElementById('ob-company-name').value = COMPANY.company_name || '';
     showScreen('screen-onboarding');
   } else {
-    CURRENT_TEMPLATE = await authedFetch(`/api/collections/templates/records/${COMPANY.template}`);
+    try {
+      CURRENT_TEMPLATE = await authedFetch(`/api/collections/templates/records/${COMPANY.template}`);
+      if (!CURRENT_TEMPLATE?.id) CURRENT_TEMPLATE = null;
+    } catch { CURRENT_TEMPLATE = null; }
     document.getElementById('app-shell').classList.remove('hidden');
     switchScreen('invoice');
     await refreshAll();
@@ -135,7 +138,8 @@ function closeSheets() {
 
 // ---------- onboarding ----------
 async function loadOnboardingTemplates() {
-  const data = await authedFetch('/api/collections/templates/records?perPage=50&sort=industry_name');
+  let data = {};
+  try { data = await authedFetch('/api/collections/templates/records?perPage=50&sort=industry_name'); } catch {}
   ONBOARDING_TEMPLATES = data.items || [];
   const iconMap = {
     'plumbing':          'water_drop',
@@ -154,11 +158,13 @@ async function loadOnboardingTemplates() {
     'flooring':          'texture',
     'tree-service':      'park',
     'pet-grooming':      'pets',
+    'computer-repair':   'computer',
+    'electronics-repair':'electrical_services',
+    'general':           'business_center',
   };
-  const base = ONBOARDING_TEMPLATES.filter(t => t.included_in_base);
-  const premium = ONBOARDING_TEMPLATES.filter(t => !t.included_in_base);
+  // All templates selectable — no gating during onboarding
   const card = t => `
-    <div class="template-card relative overflow-hidden rounded-xl bg-surface-container-lowest border border-outline-variant shadow-[0px_4px_12px_rgba(0,0,0,0.05)] cursor-pointer p-4" onclick="selectOnboardingTemplate('${t.id}', this)">
+    <div class="template-card relative overflow-hidden rounded-xl bg-surface-container-lowest border border-outline-variant shadow-[0px_4px_12px_rgba(0,0,0,0.05)] cursor-pointer p-4 transition-all" onclick="selectOnboardingTemplate('${t.id}', this)">
       <div class="flex items-center justify-between mb-1">
         <h3 class="text-title-md text-on-surface flex items-center gap-2">
           <span class="material-symbols-outlined text-primary text-[20px]">${iconMap[t.slug]||'work'}</span>${t.industry_name}
@@ -169,13 +175,12 @@ async function loadOnboardingTemplates() {
         ${(t.default_service_items||[]).slice(0,3).map(i=>`<li>• ${i.name}</li>`).join('')}
       </ul>
     </div>`;
-  document.getElementById('ob-template-grid').innerHTML = `
-    <div class="col-span-full">
-      <p class="text-label-lg text-on-surface-variant uppercase tracking-widest mb-2">Included in all plans</p>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">${base.map(card).join('')}</div>
-      <p class="text-label-lg text-on-surface-variant uppercase tracking-widest mb-2">Premium templates <span class="text-tertiary normal-case tracking-normal">(unlock with Premium plan)</span></p>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">${premium.map(card).join('')}</div>
-    </div>` || '<p class="text-on-surface-variant text-body-md">No templates available.</p>';
+  const grid = document.getElementById('ob-template-grid');
+  if (ONBOARDING_TEMPLATES.length === 0) {
+    grid.innerHTML = '<p class="text-on-surface-variant text-body-md col-span-full">No templates found. You can set up your service items manually in Settings.</p>';
+  } else {
+    grid.innerHTML = ONBOARDING_TEMPLATES.map(card).join('');
+  }
 }
 function selectOnboardingTemplate(id, el) {
   document.querySelectorAll('.template-card').forEach(c => { c.classList.remove('border-primary','ring-2','ring-primary'); c.querySelector('.selection-icon').classList.add('hidden'); });
