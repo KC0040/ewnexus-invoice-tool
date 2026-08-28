@@ -1,5 +1,10 @@
 const PB = window.location.origin;
 let TOKEN = null, COMPANY = null, CURRENT_TEMPLATE = null;
+
+// ---------- tier helpers ----------
+function isFree() { return !COMPANY || !COMPANY.subscription_tier || COMPANY.subscription_tier === 'free'; }
+function isBase() { return COMPANY && (COMPANY.subscription_tier === 'base' || COMPANY.subscription_tier === 'pro'); }
+function isPro()  { return COMPANY && COMPANY.subscription_tier === 'pro'; }
 let serviceItems = [], discounts = [], customers = [], bundles = [], workOrders = [], expenses = [], recurringInvoices = [], appointments = [], reports = [];
 let ONBOARDING_TEMPLATES = [], selectedOnboardingTemplateId = null;
 let calMonthOffset = 0;
@@ -15,7 +20,7 @@ function showScreen(id) {
 function updateTrialBadge() {
   const badge = document.getElementById('trial-badge');
   if (!badge || !COMPANY) return;
-  if (COMPANY.is_paid) { badge.classList.add('hidden'); return; }
+  if (!isFree()) { badge.classList.add('hidden'); return; }
   const left = COMPANY.trial_invoices_left ?? 5;
   if (left > 0) {
     badge.textContent = `${left} free invoice${left===1?'':'s'} left`;
@@ -28,7 +33,7 @@ function updateTrialBadge() {
 async function doPostLogin() {
   document.getElementById('brand-name').innerText = COMPANY.company_name || 'EWNexus';
   // Check paywall
-  if (!COMPANY.is_paid && (COMPANY.trial_invoices_left ?? 5) <= 0) {
+  if (isFree() && (COMPANY.trial_invoices_left ?? 5) <= 0) {
     showScreen('screen-paywall');
     return;
   }
@@ -837,8 +842,8 @@ function loadReportScreen() {
   sel.innerHTML = '<option value="">-- select customer --</option>' +
     customers.map(c => `<option value="${c.id}">${c.customer_name}</option>`).join('');
   const tierNote = document.getElementById('report-tier-note');
-  if (tierNote) tierNote.innerText = COMPANY.subscription_tier === 'premium'
-    ? 'Premium: photos are stored for 1 year on Cloudflare R2.'
+  if (tierNote) tierNote.innerText = isPro()
+    ? 'Pro: photos are stored for 1 year on Cloudflare R2.'
     : 'Base plan: photos are used for your PDF report but not stored on server.';
   reportGroups = [];
   renderReportGroups();
@@ -916,7 +921,7 @@ async function submitReport() {
   // For premium: upload group photos to R2
   const groupsForSave = await Promise.all(reportGroups.map(async (g, i) => {
     const out = {title: g.title, beforeCaption: g.beforeCaption, afterCaption: g.afterCaption, beforeUrl: '', afterUrl: ''};
-    if (COMPANY.subscription_tier === 'premium') {
+    if (isPro()) {
       const uploadFile = async (file, kind) => {
         if (!file) return '';
         const filename = file.name || 'photo.jpg';

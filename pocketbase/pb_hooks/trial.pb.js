@@ -1,5 +1,10 @@
-// Set trial_invoices_left = 5 on new company registration
+/// <reference path="../pb_data/types.d.ts" />
+
+// Set subscription_tier = 'free' and trial_invoices_left = 5 on new company registration
 onRecordCreate((e) => {
+  if (!e.record.get("subscription_tier")) {
+    e.record.set("subscription_tier", "free")
+  }
   if (e.record.get("trial_invoices_left") === null || e.record.get("trial_invoices_left") === 0) {
     e.record.set("trial_invoices_left", 5)
   }
@@ -18,8 +23,8 @@ onRecordUpdate((e) => {
     try {
       const companyId = e.record.get("company")
       const company = $app.findRecordById("companies", companyId)
-      const isPaid = company.get("is_paid")
-      if (isPaid) { e.next(); return }
+      const tier = company.get("subscription_tier") || "free"
+      if (tier !== "free") { e.next(); return }
 
       const left = company.get("trial_invoices_left") ?? 0
       if (left <= 0) {
@@ -29,7 +34,6 @@ onRecordUpdate((e) => {
       $app.save(company)
     } catch (err) {
       if (err.message && err.message.includes("Trial limit")) throw err
-      // ignore lookup errors, don't block
     }
   }
   e.next()

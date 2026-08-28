@@ -69,7 +69,12 @@ routerAdd("POST", "/api/send-invoice/{id}", (e) => {
     result.email_skipped_reason = "customer has no email on file"
   }
 
-  // ---- SMS ----
+  // ---- SMS (Pro tier only — Twilio costs per message) ----
+  const companyTier = company.get("subscription_tier") || "free"
+  if (companyTier !== "pro") {
+    result.sms_skipped_reason = "SMS requires Pro plan"
+    return e.json(200, result)
+  }
   const customerPhone = customer.get("phone")
   const twilioSid = $os.getenv("TWILIO_ACCOUNT_SID")
   const twilioToken = $os.getenv("TWILIO_AUTH_TOKEN")
