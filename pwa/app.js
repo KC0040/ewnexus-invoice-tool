@@ -537,7 +537,7 @@ function recalc() {
 }
 
 // ---------- preview (A4) ----------
-function showPreview() {
+function collectInvoiceData() {
   const {subtotal, discountAmount, taxAmount, total, items, discount} = computeTotals();
   const custId = document.getElementById('customer-select').value;
   const cust = customers.find(c => c.id === custId);
@@ -703,7 +703,18 @@ function showPreview() {
 
   html += `</div>`; // close font wrapper
 
-  document.getElementById('preview-content').innerHTML = html;
+  return {
+    subtotal, discountAmount, taxAmount, total, items, discount,
+    cust, assetDetails, logoUrl, bannerUrl, invoiceNum, formattedDate,
+    invoiceColor, fontStyle, titleLabel, numPrefix, footerMsg, hidden, L,
+    iLang,
+  };
+}
+
+function showPreview() {
+  const d = collectInvoiceData();
+  const slug = COMPANY.invoice_visual_template || 'clean-white';
+  document.getElementById('preview-content').innerHTML = renderInvoiceTemplate(slug, d);
   document.getElementById('modal-preview').classList.remove('hidden');
 }
 function closePreview() { document.getElementById('modal-preview').classList.add('hidden'); }
@@ -1947,8 +1958,12 @@ let selectedMarketplaceTemplateId = null;
 
 function renderSettingsTemplateName() {
   const el = document.getElementById('settings-current-template');
-  if (!el) return;
-  el.textContent = CURRENT_TEMPLATE ? CURRENT_TEMPLATE.industry_name : '—';
+  if (el) el.textContent = CURRENT_TEMPLATE ? CURRENT_TEMPLATE.industry_name : '—';
+  const el2 = document.getElementById('settings-visual-template-name');
+  if (el2) {
+    const slug = COMPANY?.invoice_visual_template || 'clean-white';
+    el2.textContent = VISUAL_TEMPLATES.find(t => t.slug === slug)?.label || 'Clean White';
+  }
 }
 
 async function openTemplateMarketplace() {
@@ -2060,4 +2075,430 @@ async function applySelectedTemplate() {
   resultEl.textContent = replaceItems ? 'Template applied and service items replaced.' : 'Template switched. Your existing items kept.';
   btn.textContent = 'Apply Template';
   setTimeout(() => closeTemplateMarketplace(), 1500);
+}
+
+// ============================================================
+// INVOICE VISUAL TEMPLATE ENGINE
+// ============================================================
+
+const VISUAL_TEMPLATES = [
+  { slug: 'clean-white',     label: 'Clean White',     desc: 'Minimal, professional' },
+  { slug: 'bold-header',     label: 'Bold Header',     desc: 'Strong color banner' },
+  { slug: 'dark-pro',        label: 'Dark Pro',        desc: 'Premium dark style' },
+  { slug: 'contractor',      label: 'Contractor',      desc: 'Trade-ready, orange' },
+  { slug: 'modern-minimal',  label: 'Modern Minimal',  desc: 'Airy, no header block' },
+  { slug: 'classic',         label: 'Classic',         desc: 'Traditional bordered' },
+  { slug: 'sidebar',         label: 'Sidebar',         desc: 'Two-column layout' },
+  { slug: 'red-bold',        label: 'Red Bold',        desc: 'High-contrast accent' },
+];
+
+function renderInvoiceTemplate(slug, d) {
+  switch (slug) {
+    case 'bold-header':    return tmplBoldHeader(d);
+    case 'dark-pro':       return tmplDarkPro(d);
+    case 'contractor':     return tmplContractor(d);
+    case 'modern-minimal': return tmplModernMinimal(d);
+    case 'classic':        return tmplClassic(d);
+    case 'sidebar':        return tmplSidebar(d);
+    case 'red-bold':       return tmplRedBold(d);
+    default:               return tmplCleanWhite(d);
+  }
+}
+
+// ---------- shared helpers ----------
+function _logoImg(logoUrl, size=48) {
+  return logoUrl
+    ? `<img src="${logoUrl}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:6px;">`
+    : `<div style="width:${size}px;height:${size}px;border-radius:6px;background:#e5eeff;display:flex;align-items:center;justify-content:center;font-size:${size/2.5}px;font-weight:700;color:#004ac6;">$</div>`;
+}
+
+function _itemsTable(d, headerColor='#434655', borderColor='#e5eeff', accentColor='') {
+  const rowBg = accentColor ? accentColor + '10' : '#f8f9ff';
+  let t = `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;">
+    <thead><tr style="border-bottom:2px solid ${borderColor};">
+      <th style="padding:8px 4px;text-align:left;color:${headerColor};font-weight:600;">${d.L.description}</th>
+      <th style="padding:8px 4px;text-align:right;color:${headerColor};font-weight:600;">${d.L.amount}</th>
+    </tr></thead><tbody>`;
+  d.items.forEach((i, idx) => {
+    const bg = idx % 2 === 1 ? `background:${rowBg};` : '';
+    t += `<tr style="${bg}border-bottom:1px solid ${borderColor};">
+      <td style="padding:8px 4px;"><span style="font-weight:500;">${i.name}</span>${i.description ? `<br><span style="font-size:11px;color:#737686;">${i.description}</span>` : ''}</td>
+      <td style="padding:8px 4px;text-align:right;vertical-align:top;">$${i.price.toFixed(2)}</td>
+    </tr>`;
+    (i.subitems||[]).forEach(s => { t += `<tr><td style="padding:2px 4px 2px 20px;font-size:11px;color:#737686;">— ${s}</td><td></td></tr>`; });
+  });
+  t += '</tbody></table>';
+  return t;
+}
+
+function _totalsBox(d, accentColor) {
+  let t = `<div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+    <div style="min-width:220px;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;padding:4px 0;"><span>${d.L.subtotal}</span><span>$${d.subtotal.toFixed(2)}</span></div>`;
+  if (d.discount) t += `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#ba1a1a;"><span>${d.discount.discount_name}</span><span>-$${d.discountAmount.toFixed(2)}</span></div>`;
+  t += `<div style="display:flex;justify-content:space-between;padding:4px 0;"><span>${d.L.tax}</span><span>$${d.taxAmount.toFixed(2)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0 4px;border-top:2px solid ${accentColor||'#0b1c30'};font-weight:700;font-size:16px;">
+        <span>${d.L.total}</span><span>$${d.total.toFixed(2)}</span>
+      </div>
+    </div>
+  </div>`;
+  return t;
+}
+
+function _paymentBlock(d, accentColor) {
+  const hasZelle = d.cmp && (COMPANY.zelle_email || COMPANY.zelle_phone);
+  const hasAch   = COMPANY.ach_routing && COMPANY.ach_account;
+  if (!hasZelle && !hasAch) return '';
+  let h = `<div style="border:1px solid #c3c6d7;border-radius:8px;padding:16px;background:#f8f9ff;margin-bottom:16px;">
+    <div style="font-weight:600;font-size:13px;margin-bottom:12px;color:${accentColor};">${d.L.howToPay}</div>`;
+  if (hasZelle) {
+    const qrUrl = COMPANY.zelle_qr ? `${PB}/api/files/companies/${COMPANY.id}/${COMPANY.zelle_qr}` : null;
+    h += `<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
+      ${qrUrl ? `<img src="${qrUrl}" style="width:64px;height:64px;object-fit:contain;border-radius:4px;border:1px solid #c3c6d7;">` : ''}
+      <div><div style="font-weight:500;font-size:13px;">Zelle</div>
+        ${COMPANY.zelle_email ? `<div style="font-size:11px;color:#434655;">${COMPANY.zelle_email}</div>` : ''}
+        ${COMPANY.zelle_phone ? `<div style="font-size:11px;color:#434655;">${COMPANY.zelle_phone}</div>` : ''}
+      </div></div>`;
+  }
+  if (hasAch) {
+    h += `<div style="border-top:1px solid #c3c6d7;padding-top:10px;font-size:11px;color:#434655;font-family:monospace;">
+      ACH${COMPANY.ach_bank_name ? ' — '+COMPANY.ach_bank_name : ''}<br>
+      Routing: ${COMPANY.ach_routing} &nbsp; Account: ${COMPANY.ach_account}
+    </div>`;
+  }
+  h += '</div>';
+  return h;
+}
+
+function _signatureBlock(d) {
+  if (d.hidden.has('signature')) return '';
+  return `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #c3c6d7;display:flex;justify-content:space-between;font-size:11px;color:#737686;">
+    <span>${d.L.signatureLine} _______________________</span>
+    <span>${d.L.dateLine} ___________</span>
+  </div>`;
+}
+
+function _clientBlock(d) {
+  if (d.hidden.has('client') || !d.cust) return '';
+  return `<div style="margin-bottom:20px;">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#737686;margin-bottom:4px;">${d.L.billTo}</div>
+    <div style="font-weight:600;font-size:14px;">${d.cust.customer_name}</div>
+    ${d.cust.phone ? `<div style="font-size:12px;color:#434655;">${d.cust.phone}</div>` : ''}
+    ${d.cust.email ? `<div style="font-size:12px;color:#434655;">${d.cust.email}</div>` : ''}
+    ${d.cust.address ? `<div style="font-size:12px;color:#434655;">${d.cust.address}</div>` : ''}
+  </div>`;
+}
+
+function _assetBlock(d) {
+  if (d.hidden.has('assets') || !Object.keys(d.assetDetails).length) return '';
+  const rows = ASSET_SCHEMA.filter(f => d.assetDetails[f.label])
+    .map(f => `<div style="font-size:12px;padding:2px 0;"><span style="color:#737686;">${f.label}:</span> ${d.assetDetails[f.label]}</div>`).join('');
+  return `<div style="border:1px solid #c3c6d7;border-radius:6px;padding:10px;margin-bottom:16px;">${rows}</div>`;
+}
+
+// ---------- TEMPLATE 1: Clean White (default) ----------
+function tmplCleanWhite(d) {
+  const c = d.invoiceColor;
+  let h = `<div style="${d.fontStyle}">`;
+  h += `<div style="background:${c};color:#fff;padding:20px 24px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;gap:12px;">${_logoImg(d.logoUrl)}<span style="font-weight:700;font-size:17px;">${COMPANY.company_name||''}</span></div>
+    <div style="text-align:right;"><div style="font-size:20px;font-weight:800;">${d.titleLabel}</div>
+      <div style="font-size:11px;opacity:.8;font-family:monospace;">#${d.invoiceNum}</div>
+      <div style="font-size:12px;opacity:.85;">${d.formattedDate}</div></div>
+  </div>`;
+  h += _clientBlock(d);
+  h += _assetBlock(d);
+  h += _itemsTable(d, '#434655', '#e5eeff', c);
+  h += _totalsBox(d, c);
+  h += _paymentBlock(d, c);
+  h += _signatureBlock(d);
+  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
+  h += '</div>';
+  return h;
+}
+
+// ---------- TEMPLATE 2: Bold Header ----------
+function tmplBoldHeader(d) {
+  const c = d.invoiceColor;
+  let h = `<div style="${d.fontStyle}">`;
+  h += `<div style="background:linear-gradient(135deg,${c} 0%,${c}cc 100%);color:#fff;padding:28px 24px;border-radius:8px 8px 0 0;margin-bottom:0;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>${_logoImg(d.logoUrl,56)}<div style="font-weight:800;font-size:20px;margin-top:8px;">${COMPANY.company_name||''}</div>
+        ${COMPANY.phone ? `<div style="font-size:11px;opacity:.75;margin-top:2px;">${COMPANY.phone}</div>` : ''}
+        ${COMPANY.email ? `<div style="font-size:11px;opacity:.75;">${COMPANY.email}</div>` : ''}
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:28px;font-weight:900;letter-spacing:-.5px;">${d.titleLabel}</div>
+        <div style="font-size:13px;font-family:monospace;opacity:.85;margin-top:4px;">#${d.invoiceNum}</div>
+        <div style="font-size:13px;opacity:.85;">${d.formattedDate}</div>
+        <div style="margin-top:12px;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;">Due on receipt</div>
+      </div>
+    </div>
+  </div>
+  <div style="height:4px;background:${c};opacity:.3;margin-bottom:24px;"></div>`;
+  h += _clientBlock(d);
+  h += _assetBlock(d);
+  h += _itemsTable(d, c, '#e5eeff', c);
+  h += _totalsBox(d, c);
+  h += _paymentBlock(d, c);
+  h += _signatureBlock(d);
+  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
+  h += '</div>';
+  return h;
+}
+
+// ---------- TEMPLATE 3: Dark Pro ----------
+function tmplDarkPro(d) {
+  const accent = '#f5a623';
+  let h = `<div style="${d.fontStyle}">`;
+  h += `<div style="background:#1C2541;color:#fff;padding:24px;border-radius:8px 8px 0 0;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="display:flex;align-items:center;gap:12px;">${_logoImg(d.logoUrl,52)}<div>
+      <div style="font-weight:700;font-size:18px;">${COMPANY.company_name||''}</div>
+      ${COMPANY.phone ? `<div style="font-size:11px;color:#aab;margin-top:2px;">${COMPANY.phone}</div>` : ''}
+    </div></div>
+    <div style="text-align:right;">
+      <div style="font-size:11px;color:${accent};text-transform:uppercase;letter-spacing:.1em;font-weight:600;">${d.titleLabel}</div>
+      <div style="font-size:24px;font-weight:800;color:#fff;font-family:monospace;">#${d.invoiceNum}</div>
+      <div style="font-size:12px;color:#aab;margin-top:2px;">${d.formattedDate}</div>
+    </div>
+  </div>`;
+  h += _clientBlock(d);
+  h += _assetBlock(d);
+  h += _itemsTable(d, '#1C2541', '#eaedf7', accent);
+  h += _totalsBox(d, accent);
+  h += _paymentBlock(d, '#1C2541');
+  h += _signatureBlock(d);
+  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
+  h += '</div>';
+  return h;
+}
+
+// ---------- TEMPLATE 4: Contractor ----------
+function tmplContractor(d) {
+  const orange = '#e65100';
+  let h = `<div style="${d.fontStyle}">`;
+  h += `<div style="background:${orange};color:#fff;padding:16px 24px;border-radius:8px 8px 0 0;margin-bottom:0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:10px;">${_logoImg(d.logoUrl,44)}<span style="font-weight:800;font-size:18px;text-transform:uppercase;">${COMPANY.company_name||''}</span></div>
+      <div style="text-align:right;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;opacity:.8;">Work Order</div>
+        <div style="font-size:22px;font-weight:900;font-family:monospace;">#${d.invoiceNum}</div>
+      </div>
+    </div>
+  </div>
+  <div style="background:#fff3e0;padding:8px 24px;margin-bottom:20px;display:flex;justify-content:space-between;font-size:12px;color:#bf360c;">
+    <span style="font-weight:600;">Date: ${d.formattedDate}</span>
+    <span style="font-weight:600;">Status: <span style="background:${orange};color:#fff;padding:1px 8px;border-radius:10px;">Due</span></span>
+  </div>`;
+  h += _clientBlock(d);
+  h += _assetBlock(d);
+  let t = `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;">
+    <thead><tr style="background:${orange};color:#fff;">
+      <th style="padding:8px 12px;text-align:left;border-radius:4px 0 0 4px;">Service / Description</th>
+      <th style="padding:8px 12px;text-align:right;border-radius:0 4px 4px 0;">Amount</th>
+    </tr></thead><tbody>`;
+  d.items.forEach((i, idx) => {
+    t += `<tr style="background:${idx%2===1?'#fff3e0':'#fff'};border-bottom:1px solid #ffe0b2;">
+      <td style="padding:8px 12px;">✓ <strong>${i.name}</strong>${i.description ? `<br><span style="font-size:11px;color:#737686;margin-left:18px;">${i.description}</span>` : ''}</td>
+      <td style="padding:8px 12px;text-align:right;font-family:monospace;">$${i.price.toFixed(2)}</td>
+    </tr>`;
+  });
+  t += '</tbody></table>';
+  h += t;
+  h += _totalsBox(d, orange);
+  h += _paymentBlock(d, orange);
+  h += _signatureBlock(d);
+  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
+  h += '</div>';
+  return h;
+}
+
+// ---------- TEMPLATE 5: Modern Minimal ----------
+function tmplModernMinimal(d) {
+  const c = d.invoiceColor;
+  let h = `<div style="${d.fontStyle}padding:8px;">`;
+  h += `<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid ${c};">
+    <div style="display:flex;align-items:center;gap:14px;">${_logoImg(d.logoUrl,64)}<div>
+      <div style="font-weight:700;font-size:20px;color:#111;">${COMPANY.company_name||''}</div>
+      ${COMPANY.phone ? `<div style="font-size:12px;color:#737686;">${COMPANY.phone}</div>` : ''}
+      ${COMPANY.email ? `<div style="font-size:12px;color:#737686;">${COMPANY.email}</div>` : ''}
+    </div></div>
+    <div style="text-align:right;">
+      <div style="font-size:40px;font-weight:900;color:${c};line-height:1;letter-spacing:-2px;">${d.titleLabel}</div>
+      <div style="font-size:14px;color:#737686;margin-top:6px;font-family:monospace;">#${d.invoiceNum}</div>
+      <div style="font-size:12px;color:#737686;">${d.formattedDate}</div>
+    </div>
+  </div>`;
+  h += _clientBlock(d);
+  h += _assetBlock(d);
+  h += _itemsTable(d, '#737686', '#f0f0f5', c);
+  h += _totalsBox(d, c);
+  h += _paymentBlock(d, c);
+  h += _signatureBlock(d);
+  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
+  h += '</div>';
+  return h;
+}
+
+// ---------- TEMPLATE 6: Classic ----------
+function tmplClassic(d) {
+  let h = `<div style="${d.fontStyle}">`;
+  h += `<div style="border-bottom:3px double #0b1c30;padding-bottom:16px;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;align-items:center;gap:10px;">${_logoImg(d.logoUrl,52)}<div>
+        <div style="font-weight:700;font-size:18px;">${COMPANY.company_name||''}</div>
+        ${COMPANY.phone ? `<div style="font-size:11px;color:#434655;">${COMPANY.phone}</div>` : ''}
+        ${COMPANY.email ? `<div style="font-size:11px;color:#434655;">${COMPANY.email}</div>` : ''}
+        ${COMPANY.address ? `<div style="font-size:11px;color:#434655;">${COMPANY.address}</div>` : ''}
+      </div></div>
+      <div style="text-align:right;">
+        <div style="font-size:22px;font-weight:800;border:3px solid #0b1c30;padding:4px 14px;display:inline-block;">${d.titleLabel}</div>
+        <div style="font-size:12px;color:#434655;margin-top:6px;font-family:monospace;">No. ${d.invoiceNum}</div>
+        <div style="font-size:12px;color:#434655;">Date: ${d.formattedDate}</div>
+      </div>
+    </div>
+  </div>`;
+  if (d.cust && !d.hidden.has('client')) {
+    h += `<div style="background:#f4f4f8;border:1px solid #c3c6d7;border-radius:4px;padding:12px;margin-bottom:20px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#434655;margin-bottom:6px;font-weight:700;">Bill To</div>
+      <div style="font-weight:600;">${d.cust.customer_name}</div>
+      ${d.cust.phone ? `<div style="font-size:12px;">${d.cust.phone}</div>` : ''}
+      ${d.cust.email ? `<div style="font-size:12px;">${d.cust.email}</div>` : ''}
+    </div>`;
+  }
+  h += _assetBlock(d);
+  let t = `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;border:1px solid #c3c6d7;">
+    <thead><tr style="background:#0b1c30;color:#fff;">
+      <th style="padding:8px 10px;text-align:left;">Description</th>
+      <th style="padding:8px 10px;text-align:right;">Amount</th>
+    </tr></thead><tbody>`;
+  d.items.forEach((i, idx) => {
+    t += `<tr style="background:${idx%2===1?'#f4f4f8':'#fff'};border-bottom:1px solid #c3c6d7;">
+      <td style="padding:8px 10px;"><strong>${i.name}</strong>${i.description ? `<br><span style="font-size:11px;color:#737686;">${i.description}</span>` : ''}</td>
+      <td style="padding:8px 10px;text-align:right;font-family:monospace;">$${i.price.toFixed(2)}</td>
+    </tr>`;
+  });
+  t += '</tbody></table>';
+  h += t;
+  h += _totalsBox(d, '#0b1c30');
+  h += _paymentBlock(d, '#0b1c30');
+  h += _signatureBlock(d);
+  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
+  h += '</div>';
+  return h;
+}
+
+// ---------- TEMPLATE 7: Sidebar ----------
+function tmplSidebar(d) {
+  const sideColor = '#2d6a4f';
+  let h = `<div style="${d.fontStyle}display:flex;gap:0;min-height:400px;">`;
+  h += `<div style="width:160px;min-width:160px;background:${sideColor};color:#fff;padding:20px 14px;border-radius:8px 0 0 8px;flex-shrink:0;">
+    <div style="margin-bottom:16px;">${_logoImg(d.logoUrl,48)}</div>
+    <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${COMPANY.company_name||''}</div>
+    ${COMPANY.phone ? `<div style="font-size:10px;opacity:.8;margin-top:3px;">${COMPANY.phone}</div>` : ''}
+    ${COMPANY.email ? `<div style="font-size:10px;opacity:.8;word-break:break-all;">${COMPANY.email}</div>` : ''}
+    ${COMPANY.address ? `<div style="font-size:10px;opacity:.8;margin-top:4px;">${COMPANY.address}</div>` : ''}
+    <div style="border-top:1px solid rgba(255,255,255,.3);margin:16px 0;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Bill To</div>
+      <div style="font-weight:600;font-size:12px;">${d.cust.customer_name}</div>
+      ${d.cust.phone ? `<div style="font-size:10px;opacity:.8;">${d.cust.phone}</div>` : ''}
+      ${d.cust.email ? `<div style="font-size:10px;opacity:.8;word-break:break-all;">${d.cust.email}</div>` : ''}` : ''}
+    <div style="border-top:1px solid rgba(255,255,255,.3);margin:16px 0;"></div>
+    <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Invoice</div>
+    <div style="font-family:monospace;font-size:12px;font-weight:700;">#${d.invoiceNum}</div>
+    <div style="font-size:10px;opacity:.8;margin-top:3px;">${d.formattedDate}</div>
+  </div>
+  <div style="flex:1;padding:24px;background:#fff;border-radius:0 8px 8px 0;border:1px solid #e0e0e0;border-left:none;">
+    <div style="font-size:22px;font-weight:800;color:${sideColor};margin-bottom:20px;">${d.titleLabel}</div>`;
+  h += _assetBlock(d);
+  h += _itemsTable(d, sideColor, '#e8f5e9', sideColor);
+  h += _totalsBox(d, sideColor);
+  h += _paymentBlock(d, sideColor);
+  h += _signatureBlock(d);
+  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
+  h += '</div></div>';
+  return h;
+}
+
+// ---------- TEMPLATE 8: Red Bold ----------
+function tmplRedBold(d) {
+  const red = '#c62828';
+  let h = `<div style="${d.fontStyle}">`;
+  h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding:20px 0;border-bottom:4px solid ${red};">
+    <div style="display:flex;align-items:center;gap:14px;">${_logoImg(d.logoUrl,60)}<div>
+      <div style="font-weight:800;font-size:20px;color:#1a1a1a;">${COMPANY.company_name||''}</div>
+      ${COMPANY.phone ? `<div style="font-size:12px;color:#737686;">${COMPANY.phone}</div>` : ''}
+      ${COMPANY.email ? `<div style="font-size:12px;color:#737686;">${COMPANY.email}</div>` : ''}
+    </div></div>
+    <div style="background:${red};color:#fff;padding:16px 20px;border-radius:8px;text-align:center;">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;opacity:.85;">${d.titleLabel}</div>
+      <div style="font-size:22px;font-weight:900;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+      <div style="font-size:11px;opacity:.85;margin-top:2px;">${d.formattedDate}</div>
+    </div>
+  </div>`;
+  h += _clientBlock(d);
+  h += _assetBlock(d);
+  h += _itemsTable(d, '#1a1a1a', '#fce4ec', red);
+  h += _totalsBox(d, red);
+  h += _paymentBlock(d, red);
+  h += _signatureBlock(d);
+  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
+  h += '</div>';
+  return h;
+}
+
+// ============================================================
+// VISUAL TEMPLATE PICKER
+// ============================================================
+
+function openVisualTemplatePicker() {
+  const current = COMPANY.invoice_visual_template || 'clean-white';
+  const grid = document.getElementById('vt-picker-grid');
+  grid.innerHTML = VISUAL_TEMPLATES.map(t => {
+    const active = t.slug === current;
+    return `<div onclick="selectVisualTemplate('${t.slug}',this)"
+      style="cursor:pointer;border-radius:10px;border:2px solid ${active?'#004ac6':'#c3c6d7'};overflow:hidden;transition:border-color .15s;">
+      ${vtThumbnail(t.slug)}
+      <div style="padding:8px 10px;background:#fff;">
+        <div style="font-weight:600;font-size:13px;color:${active?'#004ac6':'#0b1c30'};">${t.label}</div>
+        <div style="font-size:11px;color:#737686;">${t.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('modal-visual-template').classList.remove('hidden');
+}
+
+function closeVisualTemplatePicker() {
+  document.getElementById('modal-visual-template').classList.add('hidden');
+}
+
+async function selectVisualTemplate(slug, el) {
+  document.querySelectorAll('#vt-picker-grid > div').forEach(c => {
+    c.style.borderColor = '#c3c6d7';
+    c.querySelector('div:last-child div').style.color = '#0b1c30';
+  });
+  el.style.borderColor = '#004ac6';
+  el.querySelector('div:last-child div').style.color = '#004ac6';
+
+  await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({invoice_visual_template: slug})
+  });
+  COMPANY.invoice_visual_template = slug;
+  const label = VISUAL_TEMPLATES.find(t => t.slug === slug)?.label || slug;
+  const el2 = document.getElementById('settings-visual-template-name');
+  if (el2) el2.textContent = label;
+}
+
+function vtThumbnail(slug) {
+  const thumbs = {
+    'clean-white':    `<div style="height:60px;background:linear-gradient(to bottom,#004ac6 40%,#fff 40%);position:relative;"><div style="position:absolute;top:6px;left:8px;width:20px;height:20px;background:rgba(255,255,255,.3);border-radius:3px;"></div><div style="position:absolute;top:6px;right:8px;width:30px;height:8px;background:rgba(255,255,255,.6);border-radius:2px;"></div></div>`,
+    'bold-header':    `<div style="height:60px;background:linear-gradient(135deg,#1565c0,#42a5f5);position:relative;"><div style="position:absolute;bottom:4px;left:8px;right:8px;height:3px;background:rgba(255,255,255,.3);border-radius:2px;"></div></div>`,
+    'dark-pro':       `<div style="height:60px;background:#1C2541;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;"><div style="color:#f5a623;font-size:16px;font-weight:900;font-family:monospace;">#0042</div></div>`,
+    'contractor':     `<div style="height:60px;background:#e65100;position:relative;"><div style="position:absolute;bottom:0;left:0;right:0;height:14px;background:#fff3e0;"></div></div>`,
+    'modern-minimal': `<div style="height:60px;background:#fff;border-bottom:3px solid #004ac6;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;"><div style="font-size:22px;font-weight:900;color:#e8ecff;">INV</div></div>`,
+    'classic':        `<div style="height:60px;background:#fff;border:1px solid #c3c6d7;position:relative;"><div style="position:absolute;top:0;left:0;right:0;height:20px;background:#0b1c30;"></div></div>`,
+    'sidebar':        `<div style="height:60px;display:flex;"><div style="width:30px;background:#2d6a4f;"></div><div style="flex:1;background:#fff;border:1px solid #e0e0e0;border-left:none;"></div></div>`,
+    'red-bold':       `<div style="height:60px;background:#fff;border-bottom:4px solid #c62828;position:relative;"><div style="position:absolute;top:8px;right:8px;background:#c62828;border-radius:5px;width:36px;height:38px;"></div></div>`,
+  };
+  return thumbs[slug] || thumbs['clean-white'];
 }
