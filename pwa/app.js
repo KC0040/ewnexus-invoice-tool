@@ -2099,369 +2099,431 @@ async function applySelectedTemplate() {
 // ============================================================
 
 const VISUAL_TEMPLATES = [
-  { slug: 'clean-white',     label: 'Clean White',     desc: 'Minimal, professional' },
-  { slug: 'bold-header',     label: 'Bold Header',     desc: 'Strong color banner' },
-  { slug: 'dark-pro',        label: 'Dark Pro',        desc: 'Premium dark style' },
-  { slug: 'contractor',      label: 'Contractor',      desc: 'Trade-ready, orange' },
-  { slug: 'modern-minimal',  label: 'Modern Minimal',  desc: 'Airy, no header block' },
-  { slug: 'classic',         label: 'Classic',         desc: 'Traditional bordered' },
-  { slug: 'sidebar',         label: 'Sidebar',         desc: 'Two-column layout' },
-  { slug: 'red-bold',        label: 'Red Bold',        desc: 'High-contrast accent' },
+  { slug: 'clean-white',    label: 'Clean White',   desc: 'Apple-style minimal' },
+  { slug: 'bold-band',      label: 'Bold Band',     desc: 'Full-width color header' },
+  { slug: 'dark-pro',       label: 'Dark Pro',      desc: 'Premium dark + gold' },
+  { slug: 'contractor',     label: 'Contractor',    desc: 'Trade work-order style' },
+  { slug: 'modern-minimal', label: 'Modern',        desc: 'Large watermark, airy' },
+  { slug: 'classic',        label: 'Classic',       desc: 'Traditional bordered' },
+  { slug: 'sidebar',        label: 'Sidebar',       desc: 'Two-column layout' },
+  { slug: 'elegant',        label: 'Elegant',       desc: 'Serif, fine gold lines' },
 ];
 
 function renderInvoiceTemplate(slug, d) {
   switch (slug) {
-    case 'bold-header':    return tmplBoldHeader(d);
+    case 'bold-band':      return tmplBoldBand(d);
     case 'dark-pro':       return tmplDarkPro(d);
     case 'contractor':     return tmplContractor(d);
     case 'modern-minimal': return tmplModernMinimal(d);
     case 'classic':        return tmplClassic(d);
     case 'sidebar':        return tmplSidebar(d);
-    case 'red-bold':       return tmplRedBold(d);
+    case 'elegant':        return tmplElegant(d);
     default:               return tmplCleanWhite(d);
   }
 }
 
-// ---------- shared helpers ----------
-function _logoImg(logoUrl, size=48) {
-  return logoUrl
-    ? `<img src="${logoUrl}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:6px;">`
-    : `<div style="width:${size}px;height:${size}px;border-radius:6px;background:#e5eeff;display:flex;align-items:center;justify-content:center;font-size:${size/2.5}px;font-weight:700;color:#004ac6;">$</div>`;
+/* ─── shared micro-helpers ─────────────────────────────────── */
+function _logo(url, size = 48, radius = '8px') {
+  return url
+    ? `<img src="${url}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:${radius};display:block;">`
+    : `<div style="width:${size}px;height:${size}px;border-radius:${radius};background:#e8eeff;display:flex;align-items:center;justify-content:center;font-size:${Math.round(size/2.5)}px;font-weight:900;color:#004ac6;">$</div>`;
 }
 
-function _itemsTable(d, headerColor='#434655', borderColor='#e5eeff', accentColor='') {
-  const rowBg = accentColor ? accentColor + '10' : '#f8f9ff';
-  let t = `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;">
-    <thead><tr style="border-bottom:2px solid ${borderColor};">
-      <th style="padding:8px 4px;text-align:left;color:${headerColor};font-weight:600;">${d.L.description}</th>
-      <th style="padding:8px 4px;text-align:right;color:${headerColor};font-weight:600;">${d.L.amount}</th>
+function _clientRows(d) {
+  if (d.hidden.has('client') || !d.cust) return '';
+  return [d.cust.customer_name && `<div style="font-weight:700;font-size:14px;">${d.cust.customer_name}</div>`,
+          d.cust.phone   && `<div style="font-size:12px;color:#5a5e7a;">${d.cust.phone}</div>`,
+          d.cust.email   && `<div style="font-size:12px;color:#5a5e7a;">${d.cust.email}</div>`,
+          d.cust.address && `<div style="font-size:12px;color:#5a5e7a;">${d.cust.address}</div>`]
+    .filter(Boolean).join('');
+}
+
+function _assetRows(d, borderColor = '#dee0f0') {
+  if (d.hidden.has('assets') || !Object.keys(d.assetDetails).length) return '';
+  const rows = ASSET_SCHEMA.filter(f => d.assetDetails[f.label])
+    .map(f => `<div style="display:flex;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px solid ${borderColor};">
+      <span style="color:#8a8da8;min-width:100px;">${f.label}</span>
+      <span style="font-weight:500;">${d.assetDetails[f.label]}</span>
+    </div>`).join('');
+  return `<div style="border:1px solid ${borderColor};border-radius:8px;padding:12px 14px;margin-bottom:18px;">${rows}</div>`;
+}
+
+function _table(d, opts = {}) {
+  const {
+    headerBg   = '#f0f2fb',
+    headerColor= '#5a5e7a',
+    borderColor= '#e8eafc',
+    accentBg   = '#f8f9ff',
+    showBorder = false,
+  } = opts;
+  const tableStyle = showBorder
+    ? `width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;border:1px solid ${borderColor};`
+    : `width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;`;
+  const thStyle = showBorder
+    ? `padding:9px 12px;text-align:left;background:${headerBg};color:${headerColor};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid ${borderColor};`
+    : `padding:9px 4px;text-align:left;color:${headerColor};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid ${borderColor};`;
+
+  let t = `<table style="${tableStyle}">
+    <thead><tr>
+      <th style="${thStyle}">${d.L.description}</th>
+      <th style="${thStyle}text-align:right;">${d.L.amount}</th>
     </tr></thead><tbody>`;
-  d.items.forEach((i, idx) => {
-    const bg = idx % 2 === 1 ? `background:${rowBg};` : '';
-    t += `<tr style="${bg}border-bottom:1px solid ${borderColor};">
-      <td style="padding:8px 4px;"><span style="font-weight:500;">${i.name}</span>${i.description ? `<br><span style="font-size:11px;color:#737686;">${i.description}</span>` : ''}</td>
-      <td style="padding:8px 4px;text-align:right;vertical-align:top;">$${i.price.toFixed(2)}</td>
+
+  d.items.forEach((item, i) => {
+    const rowBg = (i % 2 === 1) ? `background:${accentBg};` : '';
+    const cellStyle = showBorder
+      ? `padding:9px 12px;border-bottom:1px solid ${borderColor};`
+      : `padding:9px 4px;border-bottom:1px solid ${borderColor};`;
+    t += `<tr style="${rowBg}">
+      <td style="${cellStyle}"><div style="font-weight:500;">${item.name}</div>${item.description ? `<div style="font-size:11px;color:#8a8da8;margin-top:2px;">${item.description}</div>` : ''}</td>
+      <td style="${cellStyle}text-align:right;vertical-align:top;font-variant-numeric:tabular-nums;">$${item.price.toFixed(2)}</td>
     </tr>`;
-    (i.subitems||[]).forEach(s => { t += `<tr><td style="padding:2px 4px 2px 20px;font-size:11px;color:#737686;">— ${s}</td><td></td></tr>`; });
+    (item.subitems || []).forEach(s => {
+      t += `<tr><td style="padding:2px 4px 2px 18px;font-size:11px;color:#8a8da8;">↳ ${s}</td><td></td></tr>`;
+    });
   });
-  t += '</tbody></table>';
+  t += `</tbody></table>`;
   return t;
 }
 
-function _totalsBox(d, accentColor) {
+function _totals(d, opts = {}) {
+  const { accentColor = '#004ac6', borderTop = '#0b1c30', bg = 'transparent' } = opts;
   let t = `<div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
-    <div style="min-width:220px;font-size:13px;">
-      <div style="display:flex;justify-content:space-between;padding:4px 0;"><span>${d.L.subtotal}</span><span>$${d.subtotal.toFixed(2)}</span></div>`;
-  if (d.discount) t += `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#ba1a1a;"><span>${d.discount.discount_name}</span><span>-$${d.discountAmount.toFixed(2)}</span></div>`;
-  t += `<div style="display:flex;justify-content:space-between;padding:4px 0;"><span>${d.L.tax}</span><span>$${d.taxAmount.toFixed(2)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:10px 0 4px;border-top:2px solid ${accentColor||'#0b1c30'};font-weight:700;font-size:16px;">
-        <span>${d.L.total}</span><span>$${d.total.toFixed(2)}</span>
-      </div>
-    </div>
-  </div>`;
+    <div style="min-width:230px;background:${bg};${bg !== 'transparent' ? 'border-radius:8px;padding:14px 16px;' : ''}">`;
+  const row = (label, val, bold = false, color = 'inherit') =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;${bold ? 'margin-top:6px;' : ''}">
+      <span style="font-size:13px;color:${bold ? color : '#5a5e7a'};">${label}</span>
+      <span style="font-size:${bold ? '18px' : '13px'};font-weight:${bold ? '800' : '400'};color:${bold ? color : 'inherit'};font-variant-numeric:tabular-nums;">$${val}</span>
+    </div>`;
+  t += row(d.L.subtotal, d.subtotal.toFixed(2));
+  if (d.discount) t += `<div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="font-size:13px;color:#c62828;">${d.discount.discount_name}</span><span style="font-size:13px;color:#c62828;font-variant-numeric:tabular-nums;">-$${d.discountAmount.toFixed(2)}</span></div>`;
+  t += row(d.L.tax, d.taxAmount.toFixed(2));
+  t += `<div style="border-top:2px solid ${borderTop};margin-top:6px;"></div>`;
+  t += row(d.L.total, d.total.toFixed(2), true, accentColor);
+  t += `</div></div>`;
   return t;
 }
 
-function _paymentBlock(d, accentColor) {
-  const hasZelle = d.cmp && (COMPANY.zelle_email || COMPANY.zelle_phone);
+function _payment(d, accentColor = '#004ac6') {
+  const hasZelle = COMPANY.zelle_email || COMPANY.zelle_phone;
   const hasAch   = COMPANY.ach_routing && COMPANY.ach_account;
   if (!hasZelle && !hasAch) return '';
-  let h = `<div style="border:1px solid #c3c6d7;border-radius:8px;padding:16px;background:#f8f9ff;margin-bottom:16px;">
-    <div style="font-weight:600;font-size:13px;margin-bottom:12px;color:${accentColor};">${d.L.howToPay}</div>`;
+  let h = `<div style="border:1px solid #dee0f0;border-radius:10px;padding:16px 18px;background:#f8f9ff;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${accentColor};margin-bottom:12px;">${d.L.howToPay}</div>`;
   if (hasZelle) {
-    const qrUrl = COMPANY.zelle_qr ? `${PB}/api/files/companies/${COMPANY.id}/${COMPANY.zelle_qr}` : null;
-    h += `<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
-      ${qrUrl ? `<img src="${qrUrl}" style="width:64px;height:64px;object-fit:contain;border-radius:4px;border:1px solid #c3c6d7;">` : ''}
-      <div><div style="font-weight:500;font-size:13px;">Zelle</div>
-        ${COMPANY.zelle_email ? `<div style="font-size:11px;color:#434655;">${COMPANY.zelle_email}</div>` : ''}
-        ${COMPANY.zelle_phone ? `<div style="font-size:11px;color:#434655;">${COMPANY.zelle_phone}</div>` : ''}
+    const qr = COMPANY.zelle_qr ? `${PB}/api/files/companies/${COMPANY.id}/${COMPANY.zelle_qr}` : null;
+    h += `<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
+      ${qr ? `<img src="${qr}" style="width:60px;height:60px;object-fit:contain;border-radius:6px;border:1px solid #dee0f0;">` : ''}
+      <div><div style="font-weight:600;font-size:13px;color:${accentColor};">Zelle</div>
+        ${COMPANY.zelle_email ? `<div style="font-size:12px;color:#5a5e7a;">${COMPANY.zelle_email}</div>` : ''}
+        ${COMPANY.zelle_phone ? `<div style="font-size:12px;color:#5a5e7a;">${COMPANY.zelle_phone}</div>` : ''}
+        <div style="font-size:11px;color:#8a8da8;margin-top:2px;">${d.L.zelleInstant}</div>
       </div></div>`;
   }
   if (hasAch) {
-    h += `<div style="border-top:1px solid #c3c6d7;padding-top:10px;font-size:11px;color:#434655;font-family:monospace;">
-      ACH${COMPANY.ach_bank_name ? ' — '+COMPANY.ach_bank_name : ''}<br>
-      Routing: ${COMPANY.ach_routing} &nbsp; Account: ${COMPANY.ach_account}
+    h += `<div style="border-top:1px solid #dee0f0;padding-top:10px;font-size:12px;color:#5a5e7a;">
+      <span style="font-weight:600;">ACH${COMPANY.ach_bank_name ? ' — ' + COMPANY.ach_bank_name : ''}</span><br>
+      <span style="font-family:monospace;">Routing: ${COMPANY.ach_routing} &nbsp;·&nbsp; Account: ${COMPANY.ach_account}</span>
     </div>`;
   }
-  h += '</div>';
-  return h;
+  return h + '</div>';
 }
 
-function _signatureBlock(d) {
+function _sig(d) {
   if (d.hidden.has('signature')) return '';
-  return `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #c3c6d7;display:flex;justify-content:space-between;font-size:11px;color:#737686;">
-    <span>${d.L.signatureLine} _______________________</span>
-    <span>${d.L.dateLine} ___________</span>
+  return `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #dee0f0;display:flex;justify-content:space-between;align-items:flex-end;font-size:11px;color:#8a8da8;">
+    <div style="flex:1;border-bottom:1px solid #5a5e7a;height:40px;margin-right:32px;padding-top:4px;">${d.L.signatureLine}</div>
+    <div style="width:100px;border-bottom:1px solid #5a5e7a;height:40px;padding-top:4px;">${d.L.dateLine}</div>
   </div>`;
 }
 
-function _clientBlock(d) {
-  if (d.hidden.has('client') || !d.cust) return '';
-  return `<div style="margin-bottom:20px;">
-    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#737686;margin-bottom:4px;">${d.L.billTo}</div>
-    <div style="font-weight:600;font-size:14px;">${d.cust.customer_name}</div>
-    ${d.cust.phone ? `<div style="font-size:12px;color:#434655;">${d.cust.phone}</div>` : ''}
-    ${d.cust.email ? `<div style="font-size:12px;color:#434655;">${d.cust.email}</div>` : ''}
-    ${d.cust.address ? `<div style="font-size:12px;color:#434655;">${d.cust.address}</div>` : ''}
-  </div>`;
+function _footer(d) {
+  return d.footerMsg ? `<div style="text-align:center;font-size:11px;color:#8a8da8;font-style:italic;margin-top:18px;padding-top:14px;border-top:1px solid #dee0f0;">${d.footerMsg}</div>` : '';
 }
 
-function _assetBlock(d) {
-  if (d.hidden.has('assets') || !Object.keys(d.assetDetails).length) return '';
-  const rows = ASSET_SCHEMA.filter(f => d.assetDetails[f.label])
-    .map(f => `<div style="font-size:12px;padding:2px 0;"><span style="color:#737686;">${f.label}:</span> ${d.assetDetails[f.label]}</div>`).join('');
-  return `<div style="border:1px solid #c3c6d7;border-radius:6px;padding:10px;margin-bottom:16px;">${rows}</div>`;
+function _companyContact(color = '#5a5e7a', size = 11) {
+  return [COMPANY.phone, COMPANY.email, COMPANY.address].filter(Boolean)
+    .map(v => `<div style="font-size:${size}px;color:${color};">${v}</div>`).join('');
 }
 
-// ---------- TEMPLATE 1: Clean White (default) ----------
+/* ─── TEMPLATE 1: Clean White ──────────────────────────────── */
 function tmplCleanWhite(d) {
   const c = d.invoiceColor;
-  let h = `<div style="${d.fontStyle}">`;
-  h += `<div style="background:${c};color:#fff;padding:20px 24px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-    <div style="display:flex;align-items:center;gap:12px;">${_logoImg(d.logoUrl)}<span style="font-weight:700;font-size:17px;">${COMPANY.company_name||''}</span></div>
-    <div style="text-align:right;"><div style="font-size:20px;font-weight:800;">${d.titleLabel}</div>
-      <div style="font-size:11px;opacity:.8;font-family:monospace;">#${d.invoiceNum}</div>
-      <div style="font-size:12px;opacity:.85;">${d.formattedDate}</div></div>
-  </div>`;
-  h += _clientBlock(d);
-  h += _assetBlock(d);
-  h += _itemsTable(d, '#434655', '#e5eeff', c);
-  h += _totalsBox(d, c);
-  h += _paymentBlock(d, c);
-  h += _signatureBlock(d);
-  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
-  h += '</div>';
-  return h;
-}
-
-// ---------- TEMPLATE 2: Bold Header ----------
-function tmplBoldHeader(d) {
-  const c = d.invoiceColor;
-  let h = `<div style="${d.fontStyle}">`;
-  h += `<div style="background:linear-gradient(135deg,${c} 0%,${c}cc 100%);color:#fff;padding:28px 24px;border-radius:8px 8px 0 0;margin-bottom:0;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div>${_logoImg(d.logoUrl,56)}<div style="font-weight:800;font-size:20px;margin-top:8px;">${COMPANY.company_name||''}</div>
-        ${COMPANY.phone ? `<div style="font-size:11px;opacity:.75;margin-top:2px;">${COMPANY.phone}</div>` : ''}
-        ${COMPANY.email ? `<div style="font-size:11px;opacity:.75;">${COMPANY.email}</div>` : ''}
+  return `<div style="${d.fontStyle}padding:2px;">
+    <div style="height:4px;background:${c};border-radius:2px 2px 0 0;margin-bottom:0;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:24px 0 20px;border-bottom:1px solid #dee0f0;margin-bottom:24px;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52)}
+        <div>
+          <div style="font-weight:800;font-size:18px;color:#0b1c30;">${COMPANY.company_name || ''}</div>
+          ${_companyContact()}
+        </div>
       </div>
       <div style="text-align:right;">
-        <div style="font-size:28px;font-weight:900;letter-spacing:-.5px;">${d.titleLabel}</div>
-        <div style="font-size:13px;font-family:monospace;opacity:.85;margin-top:4px;">#${d.invoiceNum}</div>
-        <div style="font-size:13px;opacity:.85;">${d.formattedDate}</div>
-        <div style="margin-top:12px;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;">Due on receipt</div>
+        <div style="font-size:28px;font-weight:900;letter-spacing:-1px;color:#e8eafc;">${d.titleLabel}</div>
+        <div style="font-size:13px;font-family:monospace;color:#8a8da8;margin-top:2px;">#${d.invoiceNum}</div>
+        <div style="font-size:12px;color:#8a8da8;">${d.formattedDate}</div>
       </div>
     </div>
-  </div>
-  <div style="height:4px;background:${c};opacity:.3;margin-bottom:24px;"></div>`;
-  h += _clientBlock(d);
-  h += _assetBlock(d);
-  h += _itemsTable(d, c, '#e5eeff', c);
-  h += _totalsBox(d, c);
-  h += _paymentBlock(d, c);
-  h += _signatureBlock(d);
-  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
-  h += '</div>';
-  return h;
-}
-
-// ---------- TEMPLATE 3: Dark Pro ----------
-function tmplDarkPro(d) {
-  const accent = '#f5a623';
-  let h = `<div style="${d.fontStyle}">`;
-  h += `<div style="background:#1C2541;color:#fff;padding:24px;border-radius:8px 8px 0 0;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;">
-    <div style="display:flex;align-items:center;gap:12px;">${_logoImg(d.logoUrl,52)}<div>
-      <div style="font-weight:700;font-size:18px;">${COMPANY.company_name||''}</div>
-      ${COMPANY.phone ? `<div style="font-size:11px;color:#aab;margin-top:2px;">${COMPANY.phone}</div>` : ''}
-    </div></div>
-    <div style="text-align:right;">
-      <div style="font-size:11px;color:${accent};text-transform:uppercase;letter-spacing:.1em;font-weight:600;">${d.titleLabel}</div>
-      <div style="font-size:24px;font-weight:800;color:#fff;font-family:monospace;">#${d.invoiceNum}</div>
-      <div style="font-size:12px;color:#aab;margin-top:2px;">${d.formattedDate}</div>
-    </div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerColor: '#8a8da8', borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
+    ${_totals(d, { accentColor: c, borderTop: '#dee0f0' })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, c)}
+    ${_sig(d)}
+    ${_footer(d)}
   </div>`;
-  h += _clientBlock(d);
-  h += _assetBlock(d);
-  h += _itemsTable(d, '#1C2541', '#eaedf7', accent);
-  h += _totalsBox(d, accent);
-  h += _paymentBlock(d, '#1C2541');
-  h += _signatureBlock(d);
-  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
-  h += '</div>';
-  return h;
 }
 
-// ---------- TEMPLATE 4: Contractor ----------
+/* ─── TEMPLATE 2: Bold Band ────────────────────────────────── */
+function tmplBoldBand(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}">
+    <div style="background:${c};padding:22px 24px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 56, '10px')}
+        <div>
+          <div style="font-weight:800;font-size:20px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.7)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.65);">${d.titleLabel}</div>
+        <div style="font-size:30px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+      </div>
+    </div>
+    <div style="background:${c}22;display:flex;gap:24px;padding:10px 24px;margin-bottom:24px;font-size:12px;">
+      <span><span style="color:#8a8da8;">Date: </span><strong>${d.formattedDate}</strong></span>
+      <span><span style="color:#8a8da8;">Due: </span><strong>On receipt</strong></span>
+    </div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin:0 0 20px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: `${c}18`, headerColor: c, borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
+    ${_totals(d, { accentColor: c, borderTop: c })}
+    ${_payment(d, c)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TEMPLATE 3: Dark Pro ─────────────────────────────────── */
+function tmplDarkPro(d) {
+  const gold = '#c9a84c';
+  const dark = '#12182b';
+  return `<div style="${d.fontStyle}">
+    <div style="background:${dark};border-radius:8px 8px 0 0;padding:28px 26px;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0;">
+      <div>
+        ${_logo(d.logoUrl, 54, '8px')}
+        <div style="margin-top:10px;font-weight:800;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+        ${_companyContact('rgba(255,255,255,.45)')}
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:${gold};font-weight:700;margin-bottom:4px;">${d.titleLabel}</div>
+        <div style="font-size:32px;font-weight:900;color:#fff;font-family:monospace;line-height:1;">#${d.invoiceNum}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:6px;">${d.formattedDate}</div>
+        <div style="margin-top:14px;display:inline-block;background:${gold};color:${dark};font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;">Due on receipt</div>
+      </div>
+    </div>
+    <div style="height:3px;background:linear-gradient(90deg,${gold},${dark});margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:14px 16px;background:#f8f9ff;border-radius:8px;border-left:3px solid ${gold};"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d, '#dee0f0')}
+    ${_table(d, { headerBg: '#f0f2fb', headerColor: dark, borderColor: '#e8eafc', accentBg: '#f8f9ff' })}
+    ${_totals(d, { accentColor: gold, borderTop: dark })}
+    ${_payment(d, dark)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TEMPLATE 4: Contractor ───────────────────────────────── */
 function tmplContractor(d) {
   const orange = '#e65100';
-  let h = `<div style="${d.fontStyle}">`;
-  h += `<div style="background:${orange};color:#fff;padding:16px 24px;border-radius:8px 8px 0 0;margin-bottom:0;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="display:flex;align-items:center;gap:10px;">${_logoImg(d.logoUrl,44)}<span style="font-weight:800;font-size:18px;text-transform:uppercase;">${COMPANY.company_name||''}</span></div>
-      <div style="text-align:right;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;opacity:.8;">Work Order</div>
-        <div style="font-size:22px;font-weight:900;font-family:monospace;">#${d.invoiceNum}</div>
-      </div>
-    </div>
-  </div>
-  <div style="background:#fff3e0;padding:8px 24px;margin-bottom:20px;display:flex;justify-content:space-between;font-size:12px;color:#bf360c;">
-    <span style="font-weight:600;">Date: ${d.formattedDate}</span>
-    <span style="font-weight:600;">Status: <span style="background:${orange};color:#fff;padding:1px 8px;border-radius:10px;">Due</span></span>
-  </div>`;
-  h += _clientBlock(d);
-  h += _assetBlock(d);
-  let t = `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;">
-    <thead><tr style="background:${orange};color:#fff;">
-      <th style="padding:8px 12px;text-align:left;border-radius:4px 0 0 4px;">Service / Description</th>
-      <th style="padding:8px 12px;text-align:right;border-radius:0 4px 4px 0;">Amount</th>
+  const amber  = '#fff3e0';
+  let items = `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;">
+    <thead><tr style="background:${orange};">
+      <th style="padding:10px 14px;text-align:left;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Service / Description</th>
+      <th style="padding:10px 14px;text-align:right;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Amount</th>
     </tr></thead><tbody>`;
-  d.items.forEach((i, idx) => {
-    t += `<tr style="background:${idx%2===1?'#fff3e0':'#fff'};border-bottom:1px solid #ffe0b2;">
-      <td style="padding:8px 12px;">✓ <strong>${i.name}</strong>${i.description ? `<br><span style="font-size:11px;color:#737686;margin-left:18px;">${i.description}</span>` : ''}</td>
-      <td style="padding:8px 12px;text-align:right;font-family:monospace;">$${i.price.toFixed(2)}</td>
+  d.items.forEach((item, i) => {
+    items += `<tr style="background:${i%2===1?amber:'#fff'};border-bottom:1px solid #ffe0b2;">
+      <td style="padding:10px 14px;"><span style="color:${orange};font-weight:700;margin-right:6px;">✓</span><strong>${item.name}</strong>${item.description ? `<div style="font-size:11px;color:#8a8da8;margin-left:18px;margin-top:2px;">${item.description}</div>` : ''}</td>
+      <td style="padding:10px 14px;text-align:right;font-weight:600;font-family:monospace;">$${item.price.toFixed(2)}</td>
     </tr>`;
   });
-  t += '</tbody></table>';
-  h += t;
-  h += _totalsBox(d, orange);
-  h += _paymentBlock(d, orange);
-  h += _signatureBlock(d);
-  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
-  h += '</div>';
-  return h;
+  items += '</tbody></table>';
+  return `<div style="${d.fontStyle}">
+    <div style="background:${orange};padding:16px 20px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:12px;align-items:center;">
+        ${_logo(d.logoUrl, 44, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;text-transform:uppercase;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.75)', 11)}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.65);">Work Order</div>
+        <div style="font-size:26px;font-weight:900;color:#fff;font-family:monospace;">#${d.invoiceNum}</div>
+      </div>
+    </div>
+    <div style="background:${amber};padding:8px 20px;display:flex;gap:24px;font-size:12px;margin-bottom:20px;">
+      <span><strong>Date:</strong> ${d.formattedDate}</span>
+      <span style="margin-left:auto;"><strong style="background:${orange};color:#fff;padding:2px 10px;border-radius:12px;">UNPAID</strong></span>
+    </div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:18px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d, '#ffe0b2')}
+    ${items}
+    ${_totals(d, { accentColor: orange, borderTop: orange })}
+    ${_payment(d, orange)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
 }
 
-// ---------- TEMPLATE 5: Modern Minimal ----------
+/* ─── TEMPLATE 5: Modern Minimal ───────────────────────────── */
 function tmplModernMinimal(d) {
   const c = d.invoiceColor;
-  let h = `<div style="${d.fontStyle}padding:8px;">`;
-  h += `<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid ${c};">
-    <div style="display:flex;align-items:center;gap:14px;">${_logoImg(d.logoUrl,64)}<div>
-      <div style="font-weight:700;font-size:20px;color:#111;">${COMPANY.company_name||''}</div>
-      ${COMPANY.phone ? `<div style="font-size:12px;color:#737686;">${COMPANY.phone}</div>` : ''}
-      ${COMPANY.email ? `<div style="font-size:12px;color:#737686;">${COMPANY.email}</div>` : ''}
-    </div></div>
-    <div style="text-align:right;">
-      <div style="font-size:40px;font-weight:900;color:${c};line-height:1;letter-spacing:-2px;">${d.titleLabel}</div>
-      <div style="font-size:14px;color:#737686;margin-top:6px;font-family:monospace;">#${d.invoiceNum}</div>
-      <div style="font-size:12px;color:#737686;">${d.formattedDate}</div>
+  return `<div style="${d.fontStyle}padding:4px;">
+    <div style="position:relative;margin-bottom:32px;padding-bottom:20px;">
+      <div style="position:absolute;top:0;right:0;font-size:72px;font-weight:900;color:#f0f2fb;line-height:1;letter-spacing:-4px;user-select:none;">${d.titleLabel}</div>
+      <div style="position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding-top:8px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          ${_logo(d.logoUrl, 60, '12px')}
+          <div>
+            <div style="font-weight:800;font-size:20px;">${COMPANY.company_name || ''}</div>
+            ${_companyContact()}
+          </div>
+        </div>
+        <div style="text-align:right;margin-top:8px;">
+          <div style="font-size:12px;color:#8a8da8;">Invoice No.</div>
+          <div style="font-size:20px;font-weight:800;font-family:monospace;color:${c};">${d.invoiceNum}</div>
+          <div style="font-size:12px;color:#8a8da8;margin-top:4px;">${d.formattedDate}</div>
+        </div>
+      </div>
+      <div style="margin-top:20px;height:1px;background:linear-gradient(90deg,${c},#dee0f0);"></div>
     </div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="display:flex;gap:32px;margin-bottom:24px;">
+      <div style="flex:1;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#8a8da8;margin-bottom:6px;">From</div>
+        <div style="font-size:13px;">${COMPANY.company_name || ''}</div></div>
+      <div style="flex:1;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>
+        ${_clientRows(d)}</div></div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerColor: '#8a8da8', borderColor: '#dee0f0', accentBg: '#fafbff' })}
+    <div style="height:1px;background:#dee0f0;margin-bottom:16px;"></div>
+    ${_totals(d, { accentColor: c, borderTop: '#dee0f0' })}
+    ${_payment(d, c)}
+    ${_sig(d)}
+    ${_footer(d)}
   </div>`;
-  h += _clientBlock(d);
-  h += _assetBlock(d);
-  h += _itemsTable(d, '#737686', '#f0f0f5', c);
-  h += _totalsBox(d, c);
-  h += _paymentBlock(d, c);
-  h += _signatureBlock(d);
-  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
-  h += '</div>';
-  return h;
 }
 
-// ---------- TEMPLATE 6: Classic ----------
+/* ─── TEMPLATE 6: Classic ──────────────────────────────────── */
 function tmplClassic(d) {
-  let h = `<div style="${d.fontStyle}">`;
-  h += `<div style="border-bottom:3px double #0b1c30;padding-bottom:16px;margin-bottom:20px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div style="display:flex;align-items:center;gap:10px;">${_logoImg(d.logoUrl,52)}<div>
-        <div style="font-weight:700;font-size:18px;">${COMPANY.company_name||''}</div>
-        ${COMPANY.phone ? `<div style="font-size:11px;color:#434655;">${COMPANY.phone}</div>` : ''}
-        ${COMPANY.email ? `<div style="font-size:11px;color:#434655;">${COMPANY.email}</div>` : ''}
-        ${COMPANY.address ? `<div style="font-size:11px;color:#434655;">${COMPANY.address}</div>` : ''}
-      </div></div>
-      <div style="text-align:right;">
-        <div style="font-size:22px;font-weight:800;border:3px solid #0b1c30;padding:4px 14px;display:inline-block;">${d.titleLabel}</div>
-        <div style="font-size:12px;color:#434655;margin-top:6px;font-family:monospace;">No. ${d.invoiceNum}</div>
-        <div style="font-size:12px;color:#434655;">Date: ${d.formattedDate}</div>
+  const border = '#b0b3cc';
+  return `<div style="${d.fontStyle}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:16px;">
+      <div style="flex:1;border:1px solid ${border};border-radius:6px;padding:16px;">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
+          ${_logo(d.logoUrl, 48, '4px')}
+          <div style="font-weight:800;font-size:17px;">${COMPANY.company_name || ''}</div>
+        </div>
+        ${_companyContact('#5a5e7a')}
+      </div>
+      <div style="text-align:right;border:1px solid ${border};border-radius:6px;padding:16px;min-width:160px;">
+        <div style="font-size:22px;font-weight:900;letter-spacing:-1px;border-bottom:2px solid #0b1c30;padding-bottom:6px;margin-bottom:10px;">${d.titleLabel}</div>
+        <div style="font-size:12px;color:#5a5e7a;">No. <strong style="color:#0b1c30;font-family:monospace;">${d.invoiceNum}</strong></div>
+        <div style="font-size:12px;color:#5a5e7a;margin-top:3px;">Date: <strong style="color:#0b1c30;">${d.formattedDate}</strong></div>
       </div>
     </div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="border:1px solid ${border};border-radius:6px;padding:14px;margin-bottom:20px;background:#f8f9ff;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:8px;font-weight:700;">Bill To</div>
+      ${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d, border)}
+    ${_table(d, { headerBg: '#0b1c30', headerColor: '#fff', borderColor: border, accentBg: '#f4f5fb', showBorder: true })}
+    ${_totals(d, { accentColor: '#0b1c30', borderTop: '#0b1c30' })}
+    ${_payment(d, '#0b1c30')}
+    ${_sig(d)}
+    ${_footer(d)}
   </div>`;
-  if (d.cust && !d.hidden.has('client')) {
-    h += `<div style="background:#f4f4f8;border:1px solid #c3c6d7;border-radius:4px;padding:12px;margin-bottom:20px;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#434655;margin-bottom:6px;font-weight:700;">Bill To</div>
-      <div style="font-weight:600;">${d.cust.customer_name}</div>
-      ${d.cust.phone ? `<div style="font-size:12px;">${d.cust.phone}</div>` : ''}
-      ${d.cust.email ? `<div style="font-size:12px;">${d.cust.email}</div>` : ''}
-    </div>`;
-  }
-  h += _assetBlock(d);
-  let t = `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;border:1px solid #c3c6d7;">
-    <thead><tr style="background:#0b1c30;color:#fff;">
-      <th style="padding:8px 10px;text-align:left;">Description</th>
-      <th style="padding:8px 10px;text-align:right;">Amount</th>
-    </tr></thead><tbody>`;
-  d.items.forEach((i, idx) => {
-    t += `<tr style="background:${idx%2===1?'#f4f4f8':'#fff'};border-bottom:1px solid #c3c6d7;">
-      <td style="padding:8px 10px;"><strong>${i.name}</strong>${i.description ? `<br><span style="font-size:11px;color:#737686;">${i.description}</span>` : ''}</td>
-      <td style="padding:8px 10px;text-align:right;font-family:monospace;">$${i.price.toFixed(2)}</td>
-    </tr>`;
-  });
-  t += '</tbody></table>';
-  h += t;
-  h += _totalsBox(d, '#0b1c30');
-  h += _paymentBlock(d, '#0b1c30');
-  h += _signatureBlock(d);
-  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
-  h += '</div>';
-  return h;
 }
 
-// ---------- TEMPLATE 7: Sidebar ----------
+/* ─── TEMPLATE 7: Sidebar ──────────────────────────────────── */
 function tmplSidebar(d) {
-  const sideColor = '#2d6a4f';
-  let h = `<div style="${d.fontStyle}display:flex;gap:0;min-height:400px;">`;
-  h += `<div style="width:160px;min-width:160px;background:${sideColor};color:#fff;padding:20px 14px;border-radius:8px 0 0 8px;flex-shrink:0;">
-    <div style="margin-bottom:16px;">${_logoImg(d.logoUrl,48)}</div>
-    <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${COMPANY.company_name||''}</div>
-    ${COMPANY.phone ? `<div style="font-size:10px;opacity:.8;margin-top:3px;">${COMPANY.phone}</div>` : ''}
-    ${COMPANY.email ? `<div style="font-size:10px;opacity:.8;word-break:break-all;">${COMPANY.email}</div>` : ''}
-    ${COMPANY.address ? `<div style="font-size:10px;opacity:.8;margin-top:4px;">${COMPANY.address}</div>` : ''}
-    <div style="border-top:1px solid rgba(255,255,255,.3);margin:16px 0;"></div>
-    ${d.cust && !d.hidden.has('client') ? `<div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Bill To</div>
-      <div style="font-weight:600;font-size:12px;">${d.cust.customer_name}</div>
-      ${d.cust.phone ? `<div style="font-size:10px;opacity:.8;">${d.cust.phone}</div>` : ''}
-      ${d.cust.email ? `<div style="font-size:10px;opacity:.8;word-break:break-all;">${d.cust.email}</div>` : ''}` : ''}
-    <div style="border-top:1px solid rgba(255,255,255,.3);margin:16px 0;"></div>
-    <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Invoice</div>
-    <div style="font-family:monospace;font-size:12px;font-weight:700;">#${d.invoiceNum}</div>
-    <div style="font-size:10px;opacity:.8;margin-top:3px;">${d.formattedDate}</div>
-  </div>
-  <div style="flex:1;padding:24px;background:#fff;border-radius:0 8px 8px 0;border:1px solid #e0e0e0;border-left:none;">
-    <div style="font-size:22px;font-weight:800;color:${sideColor};margin-bottom:20px;">${d.titleLabel}</div>`;
-  h += _assetBlock(d);
-  h += _itemsTable(d, sideColor, '#e8f5e9', sideColor);
-  h += _totalsBox(d, sideColor);
-  h += _paymentBlock(d, sideColor);
-  h += _signatureBlock(d);
-  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
-  h += '</div></div>';
-  return h;
-}
-
-// ---------- TEMPLATE 8: Red Bold ----------
-function tmplRedBold(d) {
-  const red = '#c62828';
-  let h = `<div style="${d.fontStyle}">`;
-  h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding:20px 0;border-bottom:4px solid ${red};">
-    <div style="display:flex;align-items:center;gap:14px;">${_logoImg(d.logoUrl,60)}<div>
-      <div style="font-weight:800;font-size:20px;color:#1a1a1a;">${COMPANY.company_name||''}</div>
-      ${COMPANY.phone ? `<div style="font-size:12px;color:#737686;">${COMPANY.phone}</div>` : ''}
-      ${COMPANY.email ? `<div style="font-size:12px;color:#737686;">${COMPANY.email}</div>` : ''}
-    </div></div>
-    <div style="background:${red};color:#fff;padding:16px 20px;border-radius:8px;text-align:center;">
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;opacity:.85;">${d.titleLabel}</div>
-      <div style="font-size:22px;font-weight:900;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
-      <div style="font-size:11px;opacity:.85;margin-top:2px;">${d.formattedDate}</div>
+  const side = d.invoiceColor;
+  return `<div style="${d.fontStyle}display:flex;min-height:500px;border-radius:8px;overflow:hidden;">
+    <div style="width:175px;min-width:175px;background:${side};padding:22px 16px;display:flex;flex-direction:column;gap:0;">
+      <div style="margin-bottom:16px;">${_logo(d.logoUrl, 52, '8px')}</div>
+      <div style="font-weight:800;font-size:15px;color:#fff;margin-bottom:4px;">${COMPANY.company_name || ''}</div>
+      ${_companyContact('rgba(255,255,255,.65)', 11)}
+      <div style="height:1px;background:rgba(255,255,255,.2);margin:16px 0;"></div>
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:6px;">${d.L.billTo}</div>
+        <div style="font-weight:700;font-size:13px;color:#fff;">${d.cust.customer_name}</div>
+        ${d.cust.phone ? `<div style="font-size:11px;color:rgba(255,255,255,.65);">${d.cust.phone}</div>` : ''}
+        ${d.cust.email ? `<div style="font-size:11px;color:rgba(255,255,255,.65);word-break:break-all;">${d.cust.email}</div>` : ''}
+      ` : ''}
+      <div style="height:1px;background:rgba(255,255,255,.2);margin:16px 0;"></div>
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:6px;">${d.titleLabel}</div>
+      <div style="font-family:monospace;font-size:15px;font-weight:700;color:#fff;">#${d.invoiceNum}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:4px;">${d.formattedDate}</div>
+    </div>
+    <div style="flex:1;padding:24px 22px;background:#fff;border:1px solid #dee0f0;border-left:none;border-radius:0 8px 8px 0;">
+      ${_assetRows(d)}
+      ${_table(d, { headerBg: `${side}18`, headerColor: side, borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
+      ${_totals(d, { accentColor: side, borderTop: side })}
+      ${_payment(d, side)}
+      ${_sig(d)}
+      ${_footer(d)}
     </div>
   </div>`;
-  h += _clientBlock(d);
-  h += _assetBlock(d);
-  h += _itemsTable(d, '#1a1a1a', '#fce4ec', red);
-  h += _totalsBox(d, red);
-  h += _paymentBlock(d, red);
-  h += _signatureBlock(d);
-  if (d.footerMsg) h += `<div style="text-align:center;font-size:11px;color:#737686;font-style:italic;margin-top:16px;">${d.footerMsg}</div>`;
-  h += '</div>';
-  return h;
 }
+
+/* ─── TEMPLATE 8: Elegant ──────────────────────────────────── */
+function tmplElegant(d) {
+  const gold = '#b8962e';
+  const dark = '#1a1a1a';
+  const serif = 'Georgia, "Times New Roman", serif';
+  return `<div style="${d.fontStyle}">
+    <div style="border-bottom:3px double ${gold};padding-bottom:20px;margin-bottom:22px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div style="display:flex;gap:16px;align-items:center;">
+          ${_logo(d.logoUrl, 60, '4px')}
+          <div>
+            <div style="font-family:${serif};font-weight:700;font-size:20px;letter-spacing:.02em;color:${dark};">${COMPANY.company_name || ''}</div>
+            ${_companyContact('#6a6a6a')}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:${serif};font-size:32px;font-style:italic;color:${dark};letter-spacing:-1px;">${d.titleLabel}</div>
+          <div style="font-size:12px;color:${gold};font-family:monospace;margin-top:2px;">№ ${d.invoiceNum}</div>
+          <div style="font-size:11px;color:#6a6a6a;margin-top:2px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    ${d.cust && !d.hidden.has('client') ? `
+      <div style="margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid #e0d9c8;">
+        <div style="font-family:${serif};font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:${gold};margin-bottom:8px;">Billed to</div>
+        ${_clientRows(d)}
+      </div>` : ''}
+    ${_assetRows(d, '#e0d9c8')}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;">
+      <thead><tr style="border-bottom:2px solid ${gold};">
+        <th style="padding:8px 4px;text-align:left;font-family:${serif};font-style:italic;color:${dark};font-size:12px;font-weight:400;">${d.L.description}</th>
+        <th style="padding:8px 4px;text-align:right;font-family:${serif};font-style:italic;color:${dark};font-size:12px;font-weight:400;">${d.L.amount}</th>
+      </tr></thead><tbody>
+      ${d.items.map((item, i) => `<tr style="border-bottom:1px solid #e0d9c8;background:${i%2===1?'#faf8f2':'transparent'};">
+        <td style="padding:9px 4px;"><span style="font-weight:600;">${item.name}</span>${item.description ? `<div style="font-size:11px;color:#8a8a8a;margin-top:1px;">${item.description}</div>` : ''}</td>
+        <td style="padding:9px 4px;text-align:right;font-family:monospace;">$${item.price.toFixed(2)}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>
+    ${_totals(d, { accentColor: gold, borderTop: gold })}
+    ${_payment(d, dark)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
 
 // ============================================================
 // VISUAL TEMPLATE PICKER
@@ -2507,15 +2569,16 @@ async function selectVisualTemplate(slug, el) {
 }
 
 function vtThumbnail(slug) {
+  const c = COMPANY?.invoice_color || '#004ac6';
   const thumbs = {
-    'clean-white':    `<div style="height:60px;background:linear-gradient(to bottom,#004ac6 40%,#fff 40%);position:relative;"><div style="position:absolute;top:6px;left:8px;width:20px;height:20px;background:rgba(255,255,255,.3);border-radius:3px;"></div><div style="position:absolute;top:6px;right:8px;width:30px;height:8px;background:rgba(255,255,255,.6);border-radius:2px;"></div></div>`,
-    'bold-header':    `<div style="height:60px;background:linear-gradient(135deg,#1565c0,#42a5f5);position:relative;"><div style="position:absolute;bottom:4px;left:8px;right:8px;height:3px;background:rgba(255,255,255,.3);border-radius:2px;"></div></div>`,
-    'dark-pro':       `<div style="height:60px;background:#1C2541;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;"><div style="color:#f5a623;font-size:16px;font-weight:900;font-family:monospace;">#0042</div></div>`,
-    'contractor':     `<div style="height:60px;background:#e65100;position:relative;"><div style="position:absolute;bottom:0;left:0;right:0;height:14px;background:#fff3e0;"></div></div>`,
-    'modern-minimal': `<div style="height:60px;background:#fff;border-bottom:3px solid #004ac6;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;"><div style="font-size:22px;font-weight:900;color:#e8ecff;">INV</div></div>`,
-    'classic':        `<div style="height:60px;background:#fff;border:1px solid #c3c6d7;position:relative;"><div style="position:absolute;top:0;left:0;right:0;height:20px;background:#0b1c30;"></div></div>`,
-    'sidebar':        `<div style="height:60px;display:flex;"><div style="width:30px;background:#2d6a4f;"></div><div style="flex:1;background:#fff;border:1px solid #e0e0e0;border-left:none;"></div></div>`,
-    'red-bold':       `<div style="height:60px;background:#fff;border-bottom:4px solid #c62828;position:relative;"><div style="position:absolute;top:8px;right:8px;background:#c62828;border-radius:5px;width:36px;height:38px;"></div></div>`,
+    'clean-white':    `<div style="height:64px;background:#fff;position:relative;overflow:hidden;"><div style="height:4px;background:${c};"></div><div style="padding:8px 10px;display:flex;justify-content:space-between;align-items:center;"><div style="width:18px;height:18px;border-radius:4px;background:#e8eeff;"></div><div style="font-size:18px;font-weight:900;color:#eef0fb;line-height:1;">INV</div></div><div style="margin:0 10px;height:1px;background:#dee0f0;"></div></div>`,
+    'bold-band':      `<div style="height:64px;overflow:hidden;"><div style="background:${c};height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.3);"></div><div style="font-size:11px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div><div style="background:${c}18;height:10px;"></div></div>`,
+    'dark-pro':       `<div style="height:64px;background:#12182b;display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.15);"></div><div style="text-align:right;"><div style="font-size:8px;color:#c9a84c;font-weight:700;text-transform:uppercase;">INVOICE</div><div style="font-size:13px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div>`,
+    'contractor':     `<div style="height:64px;overflow:hidden;"><div style="background:#e65100;height:36px;display:flex;align-items:center;padding:0 10px;"><div style="font-size:8px;font-weight:900;color:rgba(255,255,255,.9);text-transform:uppercase;">Work Order</div></div><div style="background:#fff3e0;height:12px;"></div><div style="background:#fff;height:16px;display:flex;align-items:center;padding:0 10px;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#e65100;"></div><div style="flex:1;height:2px;background:#ffe0b2;"></div></div></div>`,
+    'modern-minimal': `<div style="height:64px;background:#fff;position:relative;overflow:hidden;"><div style="position:absolute;top:2px;right:4px;font-size:38px;font-weight:900;color:#f0f2fb;line-height:1;">INV</div><div style="position:relative;padding:10px;"><div style="width:22px;height:22px;border-radius:6px;background:#e8eeff;"></div></div><div style="margin:0 10px;height:2px;background:linear-gradient(90deg,${c},#dee0f0);"></div></div>`,
+    'classic':        `<div style="height:64px;background:#fff;border:1px solid #b0b3cc;overflow:hidden;"><div style="display:flex;gap:4px;padding:6px;"><div style="flex:1;border:1px solid #b0b3cc;border-radius:2px;height:22px;"></div><div style="width:40px;border:1px solid #b0b3cc;border-radius:2px;height:22px;"></div></div><div style="margin:0 6px;height:16px;background:#0b1c30;border-radius:2px;"></div></div>`,
+    'sidebar':        `<div style="height:64px;display:flex;overflow:hidden;"><div style="width:28px;background:${c};"></div><div style="flex:1;background:#fff;border-top:1px solid #dee0f0;border-bottom:1px solid #dee0f0;border-right:1px solid #dee0f0;padding:6px;"><div style="height:2px;background:#dee0f0;margin-bottom:4px;"></div><div style="height:2px;background:#dee0f0;margin-bottom:4px;width:70%;"></div><div style="height:2px;background:${c};width:40%;"></div></div></div>`,
+    'elegant':        `<div style="height:64px;background:#fff;padding:8px 10px;"><div style="display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:6px;border-bottom:2px solid #b8962e;"><div style="font-size:9px;font-style:italic;color:#1a1a1a;">Company</div><div style="font-size:16px;font-style:italic;font-weight:700;color:#1a1a1a;">Invoice</div></div><div style="margin-top:6px;font-size:8px;color:#b8962e;font-style:italic;">№ 0042</div></div>`,
   };
   return thumbs[slug] || thumbs['clean-white'];
 }
