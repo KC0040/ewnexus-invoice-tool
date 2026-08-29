@@ -207,13 +207,21 @@ function obGoToStep(step) {
 }
 async function finishOnboarding() {
   if (!selectedOnboardingTemplateId) { alert('Select an industry first'); return; }
-  const body = {
-    template: selectedOnboardingTemplateId,
-    company_name: document.getElementById('ob-company-name').value,
-    terms_of_service: document.getElementById('ob-tos').value
-  };
-  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', body: JSON.stringify(body)});
-  if (!data.id) { document.getElementById('ob-result').innerText = 'ERROR: ' + JSON.stringify(data); return; }
+  // PATCH company fields (update rule blocks setting template field directly)
+  const patch = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      company_name: document.getElementById('ob-company-name').value,
+      terms_of_service: document.getElementById('ob-tos').value
+    })
+  });
+  if (!patch.id) { document.getElementById('ob-result').innerText = 'ERROR: ' + JSON.stringify(patch); return; }
+  // Assign template via dedicated endpoint (bypasses update rule restriction)
+  const data = await authedFetch('/api/select-template', {
+    method: 'POST',
+    body: JSON.stringify({templateId: selectedOnboardingTemplateId})
+  });
+  if (!data.id) { document.getElementById('ob-result').innerText = 'ERROR (template): ' + JSON.stringify(data); return; }
   COMPANY = data;
   const tmpl = ONBOARDING_TEMPLATES.find(t => t.id === selectedOnboardingTemplateId);
   if (tmpl && tmpl.default_service_items) {

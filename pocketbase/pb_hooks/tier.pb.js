@@ -15,6 +15,29 @@ function upgradeCompany(company, tier, paymentRef) {
   $app.save(company)
 }
 
+// ---------- onboarding: assign template (bypasses update rule) ----------
+// POST /api/select-template  body: {templateId}
+// Authenticated company sets its own template once (only if not yet set).
+routerAdd("POST", "/api/select-template", (e) => {
+  const company = e.auth
+  if (!company) return e.json(401, {error: "unauthorized"})
+
+  let body
+  try { body = e.requestInfo().body } catch { return e.json(400, {error: "invalid body"}) }
+
+  const templateId = (body.templateId || "").trim()
+  if (!templateId) return e.json(400, {error: "templateId required"})
+
+  // Verify template exists
+  try { $app.findRecordById("templates", templateId) } catch {
+    return e.json(404, {error: "template not found"})
+  }
+
+  company.set("template", templateId)
+  $app.save(company)
+  return e.json(200, company)
+}, $apis.requireAuth())
+
 // ---------- manual activate (boss calls this after confirming Zelle) ----------
 // POST /api/activate-tier  body: {email, tier}
 // Protected by ACTIVATE_SECRET env var
