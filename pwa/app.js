@@ -856,6 +856,24 @@ function loadReportScreen() {
   if (tierNote) tierNote.innerText = isPro()
     ? 'Pro: photos are stored for 1 year on Cloudflare R2.'
     : 'Base plan: photos are used for your PDF report but not stored on server.';
+
+  // Show canvas signature for Pro, text fallback for others
+  const canvasWrap = document.getElementById('sig-canvas-wrap');
+  const textWrap   = document.getElementById('sig-text-wrap');
+  const proBadge   = document.getElementById('sig-pro-badge');
+  if (canvasWrap && textWrap) {
+    if (isPro()) {
+      canvasWrap.classList.remove('hidden');
+      textWrap.classList.add('hidden');
+      if (proBadge) proBadge.classList.remove('hidden');
+      initSignatureCanvas();
+    } else {
+      canvasWrap.classList.add('hidden');
+      textWrap.classList.remove('hidden');
+      if (proBadge) proBadge.classList.add('hidden');
+    }
+  }
+
   reportGroups = [];
   renderReportGroups();
   ['report-objective','report-findings','report-materials','report-recommendations','report-summary','report-signature','report-asset-freeform'].forEach(id => {
@@ -956,7 +974,8 @@ async function submitReport() {
     materials_used: document.getElementById('report-materials').value,
     recommendations: document.getElementById('report-recommendations').value,
     summary: document.getElementById('report-summary').value,
-    signature: document.getElementById('report-signature').value,
+    signature: isPro() ? '' : (document.getElementById('report-signature')?.value || ''),
+    signature_data: isPro() ? getSignatureDataUrl() : '',
     work_start: startT, work_end: endT,
     notes: [document.getElementById('report-objective').value, document.getElementById('report-summary').value].filter(Boolean).join('\n\n'),
   };
@@ -1032,7 +1051,8 @@ function generateReportPDF() {
   const materialsVal = document.getElementById('report-materials').value;
   const recsVal = document.getElementById('report-recommendations').value;
   const summaryVal = document.getElementById('report-summary').value;
-  const signatureVal = document.getElementById('report-signature').value;
+  const signatureVal = isPro() ? '' : (document.getElementById('report-signature')?.value || '');
+  const signatureDataUrl = isPro() ? getSignatureDataUrl() : '';
   const assetFreeform = document.getElementById('report-asset-freeform').value;
 
   const printHtml = `<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -1082,7 +1102,9 @@ function generateReportPDF() {
       <div style="border-bottom:1px solid #0b1c30;height:32px;"></div>
       <div style="font-size:11px;color:#737686;margin-top:4px;">${COMPANY.company_name||''}</div></div>
     <div><div style="font-size:11px;color:#737686;margin-bottom:4px;">Customer Signature / Confirmation</div>
-      <div style="border-bottom:1px solid #0b1c30;height:32px;padding-top:8px;font-size:13px;">${signatureVal||''}</div>
+      ${signatureDataUrl
+        ? `<img src="${signatureDataUrl}" style="height:60px;max-width:100%;border-bottom:1px solid #0b1c30;display:block;">`
+        : `<div style="border-bottom:1px solid #0b1c30;height:32px;padding-top:8px;font-size:13px;">${signatureVal||''}</div>`}
       <div style="font-size:11px;color:#737686;margin-top:4px;">${cust ? cust.customer_name : ''}</div></div>
   </div>
   <script>window.onload=function(){window.print();}<\/script>
@@ -2008,14 +2030,9 @@ function renderMarketplaceGrid() {
       </ul>
     </div>`;
   };
-  const base = ONBOARDING_TEMPLATES.filter(t => t.included_in_base);
-  const premium = ONBOARDING_TEMPLATES.filter(t => !t.included_in_base);
   document.getElementById('marketplace-template-grid').innerHTML = `
     <div class="col-span-full">
-      <p class="text-label-lg text-on-surface-variant uppercase tracking-widest mb-2">Included in all plans</p>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">${base.map(card).join('')}</div>
-      ${premium.length ? `<p class="text-label-lg text-on-surface-variant uppercase tracking-widest mb-2">Premium templates</p>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">${premium.map(card).join('')}</div>` : ''}
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">${ONBOARDING_TEMPLATES.map(card).join('')}</div>
     </div>`;
 }
 
@@ -2501,4 +2518,67 @@ function vtThumbnail(slug) {
     'red-bold':       `<div style="height:60px;background:#fff;border-bottom:4px solid #c62828;position:relative;"><div style="position:absolute;top:8px;right:8px;background:#c62828;border-radius:5px;width:36px;height:38px;"></div></div>`,
   };
   return thumbs[slug] || thumbs['clean-white'];
+}
+
+// ============================================================
+// SIGNATURE CANVAS (Pro tier)
+// ============================================================
+
+let _sigDrawing = false;
+let _sigHasStrokes = false;
+
+function initSignatureCanvas() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // Size canvas to its display size
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  || canvas.offsetWidth  || 300;
+  canvas.height = rect.height || canvas.offsetHeight || 160;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#0b1c30';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  _sigDrawing = false;
+  _sigHasStrokes = false;
+
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * (canvas.width / r.width),
+             y: (src.clientY - r.top)  * (canvas.height / r.height) };
+  }
+
+  function start(e) { e.preventDefault(); _sigDrawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
+  function move(e)  { e.preventDefault(); if (!_sigDrawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); _sigHasStrokes = true; updateSigStatus(); }
+  function end(e)   { e.preventDefault(); _sigDrawing = false; }
+
+  canvas.addEventListener('mousedown',  start, {passive:false});
+  canvas.addEventListener('mousemove',  move,  {passive:false});
+  canvas.addEventListener('mouseup',    end,   {passive:false});
+  canvas.addEventListener('touchstart', start, {passive:false});
+  canvas.addEventListener('touchmove',  move,  {passive:false});
+  canvas.addEventListener('touchend',   end,   {passive:false});
+}
+
+function clearSignature() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  _sigHasStrokes = false;
+  updateSigStatus();
+}
+
+function getSignatureDataUrl() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas || !_sigHasStrokes) return '';
+  return canvas.toDataURL('image/png');
+}
+
+function updateSigStatus() {
+  const el = document.getElementById('sig-status');
+  if (el) el.textContent = _sigHasStrokes ? '✓ Signed' : '';
 }

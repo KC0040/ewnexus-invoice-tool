@@ -483,9 +483,27 @@ tailwind.config = {
         </section>
 
         <!-- ⑩ Signature -->
-        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
-          <h2 class="text-headline-md text-on-surface mb-3">Customer Signature</h2>
-          <input id="report-signature" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" placeholder="Customer printed name / confirmation">
+        <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30" id="signature-section">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-headline-md text-on-surface">Customer Signature</h2>
+            <span id="sig-pro-badge" class="hidden text-xs bg-primary text-on-primary px-2 py-0.5 rounded-full font-semibold">Pro</span>
+          </div>
+          <!-- Pro: canvas pad -->
+          <div id="sig-canvas-wrap" class="hidden">
+            <p class="text-body-sm text-on-surface-variant mb-3">Hand the phone to your customer to sign below.</p>
+            <div class="relative border-2 border-outline-variant rounded-xl overflow-hidden bg-white touch-none" style="height:160px;">
+              <canvas id="sig-canvas" style="width:100%;height:160px;display:block;touch-action:none;"></canvas>
+              <span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-on-surface-variant/40 pointer-events-none select-none">Sign here</span>
+            </div>
+            <div class="flex justify-between mt-2">
+              <button onclick="clearSignature()" class="text-body-sm text-error underline">Clear</button>
+              <span id="sig-status" class="text-body-sm text-on-surface-variant"></span>
+            </div>
+          </div>
+          <!-- Free/Base: text fallback -->
+          <div id="sig-text-wrap">
+            <input id="report-signature" class="w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" placeholder="Customer printed name / confirmation">
+          </div>
           <p class="text-body-sm text-on-surface-variant mt-2" id="report-tier-note"></p>
         </section>
       </div>
