@@ -2574,6 +2574,7 @@ async function selectVisualTemplate(slug, el) {
   const label = VISUAL_TEMPLATES.find(t => t.slug === slug)?.label || slug;
   const el2 = document.getElementById('settings-visual-template-name');
   if (el2) el2.textContent = label;
+  closeVisualTemplatePicker();
 }
 
 function vtThumbnail(slug) {

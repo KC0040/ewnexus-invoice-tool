@@ -16,5 +16,11 @@ python3 /pb/r2_presign.py &
   sleep 3600
 done) &
 
+# Zelle Gmail checker — runs every 5 minutes
+(while true; do
+  python3 /pb/check_zelle_gmail.py >> /pb/zelle_checker.log 2>&1 || true
+  sleep 300
+done) &
+
 # Start PocketBase (foreground, handles SIGTERM)
 exec /pb/pocketbase serve --http=0.0.0.0:8090
