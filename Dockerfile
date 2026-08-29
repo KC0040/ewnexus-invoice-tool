@@ -20,7 +20,8 @@ COPY pocketbase/run_recurring_invoices.py ./
 COPY pocketbase/generate_next_invoice.py  ./
 
 # PWA served from pb_public/ (PocketBase serves this at /)
-COPY pwa/app.html       ./pb_public/index.html
+COPY pwa/landing.html   ./pb_public/index.html
+COPY pwa/app.html       ./pb_public/app.html
 COPY pwa/app.js         ./pb_public/app.js
 COPY pwa/manifest.json  ./pb_public/manifest.json
 COPY pwa/icon-192.png   ./pb_public/icon-192.png

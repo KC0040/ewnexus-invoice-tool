@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EWNexus Invoice — Professional Invoicing for Tradespeople</title>
+  <meta name="description" content="Send professional invoices in 60 seconds. Built for plumbers, mechanics, HVAC techs, and handymen. SMS delivery, before/after job reports, customer signatures.">
+  <link rel="icon" href="/icon-192.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #004ac6; --blue-dark: #003399; --blue-light: #e8f0fe;
+      --green: #1a7a4a; --orange: #e65100;
+      --gray-50: #f8f9ff; --gray-100: #f0f2fa; --gray-300: #c3c6d7;
+      --gray-600: #434655; --gray-800: #1a1c2e; --white: #fff;
+      --radius: 14px; --shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--gray-800); background: var(--white); }
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray-100); padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-weight: 800; font-size: 18px; color: var(--blue); }
+    .nav-cta { background: var(--blue); color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+
+    /* HERO */
+    .hero { padding: 60px 20px 48px; text-align: center; background: linear-gradient(180deg, var(--blue-light) 0%, var(--white) 100%); }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--blue); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; }
+    .hero h1 { font-size: clamp(28px, 6vw, 44px); font-weight: 900; line-height: 1.15; color: var(--gray-800); margin-bottom: 16px; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .hero h1 span { color: var(--blue); }
+    .hero p { font-size: 17px; color: var(--gray-600); max-width: 480px; margin: 0 auto 32px; line-height: 1.6; }
+    .hero-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .btn-primary { background: var(--blue); color: #fff; padding: 14px 28px; border-radius: 10px; font-size: 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-secondary { border: 2px solid var(--blue); color: var(--blue); padding: 14px 28px; border-radius: 10px; font-size: 16px; font-weight: 600; }
+    .hero-note { margin-top: 16px; font-size: 13px; color: var(--gray-600); }
+
+    /* SOCIAL PROOF */
+    .proof { padding: 24px 20px; background: var(--gray-100); text-align: center; border-top: 1px solid var(--gray-300); border-bottom: 1px solid var(--gray-300); }
+    .proof p { font-size: 14px; color: var(--gray-600); }
+    .proof strong { color: var(--gray-800); }
+
+    /* SECTION */
+    section { padding: 60px 20px; max-width: 720px; margin: 0 auto; }
+    .section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--blue); margin-bottom: 10px; }
+    .section-title { font-size: clamp(22px, 4vw, 32px); font-weight: 800; line-height: 1.2; margin-bottom: 14px; }
+    .section-sub { font-size: 16px; color: var(--gray-600); line-height: 1.6; margin-bottom: 40px; }
+
+    /* HOW IT WORKS */
+    .steps { display: flex; flex-direction: column; gap: 24px; }
+    .step { display: flex; gap: 16px; align-items: flex-start; }
+    .step-num { width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .step-body h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .step-body p { font-size: 14px; color: var(--gray-600); line-height: 1.5; }
+    .step-time { display: inline-block; background: var(--blue-light); color: var(--blue); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-top: 4px; }
+
+    /* FEATURES GRID */
+    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 480px) { .features { grid-template-columns: 1fr; } }
+    .feature-card { background: var(--gray-50); border: 1px solid var(--gray-300); border-radius: var(--radius); padding: 20px; }
+    .feature-icon { font-size: 28px; margin-bottom: 10px; }
+    .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .feature-card p { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
+    .feature-badge { font-size: 10px; font-weight: 700; background: var(--blue); color: #fff; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+
+    /* TIME SAVINGS */
+    .savings-block { background: linear-gradient(135deg, var(--blue) 0%, #0062ff 100%); color: #fff; border-radius: var(--radius); padding: 36px 28px; text-align: center; }
+    .savings-num { font-size: 56px; font-weight: 900; line-height: 1; }
+    .savings-unit { font-size: 18px; font-weight: 600; opacity: .85; margin-bottom: 12px; }
+    .savings-desc { font-size: 15px; opacity: .9; line-height: 1.6; max-width: 360px; margin: 0 auto; }
+    .savings-math { margin-top: 20px; background: rgba(255,255,255,.15); border-radius: 10px; padding: 16px; font-size: 14px; line-height: 1.8; }
+
+    /* COMPARISON */
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .compare-table th { padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--gray-300); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--gray-600); }
+    .compare-table th:not(:first-child) { text-align: center; }
+    .compare-table td { padding: 12px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+    .compare-table td:not(:first-child) { text-align: center; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table .ew { background: var(--blue-light); font-weight: 700; color: var(--blue); }
+    .check { color: #1a7a4a; font-size: 18px; }
+    .cross { color: #c62828; font-size: 18px; }
+    .compare-note { font-size: 12px; color: var(--gray-600); margin-top: 12px; }
+
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    @media (max-width: 480px) { .pricing-grid { grid-template-columns: 1fr; } }
+    .price-card { border: 2px solid var(--gray-300); border-radius: var(--radius); padding: 24px; }
+    .price-card.featured { border-color: var(--blue); background: var(--blue-light); position: relative; }
+    .price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--blue); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 20px; white-space: nowrap; }
+    .price-tier { font-size: 13px; font-weight: 700; color: var(--gray-600); margin-bottom: 4px; }
+    .price-amt { font-size: 32px; font-weight: 900; color: var(--gray-800); }
+    .price-amt span { font-size: 14px; font-weight: 400; color: var(--gray-600); }
+    .price-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+    .price-list li { display: flex; gap: 8px; align-items: flex-start; list-style: none; }
+    .price-list li::before { content: "✓"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .free-note { text-align: center; font-size: 14px; color: var(--gray-600); margin-bottom: 8px; }
+    .free-note strong { color: var(--gray-800); }
+
+    /* PAY BLOCK */
+    .pay-block { background: var(--gray-50); border: 1px solid var(--gray-300); border-radius: var(--radius); padding: 20px; margin-top: 24px; }
+    .pay-block h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+    .pay-row { display: flex; align-items: flex-start; gap: 12px; }
+    .pay-info { font-size: 14px; line-height: 1.7; }
+    .pay-info code { font-family: monospace; background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+
+    /* CTA FOOTER */
+    .cta-section { background: var(--gray-800); color: #fff; text-align: center; padding: 60px 20px; }
+    .cta-section h2 { font-size: clamp(22px, 4vw, 32px); font-weight: 800; margin-bottom: 12px; }
+    .cta-section p { font-size: 15px; opacity: .8; margin-bottom: 28px; }
+    .btn-white { background: #fff; color: var(--blue); padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; display: inline-block; }
+
+    footer { padding: 24px 20px; text-align: center; font-size: 13px; color: var(--gray-600); border-top: 1px solid var(--gray-100); }
+    footer a { color: var(--blue); }
+
+    /* Divider */
+    .divider { border: none; border-top: 1px solid var(--gray-100); margin: 0; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">EWNexus Invoice</div>
+  <a href="/app.html" class="nav-cta">Sign In →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">⚡ Built for Tradespeople</div>
+  <h1>Send professional invoices<br>in <span>under 60 seconds</span></h1>
+  <p>Stop chasing payments. Send branded invoices via SMS and email right from the job site — your customers pay you faster.</p>
+  <div class="hero-btns">
+    <a href="/app.html" class="btn-primary">Start Free Trial →</a>
+    <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+  </div>
+  <p class="hero-note">5 free invoices — no credit card required</p>
+</div>
+
+<!-- SOCIAL PROOF BAR -->
+<div class="proof">
+  <p>Designed for <strong>plumbers · HVAC techs · mechanics · handymen · electricians · landscapers</strong></p>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works">
+  <div class="section-label">How It Works</div>
+  <div class="section-title">From job done to payment received<br>in minutes — not days</div>
+  <div class="section-sub">Other tools were built for office accountants. EWNexus is built for you — one hand, job site, phone in your pocket.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Select your customer & services</h3>
+        <p>Your saved service items and customer list are one tap away. No typing from scratch every time.</p>
+        <span class="step-time">~15 seconds</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Preview &amp; send — SMS + Email at once</h3>
+        <p>Your customer gets a professional PDF by text and email. Zelle QR code included — they can pay on the spot.</p>
+        <span class="step-time">~20 seconds</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Optional: attach a job report</h3>
+        <p>Before/after photos, work summary, and customer signature — all in the same app. No extra tools.</p>
+        <span class="step-time">~2 minutes</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- TIME SAVINGS -->
+<section>
+  <div class="savings-block">
+    <div class="savings-num">5–10</div>
+    <div class="savings-unit">minutes saved per invoice</div>
+    <div class="savings-desc">No manual typing. No switching between apps. No "did the email go through?" No chasing payments.</div>
+    <div class="savings-math">
+      10 invoices/week × 7 min saved = <strong>70 min/week back</strong><br>
+      50 weeks/year = <strong>58 hours returned to your life</strong>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FEATURES -->
+<section>
+  <div class="section-label">Features</div>
+  <div class="section-title">Everything a tradesperson needs. Nothing they don't.</div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <h3>8 Professional Templates</h3>
+      <p>Pick a visual style that fits your trade. Clean, bold, dark, contractor-style — all included.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <h3>SMS Delivery <span class="feature-badge">Pro</span></h3>
+      <p>Your customer gets the invoice as a text — not buried in their spam folder.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📸</div>
+      <h3>Before/After Job Reports <span class="feature-badge">Pro</span></h3>
+      <p>Document your work with photos. No more "you didn't fix anything" disputes.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✍️</div>
+      <h3>Customer Signature <span class="feature-badge">Pro</span></h3>
+      <p>Customer signs on your phone screen at job completion. Stored with the report.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💸</div>
+      <h3>Zelle QR on Every Invoice</h3>
+      <p>Your Zelle QR code is sent with the invoice. Customers tap and pay immediately.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔁</div>
+      <h3>Recurring Invoices</h3>
+      <p>Set up weekly or monthly billing — it runs automatically in the background.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>Trilingual App</h3>
+      <p>English, Spanish, Chinese. Switch languages for your team or your customers.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>Works on Any Phone</h3>
+      <p>No app to download — add to home screen and it works like a native app.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- COMPARISON -->
+<section>
+  <div class="section-label">Pricing Comparison</div>
+  <div class="section-title">Why pay more for less?</div>
+  <div class="section-sub">Other invoicing tools weren't built with tradespeople in mind — and their pricing shows it.</div>
+  <div style="overflow-x:auto;">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th class="ew">EWNexus Pro<br>$8.99/mo</th>
+          <th>FreshBooks Lite<br>$23/mo</th>
+          <th>Invoice2go<br>~$20/mo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Unlimited invoices</td>
+          <td class="ew"><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span> 30/yr limit</td>
+        </tr>
+        <tr>
+          <td>Client limit</td>
+          <td class="ew">Unlimited</td>
+          <td><strong style="color:#c62828;">5 clients only</strong></td>
+          <td>Unlimited</td>
+        </tr>
+        <tr>
+          <td>SMS to customer</td>
+          <td class="ew"><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Before/after job photos</td>
+          <td class="ew"><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Customer signature</td>
+          <td class="ew"><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Zelle QR on invoice</td>
+          <td class="ew"><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Built for tradespeople</td>
+          <td class="ew"><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td>Partial</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="compare-note">Prices as of 2026. FreshBooks and Invoice2go are registered trademarks of their respective owners.</p>
+</section>
+
+<hr class="divider">
+
+<!-- PRICING -->
+<section>
+  <div class="section-label">Pricing</div>
+  <div class="section-title">Simple, honest pricing</div>
+  <p class="free-note">Start with <strong>5 free invoices</strong> — no credit card needed.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-tier">Base</div>
+      <div class="price-amt">$5.99<span>/mo</span></div>
+      <ul class="price-list">
+        <li>Unlimited invoices & customers</li>
+        <li>All 8 visual templates</li>
+        <li>PDF export & email delivery</li>
+        <li>Zelle QR on invoices</li>
+        <li>Recurring invoices</li>
+        <li>Customer history</li>
+      </ul>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge">Best Value</div>
+      <div class="price-tier" style="color:var(--blue);">Pro</div>
+      <div class="price-amt">$8.99<span>/mo</span></div>
+      <ul class="price-list">
+        <li>Everything in Base</li>
+        <li>SMS delivery to customer</li>
+        <li>Before/after job reports</li>
+        <li>Customer signature capture</li>
+        <li>Zelle QR sent via SMS</li>
+        <li>R2 photo storage (1 year)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pay-block">
+    <h3>💳 Pay via Zelle — activate in under 24 hours</h3>
+    <div class="pay-row">
+      <div class="pay-info">
+        Send <strong>$5.99</strong> (Base) or <strong>$8.99</strong> (Pro) to:<br>
+        <code>eastwestnexus@gmail.com</code> or <code>(909) 908-3995</code><br>
+        Memo: <code>your-email@domain.com Base</code> or <code>Pro</code><br>
+        <span style="font-size:12px;color:var(--gray-600);margin-top:4px;display:block;">Account activated manually within 24 hours after payment is received.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Start sending invoices today</h2>
+  <p>5 free invoices. No credit card. No setup fee. Works from your phone right now.</p>
+  <a href="/app.html" class="btn-white">Create Free Account →</a>
+</div>
+
+<footer>
+  <p>© 2026 EWNexus · <a href="/app.html">Sign In</a> · Built for tradespeople</p>
+</footer>
+
+</body>
+</html>
