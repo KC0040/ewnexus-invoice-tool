@@ -115,6 +115,7 @@ async function refreshAll() {
   loadBlockOrder();
   loadBrandingSettings();
   loadLanguageSettings();
+  renderPresetManager();
 }
 
 function stripHtml(html) { const d = document.createElement('div'); d.innerHTML = html; return d.textContent || ''; }
@@ -2115,6 +2116,10 @@ const VISUAL_TEMPLATES = [
   { slug: 'classic',        label: 'Classic',       desc: 'Traditional bordered' },
   { slug: 'sidebar',        label: 'Sidebar',       desc: 'Two-column layout' },
   { slug: 'elegant',        label: 'Elegant',       desc: 'Serif, fine gold lines' },
+  { slug: 'texas',          label: 'Texas Star',    desc: 'Lone Star — navy & burnt orange' },
+  { slug: 'american',       label: 'American',      desc: 'Red · White · Blue patriotic' },
+  { slug: 'forest',         label: 'Forest',        desc: 'Deep green, outdoor trades' },
+  { slug: 'sunset',         label: 'Sunset',        desc: 'Warm amber gradient, modern' },
 ];
 
 function renderInvoiceTemplate(slug, d) {
@@ -2126,6 +2131,10 @@ function renderInvoiceTemplate(slug, d) {
     case 'classic':        return tmplClassic(d);
     case 'sidebar':        return tmplSidebar(d);
     case 'elegant':        return tmplElegant(d);
+    case 'texas':          return tmplTexas(d);
+    case 'american':       return tmplAmerican(d);
+    case 'forest':         return tmplForest(d);
+    case 'sunset':         return tmplSunset(d);
     default:               return tmplCleanWhite(d);
   }
 }
@@ -2533,6 +2542,139 @@ function tmplElegant(d) {
 }
 
 
+/* ─── TEMPLATE 9: Texas Star ───────────────────────────────── */
+function tmplTexas(d) {
+  const navy   = '#002868';
+  const red    = '#BF0A30';
+  const orange = '#BF5700';
+  return `<div style="${d.fontStyle}">
+    <div style="background:${navy};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:16px;align-items:center;">
+        <div style="width:36px;height:36px;background:${red};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;line-height:1;flex-shrink:0;">★</div>
+        <div>
+          ${_logo(d.logoUrl, 44, '4px')}
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.6)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.55);">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,${red} 33%,#fff 33% 66%,${orange} 66%);margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;border-left:4px solid ${orange};background:#fff9f0;border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: navy, headerColor: '#fff', borderColor: '#dee0f0', accentBg: '#f0f4ff' })}
+    ${_totals(d, { accentColor: orange, borderTop: navy })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${orange};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, navy)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TEMPLATE 10: American ────────────────────────────────── */
+function tmplAmerican(d) {
+  const usRed  = '#B22234';
+  const usBlue = '#3C3B6E';
+  return `<div style="${d.fontStyle}">
+    <div style="background:${usBlue};border-radius:8px 8px 0 0;padding:22px 24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          ${_logo(d.logoUrl, 52, '6px')}
+          <div>
+            <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+            ${_companyContact('rgba(255,255,255,.65)')}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.55);">${d.titleLabel}</div>
+          <div style="font-size:30px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;height:6px;margin-bottom:0;">
+      ${[usRed,'#fff',usRed,'#fff',usRed,'#fff'].map(bg=>`<div style="flex:1;background:${bg};"></div>`).join('')}
+    </div>
+    <div style="height:6px;background:${usRed};margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:#f0f2ff;border-top:3px solid ${usBlue};border-radius:0 0 8px 8px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: usBlue, headerColor: '#fff', borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
+    ${_totals(d, { accentColor: usRed, borderTop: usBlue })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${usRed};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, usBlue)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TEMPLATE 11: Forest ──────────────────────────────────── */
+function tmplForest(d) {
+  const green  = '#1B5E20';
+  const mid    = '#2E7D32';
+  const light  = '#F1F8E9';
+  return `<div style="${d.fontStyle}">
+    <div style="background:${green};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.65)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:3px;background:linear-gradient(90deg,${mid},${light});margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${light};border-left:4px solid ${mid};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: green, headerColor: '#fff', borderColor: '#c8e6c9', accentBg: light })}
+    ${_totals(d, { accentColor: green, borderTop: mid })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${green};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, green)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TEMPLATE 12: Sunset ──────────────────────────────────── */
+function tmplSunset(d) {
+  const amber  = '#F57F17';
+  const orange = '#E65100';
+  const dark   = '#1a0a00';
+  return `<div style="${d.fontStyle}">
+    <div style="background:linear-gradient(135deg,${amber},${orange});border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.2);">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.75)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.65);">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;text-shadow:0 1px 4px rgba(0,0,0,.2);">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,${orange},${amber},#FFF9C4);margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:#fff9f0;border-left:4px solid ${amber};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: orange, headerColor: '#fff', borderColor: '#ffe0b2', accentBg: '#fff9f0' })}
+    ${_totals(d, { accentColor: orange, borderTop: amber })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${orange};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, dark)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
 // ============================================================
 // VISUAL TEMPLATE PICKER
 // ============================================================
@@ -2588,8 +2730,171 @@ function vtThumbnail(slug) {
     'classic':        `<div style="height:64px;background:#fff;border:1px solid #b0b3cc;overflow:hidden;"><div style="display:flex;gap:4px;padding:6px;"><div style="flex:1;border:1px solid #b0b3cc;border-radius:2px;height:22px;"></div><div style="width:40px;border:1px solid #b0b3cc;border-radius:2px;height:22px;"></div></div><div style="margin:0 6px;height:16px;background:#0b1c30;border-radius:2px;"></div></div>`,
     'sidebar':        `<div style="height:64px;display:flex;overflow:hidden;"><div style="width:28px;background:${c};"></div><div style="flex:1;background:#fff;border-top:1px solid #dee0f0;border-bottom:1px solid #dee0f0;border-right:1px solid #dee0f0;padding:6px;"><div style="height:2px;background:#dee0f0;margin-bottom:4px;"></div><div style="height:2px;background:#dee0f0;margin-bottom:4px;width:70%;"></div><div style="height:2px;background:${c};width:40%;"></div></div></div>`,
     'elegant':        `<div style="height:64px;background:#fff;padding:8px 10px;"><div style="display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:6px;border-bottom:2px solid #b8962e;"><div style="font-size:9px;font-style:italic;color:#1a1a1a;">Company</div><div style="font-size:16px;font-style:italic;font-weight:700;color:#1a1a1a;">Invoice</div></div><div style="margin-top:6px;font-size:8px;color:#b8962e;font-style:italic;">№ 0042</div></div>`,
+    'texas':          `<div style="height:64px;background:#002868;overflow:hidden;position:relative;"><div style="position:absolute;top:0;bottom:0;left:0;width:28px;background:#BF0A30;"></div><div style="position:absolute;top:0;bottom:0;left:28px;right:0;background:#002868;"></div><div style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:16px;color:#fff;line-height:1;">★</div><div style="position:absolute;right:8px;top:8px;text-align:right;"><div style="font-size:7px;font-weight:900;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#BF5700;"></div></div>`,
+    'american':       `<div style="height:64px;overflow:hidden;"><div style="height:32px;background:#B22234;display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><div style="font-size:8px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:11px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div><div style="height:8px;background:#fff;"></div><div style="height:8px;background:#3C3B6E;"></div><div style="height:8px;background:#B22234;"></div><div style="position:absolute;top:4px;left:8px;font-size:11px;color:rgba(255,255,255,.8);">★</div></div>`,
+    'forest':         `<div style="height:64px;background:#1B5E20;overflow:hidden;"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:16px;height:16px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:2px;background:rgba(255,255,255,.15);margin:0 12px;"></div><div style="padding:6px 12px;display:flex;gap:3px;">${[1,2,3].map(()=>`<div style="height:4px;flex:1;background:rgba(255,255,255,.15);border-radius:2px;"></div>`).join('')}</div></div>`,
+    'sunset':         `<div style="height:64px;overflow:hidden;background:linear-gradient(135deg,#F57F17,#E65100);"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.25);"></div><div style="text-align:right;"><div style="font-size:7px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:13px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:24px;background:rgba(0,0,0,.1);"></div></div>`,
   };
   return thumbs[slug] || thumbs['clean-white'];
+}
+
+// ============================================================
+// QUICK FILL PRESETS
+// ============================================================
+
+function getPresets() {
+  try { return JSON.parse(COMPANY.invoice_presets || '[]') || []; }
+  catch { return []; }
+}
+
+async function savePresets(presets) {
+  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ invoice_presets: JSON.stringify(presets) })
+  });
+  if (data.id) COMPANY.invoice_presets = data.invoice_presets;
+  return !!data.id;
+}
+
+function renderPresetManager() {
+  const box = document.getElementById('settings-presets-list');
+  if (!box) return;
+  const presets = getPresets();
+  box.innerHTML = [0,1,2].map(i => {
+    const p = presets[i];
+    if (!p || !p.name) {
+      return `<div class="flex items-center justify-between p-4 rounded-lg border border-dashed border-outline-variant/50 bg-surface">
+        <span class="text-body-md text-on-surface-variant">Slot ${i+1} — Empty</span>
+        <button onclick="openPresetEditor(${i})" class="flex items-center gap-1 text-primary text-label-sm min-h-[36px] px-3 border border-primary rounded-full">
+          <span class="material-symbols-outlined text-[15px]">add</span> Create
+        </button>
+      </div>`;
+    }
+    const slug = p.visualTemplate || 'clean-white';
+    const tmpl = VISUAL_TEMPLATES.find(t => t.slug === slug);
+    const cnt  = (p.checkedItemIds || []).length;
+    return `<div class="rounded-xl border border-outline-variant/40 overflow-hidden">
+      <div style="height:44px;overflow:hidden;">${vtThumbnail(slug)}</div>
+      <div class="flex items-center gap-3 p-3 bg-surface">
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm text-on-surface truncate">${p.name}</div>
+          <div class="text-xs text-on-surface-variant">${tmpl?.label || slug} · ${cnt} item${cnt!==1?'s':''}</div>
+        </div>
+        <button onclick="openPresetEditor(${i})" class="w-8 h-8 flex items-center justify-center rounded-full border border-outline-variant/40 text-on-surface-variant">
+          <span class="material-symbols-outlined text-[18px]">edit</span>
+        </button>
+        <button onclick="deletePreset(${i})" class="w-8 h-8 flex items-center justify-center rounded-full border border-outline-variant/40 text-error">
+          <span class="material-symbols-outlined text-[18px]">delete</span>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openPresetPicker() {
+  const presets = getPresets().map((p,i) => ({...p, _idx: i})).filter(p => p && p.name);
+  if (presets.length === 0) {
+    alert('No presets saved yet. Go to Settings → Quick Fill Presets to create one.');
+    return;
+  }
+  const box = document.getElementById('preset-picker-cards');
+  box.innerHTML = presets.map(p => {
+    const slug = p.visualTemplate || 'clean-white';
+    const tmpl = VISUAL_TEMPLATES.find(t => t.slug === slug);
+    const cnt  = (p.checkedItemIds || []).length;
+    return `<div onclick="loadPreset(${p._idx})"
+      class="cursor-pointer rounded-xl border-2 border-outline-variant/40 overflow-hidden active:scale-[.98] transition-transform">
+      <div style="height:64px;overflow:hidden;">${vtThumbnail(slug)}</div>
+      <div class="p-3">
+        <div class="font-semibold text-sm text-on-surface">${p.name}</div>
+        <div class="text-xs text-on-surface-variant mt-0.5">${tmpl?.label || slug} · ${cnt} item${cnt!==1?'s':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('modal-preset-picker').classList.remove('hidden');
+}
+
+function closePresetPicker() {
+  document.getElementById('modal-preset-picker').classList.add('hidden');
+}
+
+function loadPreset(idx) {
+  const p = getPresets()[idx];
+  if (!p) return;
+  closePresetPicker();
+  const ids = new Set(p.checkedItemIds || []);
+  document.querySelectorAll('.si-check').forEach(cb => {
+    cb.checked = ids.has(cb.value);
+  });
+  recalc();
+}
+
+let _editingPresetIdx = -1;
+
+function openPresetEditor(idx) {
+  _editingPresetIdx = idx;
+  const p = (getPresets()[idx]) || {};
+  document.getElementById('preset-edit-name').value = p.name || '';
+  const selectedIds = new Set(p.checkedItemIds || []);
+  const itemsBox = document.getElementById('preset-edit-items');
+  if (!serviceItems || serviceItems.length === 0) {
+    itemsBox.innerHTML = '<p class="text-body-sm text-on-surface-variant">No service items yet. Add them in Settings first.</p>';
+  } else {
+    itemsBox.innerHTML = serviceItems.map(si => `
+      <label class="flex items-center gap-3 py-2.5 cursor-pointer border-b border-outline-variant/20 last:border-0">
+        <input type="checkbox" class="rounded w-4 h-4" data-si-id="${si.id}" ${selectedIds.has(si.id)?'checked':''}>
+        <span class="flex-1 text-body-md text-on-surface">${si.item_name}</span>
+        <span class="text-body-sm text-on-surface-variant">$${Number(si.default_price||0).toFixed(2)}</span>
+      </label>`).join('');
+  }
+  const currentSlug = p.visualTemplate || (COMPANY.invoice_visual_template || 'clean-white');
+  const vtBox = document.getElementById('preset-edit-vt');
+  vtBox.innerHTML = VISUAL_TEMPLATES.map(t => {
+    const active = t.slug === currentSlug;
+    return `<div onclick="pickPresetVt('${t.slug}',this)" data-slug="${t.slug}"
+      style="cursor:pointer;border-radius:8px;border:2px solid ${active?'#004ac6':'#c3c6d7'};overflow:hidden;">
+      ${vtThumbnail(t.slug)}
+      <div style="padding:4px 7px;background:#fff;font-size:10px;font-weight:600;color:${active?'#004ac6':'#0b1c30'};">${t.label}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('modal-preset-edit').classList.remove('hidden');
+}
+
+function pickPresetVt(slug, el) {
+  document.querySelectorAll('#preset-edit-vt > div').forEach(c => {
+    c.style.borderColor = '#c3c6d7';
+    c.querySelector('div').style.color = '#0b1c30';
+  });
+  el.style.borderColor = '#004ac6';
+  el.querySelector('div').style.color = '#004ac6';
+}
+
+function closePresetEditor() {
+  document.getElementById('modal-preset-edit').classList.add('hidden');
+}
+
+async function savePresetFromEditor() {
+  const name = document.getElementById('preset-edit-name').value.trim();
+  if (!name) { alert('Please enter a preset name.'); return; }
+  const checkedItemIds = [...document.querySelectorAll('#preset-edit-items input[type=checkbox]:checked')]
+    .map(cb => cb.dataset.siId);
+  const activeVt = document.querySelector('#preset-edit-vt [data-slug][style*="rgb(0, 74, 198)"]') ||
+                   document.querySelector('#preset-edit-vt [data-slug][style*="#004ac6"]');
+  const visualTemplate = activeVt?.dataset.slug || COMPANY.invoice_visual_template || 'clean-white';
+  const presets = getPresets();
+  while (presets.length <= _editingPresetIdx) presets.push(null);
+  presets[_editingPresetIdx] = { name, checkedItemIds, visualTemplate };
+  const ok = await savePresets(presets);
+  if (ok) { closePresetEditor(); renderPresetManager(); }
+  else alert('Save failed.');
+}
+
+async function deletePreset(idx) {
+  if (!confirm('Delete this preset?')) return;
+  const presets = getPresets();
+  presets[idx] = null;
+  await savePresets(presets);
+  renderPresetManager();
 }
 
 // ============================================================
