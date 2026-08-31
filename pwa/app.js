@@ -231,6 +231,14 @@ async function finishOnboarding() {
     }
   }
   CURRENT_TEMPLATE = tmpl;
+  // Auto-bind matching visual template if available
+  const matchVt = INDUSTRY_VISUAL_MAP[tmpl?.slug];
+  if (matchVt) {
+    await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {
+      method: 'PATCH', body: JSON.stringify({invoice_visual_template: matchVt})
+    });
+    COMPANY.invoice_visual_template = matchVt;
+  }
   obGoToStep(4);
 }
 function enterApp() {
@@ -2096,9 +2104,18 @@ async function applySelectedTemplate() {
     await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {method:'PATCH', body: JSON.stringify({custom_asset_schema: JSON.stringify(ASSET_SCHEMA)})});
   }
 
+  // Auto-bind matching visual template if available
+  const matchVt = INDUSTRY_VISUAL_MAP[tmpl?.slug];
+  if (matchVt) {
+    await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {
+      method: 'PATCH', body: JSON.stringify({invoice_visual_template: matchVt})
+    });
+    COMPANY.invoice_visual_template = matchVt;
+  }
   await refreshAll();
   renderSettingsTemplateName();
-  resultEl.textContent = replaceItems ? 'Template applied and service items replaced.' : 'Template switched. Your existing items kept.';
+  const vtLabel = matchVt ? ` · Visual: ${VISUAL_TEMPLATES.find(t=>t.slug===matchVt)?.label}` : '';
+  resultEl.textContent = (replaceItems ? 'Template applied and service items replaced.' : 'Template switched. Your existing items kept.') + vtLabel;
   btn.textContent = 'Apply Template';
   setTimeout(() => closeTemplateMarketplace(), 1500);
 }
@@ -2107,19 +2124,40 @@ async function applySelectedTemplate() {
 // INVOICE VISUAL TEMPLATE ENGINE
 // ============================================================
 
+// Map industry template slug → matching visual template slug
+const INDUSTRY_VISUAL_MAP = {
+  'plumbing':    'trade-plumbing',
+  'hvac':        'trade-hvac',
+  'electrical':  'trade-electrical',
+  'auto-repair': 'trade-auto',
+  'landscaping': 'trade-landscape',
+  'roofing':     'trade-roofing',
+  'handyman':    'trade-handyman',
+};
+
 const VISUAL_TEMPLATES = [
-  { slug: 'clean-white',    label: 'Clean White',   desc: 'Apple-style minimal' },
-  { slug: 'bold-band',      label: 'Bold Band',     desc: 'Full-width color header' },
-  { slug: 'dark-pro',       label: 'Dark Pro',      desc: 'Premium dark + gold' },
-  { slug: 'contractor',     label: 'Contractor',    desc: 'Trade work-order style' },
-  { slug: 'modern-minimal', label: 'Modern',        desc: 'Large watermark, airy' },
-  { slug: 'classic',        label: 'Classic',       desc: 'Traditional bordered' },
-  { slug: 'sidebar',        label: 'Sidebar',       desc: 'Two-column layout' },
-  { slug: 'elegant',        label: 'Elegant',       desc: 'Serif, fine gold lines' },
-  { slug: 'texas',          label: 'Texas Star',    desc: 'Lone Star — navy & burnt orange' },
-  { slug: 'american',       label: 'American',      desc: 'Red · White · Blue patriotic' },
-  { slug: 'forest',         label: 'Forest',        desc: 'Deep green, outdoor trades' },
-  { slug: 'sunset',         label: 'Sunset',        desc: 'Warm amber gradient, modern' },
+  // ── General styles ──
+  { slug: 'clean-white',    label: 'Clean White',   desc: 'Apple-style minimal',            group: 'general' },
+  { slug: 'bold-band',      label: 'Bold Band',     desc: 'Full-width color header',        group: 'general' },
+  { slug: 'dark-pro',       label: 'Dark Pro',      desc: 'Premium dark + gold',            group: 'general' },
+  { slug: 'contractor',     label: 'Contractor',    desc: 'Trade work-order style',         group: 'general' },
+  { slug: 'modern-minimal', label: 'Modern',        desc: 'Large watermark, airy',          group: 'general' },
+  { slug: 'classic',        label: 'Classic',       desc: 'Traditional bordered',           group: 'general' },
+  { slug: 'sidebar',        label: 'Sidebar',       desc: 'Two-column layout',              group: 'general' },
+  { slug: 'elegant',        label: 'Elegant',       desc: 'Serif, fine gold lines',         group: 'general' },
+  // ── Regional themes ──
+  { slug: 'texas',          label: 'Texas Star',    desc: 'Lone Star — navy & burnt orange',group: 'regional' },
+  { slug: 'american',       label: 'American',      desc: 'Red · White · Blue patriotic',  group: 'regional' },
+  { slug: 'forest',         label: 'Forest',        desc: 'Deep green, outdoor trades',     group: 'regional' },
+  { slug: 'sunset',         label: 'Sunset',        desc: 'Warm amber gradient, modern',    group: 'regional' },
+  // ── Trade themes (auto-bound to industry) ──
+  { slug: 'trade-plumbing', label: 'Plumbing',      desc: 'Navy blue + water drop accent',  group: 'trade' },
+  { slug: 'trade-hvac',     label: 'HVAC / A/C',    desc: 'Ice blue, snowflake watermark',  group: 'trade' },
+  { slug: 'trade-electrical',label:'Electrical',    desc: 'Black + amber lightning',        group: 'trade' },
+  { slug: 'trade-auto',     label: 'Auto Repair',   desc: 'Charcoal, gear watermark',       group: 'trade' },
+  { slug: 'trade-landscape',label: 'Landscaping',   desc: 'Leaf green, nature watermark',   group: 'trade' },
+  { slug: 'trade-roofing',  label: 'Roofing',       desc: 'Brick red, roof outline',        group: 'trade' },
+  { slug: 'trade-handyman', label: 'Handyman',      desc: 'Olive + orange, wrench accent',  group: 'trade' },
 ];
 
 function renderInvoiceTemplate(slug, d) {
@@ -2131,10 +2169,17 @@ function renderInvoiceTemplate(slug, d) {
     case 'classic':        return tmplClassic(d);
     case 'sidebar':        return tmplSidebar(d);
     case 'elegant':        return tmplElegant(d);
-    case 'texas':          return tmplTexas(d);
-    case 'american':       return tmplAmerican(d);
-    case 'forest':         return tmplForest(d);
-    case 'sunset':         return tmplSunset(d);
+    case 'texas':            return tmplTexas(d);
+    case 'american':         return tmplAmerican(d);
+    case 'forest':           return tmplForest(d);
+    case 'sunset':           return tmplSunset(d);
+    case 'trade-plumbing':   return tmplTradePlumbing(d);
+    case 'trade-hvac':       return tmplTradeHvac(d);
+    case 'trade-electrical': return tmplTradeElectrical(d);
+    case 'trade-auto':       return tmplTradeAuto(d);
+    case 'trade-landscape':  return tmplTradeLandscape(d);
+    case 'trade-roofing':    return tmplTradeRoofing(d);
+    case 'trade-handyman':   return tmplTradeHandyman(d);
     default:               return tmplCleanWhite(d);
   }
 }
@@ -2681,8 +2726,12 @@ function tmplSunset(d) {
 
 function openVisualTemplatePicker() {
   const current = COMPANY.invoice_visual_template || 'clean-white';
-  const grid = document.getElementById('vt-picker-grid');
-  grid.innerHTML = VISUAL_TEMPLATES.map(t => {
+  const groups = [
+    { key: 'general',  label: 'General Styles' },
+    { key: 'regional', label: 'Regional Themes' },
+    { key: 'trade',    label: 'Trade Themes' },
+  ];
+  const card = t => {
     const active = t.slug === current;
     return `<div onclick="selectVisualTemplate('${t.slug}',this)"
       style="cursor:pointer;border-radius:10px;border:2px solid ${active?'#004ac6':'#c3c6d7'};overflow:hidden;transition:border-color .15s;">
@@ -2692,6 +2741,15 @@ function openVisualTemplatePicker() {
         <div style="font-size:11px;color:#737686;">${t.desc}</div>
       </div>
     </div>`;
+  };
+  const grid = document.getElementById('vt-picker-grid');
+  grid.innerHTML = groups.map(g => {
+    const items = VISUAL_TEMPLATES.filter(t => t.group === g.key);
+    if (!items.length) return '';
+    return `<div class="col-span-2 sm:col-span-3 pt-2 pb-1">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;">${g.label}</div>
+    </div>
+    ${items.map(card).join('')}`;
   }).join('');
   document.getElementById('modal-visual-template').classList.remove('hidden');
 }
@@ -2701,12 +2759,15 @@ function closeVisualTemplatePicker() {
 }
 
 async function selectVisualTemplate(slug, el) {
-  document.querySelectorAll('#vt-picker-grid > div').forEach(c => {
+  // reset only template cards (not group header divs)
+  document.querySelectorAll('#vt-picker-grid > div[onclick]').forEach(c => {
     c.style.borderColor = '#c3c6d7';
-    c.querySelector('div:last-child div').style.color = '#0b1c30';
+    const lbl = c.querySelector('div:last-child div');
+    if (lbl) lbl.style.color = '#0b1c30';
   });
   el.style.borderColor = '#004ac6';
-  el.querySelector('div:last-child div').style.color = '#004ac6';
+  const lbl = el.querySelector('div:last-child div');
+  if (lbl) lbl.style.color = '#004ac6';
 
   await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {
     method: 'PATCH',
@@ -2733,9 +2794,260 @@ function vtThumbnail(slug) {
     'texas':          `<div style="height:64px;background:#002868;overflow:hidden;position:relative;"><div style="position:absolute;top:0;bottom:0;left:0;width:28px;background:#BF0A30;"></div><div style="position:absolute;top:0;bottom:0;left:28px;right:0;background:#002868;"></div><div style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:16px;color:#fff;line-height:1;">★</div><div style="position:absolute;right:8px;top:8px;text-align:right;"><div style="font-size:7px;font-weight:900;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#BF5700;"></div></div>`,
     'american':       `<div style="height:64px;overflow:hidden;"><div style="height:32px;background:#B22234;display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><div style="font-size:8px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:11px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div><div style="height:8px;background:#fff;"></div><div style="height:8px;background:#3C3B6E;"></div><div style="height:8px;background:#B22234;"></div><div style="position:absolute;top:4px;left:8px;font-size:11px;color:rgba(255,255,255,.8);">★</div></div>`,
     'forest':         `<div style="height:64px;background:#1B5E20;overflow:hidden;"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:16px;height:16px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:2px;background:rgba(255,255,255,.15);margin:0 12px;"></div><div style="padding:6px 12px;display:flex;gap:3px;">${[1,2,3].map(()=>`<div style="height:4px;flex:1;background:rgba(255,255,255,.15);border-radius:2px;"></div>`).join('')}</div></div>`,
-    'sunset':         `<div style="height:64px;overflow:hidden;background:linear-gradient(135deg,#F57F17,#E65100);"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.25);"></div><div style="text-align:right;"><div style="font-size:7px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:13px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:24px;background:rgba(0,0,0,.1);"></div></div>`,
+    'sunset':           `<div style="height:64px;overflow:hidden;background:linear-gradient(135deg,#F57F17,#E65100);"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.25);"></div><div style="text-align:right;"><div style="font-size:7px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:13px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:24px;background:rgba(0,0,0,.1);"></div></div>`,
+    // Trade themes
+    'trade-plumbing':   `<div style="height:64px;background:#0d3461;position:relative;overflow:hidden;"><div style="position:absolute;right:-6px;bottom:-8px;font-size:52px;color:rgba(255,255,255,.07);line-height:1;">💧</div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:#90CAF9;text-transform:uppercase;letter-spacing:.1em;">Plumbing Invoice</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:3px;background:linear-gradient(90deg,#1565C0,#42A5F5);margin:0 12px;"></div></div>`,
+    'trade-hvac':       `<div style="height:64px;background:#0a1929;position:relative;overflow:hidden;"><div style="position:absolute;right:4px;top:4px;font-size:36px;color:rgba(144,202,249,.12);line-height:1;">❄</div><div style="padding:10px 12px 0;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.15);"></div><div style="text-align:right;"><div style="font-size:7px;color:#4FC3F7;text-transform:uppercase;letter-spacing:.08em;">HVAC Service</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="margin:6px 12px 0;height:2px;background:linear-gradient(90deg,#4FC3F7,rgba(79,195,247,.1));"></div></div>`,
+    'trade-electrical': `<div style="height:64px;background:#1a1a1a;position:relative;overflow:hidden;"><div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:38px;color:rgba(255,193,7,.12);line-height:1;">⚡</div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.15);"></div><div style="text-align:right;"><div style="font-size:7px;color:#FFC107;text-transform:uppercase;letter-spacing:.1em;">Electrical</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:3px;background:#FFC107;margin:0 12px;"></div></div>`,
+    'trade-auto':       `<div style="height:64px;background:#212121;position:relative;overflow:hidden;"><div style="position:absolute;right:-4px;bottom:-8px;font-size:48px;color:rgba(255,255,255,.06);line-height:1;">⚙</div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.15);"></div><div style="text-align:right;"><div style="font-size:7px;color:#B0BEC5;text-transform:uppercase;letter-spacing:.1em;">Auto Repair</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:2px;background:linear-gradient(90deg,#EF5350,#212121);margin:0 12px;"></div></div>`,
+    'trade-landscape':  `<div style="height:64px;background:#1B5E20;position:relative;overflow:hidden;"><div style="position:absolute;right:-2px;bottom:-4px;font-size:44px;color:rgba(255,255,255,.1);line-height:1;">🌿</div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:#A5D6A7;text-transform:uppercase;letter-spacing:.1em;">Landscaping</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:2px;background:linear-gradient(90deg,#69F0AE,rgba(105,240,174,.1));margin:0 12px;"></div></div>`,
+    'trade-roofing':    `<div style="height:64px;background:#4E342E;position:relative;overflow:hidden;"><div style="position:absolute;left:50%;top:6px;transform:translateX(-50%);width:0;height:0;border-left:28px solid transparent;border-right:28px solid transparent;border-bottom:18px solid rgba(255,255,255,.07);"></div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:#FFCCBC;text-transform:uppercase;letter-spacing:.1em;">Roofing</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:3px;background:linear-gradient(90deg,#FF7043,#4E342E);margin:0 12px;"></div></div>`,
+    'trade-handyman':   `<div style="height:64px;background:#33691E;position:relative;overflow:hidden;"><div style="position:absolute;right:4px;top:50%;transform:translateY(-50%) rotate(-45deg);font-size:36px;color:rgba(255,255,255,.1);line-height:1;">🔧</div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:#CCFF90;text-transform:uppercase;letter-spacing:.1em;">Handyman</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:3px;background:#FF6D00;margin:0 12px;"></div></div>`,
   };
   return thumbs[slug] || thumbs['clean-white'];
+}
+
+// ============================================================
+// TRADE TEMPLATES (industry-specific)
+// ============================================================
+
+/* shared helper for a watermark div */
+function _wm(content, size, opacity, right, bottom) {
+  return `<div style="position:absolute;right:${right};bottom:${bottom};font-size:${size}px;line-height:1;opacity:${opacity};pointer-events:none;user-select:none;">${content}</div>`;
+}
+
+/* ─── TRADE 1: Plumbing ────────────────────────────────────── */
+function tmplTradePlumbing(d) {
+  const navy  = '#0d3461';
+  const blue  = '#1565C0';
+  const light = '#E3F2FD';
+  return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
+    ${_wm('💧','96','.04','−10px','−20px')}
+    <div style="background:${navy};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.6)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#90CAF9;">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,${blue},#42A5F5,${light});margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${light};border-left:4px solid ${blue};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: navy, headerColor: '#fff', borderColor: '#BBDEFB', accentBg: light })}
+    ${_totals(d, { accentColor: blue, borderTop: navy })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${blue};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, navy)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TRADE 2: HVAC ────────────────────────────────────────── */
+function tmplTradeHvac(d) {
+  const dark  = '#0a1929';
+  const ice   = '#4FC3F7';
+  const frost = '#E1F5FE';
+  return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
+    ${_wm('❄','110','.04','−8px','−10px')}
+    <div style="background:${dark};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.55)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:${ice};">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,${ice},${frost},rgba(255,255,255,0));margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${frost};border-top:3px solid ${ice};border-radius:0 0 8px 8px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: dark, headerColor: ice, borderColor: '#B3E5FC', accentBg: frost })}
+    ${_totals(d, { accentColor: ice, borderTop: dark })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${dark};color:${ice};padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, dark)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TRADE 3: Electrical ──────────────────────────────────── */
+function tmplTradeElectrical(d) {
+  const blk   = '#1a1a1a';
+  const amber = '#FFC107';
+  const warm  = '#FFF8E1';
+  return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
+    ${_wm('⚡','110','.05','4px','−10px')}
+    <div style="background:${blk};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.5)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:${amber};">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:${amber};margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${warm};border-left:4px solid ${amber};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: blk, headerColor: amber, borderColor: '#FFE082', accentBg: warm })}
+    ${_totals(d, { accentColor: amber, borderTop: blk })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${amber};color:${blk};padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, blk)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TRADE 4: Auto Repair ─────────────────────────────────── */
+function tmplTradeAuto(d) {
+  const charcoal = '#212121';
+  const steel    = '#455A64';
+  const red      = '#EF5350';
+  const light    = '#ECEFF1';
+  return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
+    ${_wm('⚙','110','.05','−8px','−12px')}
+    <div style="background:${charcoal};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.5)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#B0BEC5;">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,${red},${steel},${charcoal});margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${light};border-left:4px solid ${red};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d, '#dee0f0')}
+    ${_table(d, { headerBg: steel, headerColor: '#fff', borderColor: '#CFD8DC', accentBg: light })}
+    ${_totals(d, { accentColor: red, borderTop: charcoal })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${red};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, charcoal)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TRADE 5: Landscaping ─────────────────────────────────── */
+function tmplTradeLandscape(d) {
+  const dark  = '#1B5E20';
+  const mid   = '#388E3C';
+  const mint  = '#E8F5E9';
+  return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
+    ${_wm('🌿','100','.06','−6px','−14px')}
+    <div style="background:${dark};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.6)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#A5D6A7;">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,#69F0AE,${mid},rgba(56,142,60,.2));margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${mint};border-left:4px solid ${mid};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: dark, headerColor: '#fff', borderColor: '#C8E6C9', accentBg: mint })}
+    ${_totals(d, { accentColor: mid, borderTop: dark })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${mid};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, dark)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TRADE 6: Roofing ─────────────────────────────────────── */
+function tmplTradeRoofing(d) {
+  const brick = '#4E342E';
+  const terra = '#FF7043';
+  const cream = '#FBE9E7';
+  return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
+    <div style="background:${brick};border-radius:8px 8px 0 0;padding:22px 24px 18px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:60px solid transparent;border-right:60px solid transparent;border-top:38px solid rgba(255,255,255,.05);"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          ${_logo(d.logoUrl, 52, '6px')}
+          <div>
+            <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+            ${_companyContact('rgba(255,255,255,.6)')}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#FFCCBC;">${d.titleLabel}</div>
+          <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,${terra},#FFCCBC,rgba(255,112,67,.1));margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${cream};border-left:4px solid ${terra};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: brick, headerColor: '#fff', borderColor: '#FFCCBC', accentBg: cream })}
+    ${_totals(d, { accentColor: terra, borderTop: brick })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${terra};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, brick)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── TRADE 7: Handyman ────────────────────────────────────── */
+function tmplTradeHandyman(d) {
+  const olive  = '#33691E';
+  const orange = '#FF6D00';
+  const warm   = '#F9FBE7';
+  return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
+    ${_wm('🔧','100','.05','2px','−12px')}
+    <div style="background:${olive};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.6)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#CCFF90;">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,${orange},#FFD600,rgba(255,109,0,.1));margin-bottom:24px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${warm};border-left:4px solid ${orange};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: olive, headerColor: '#fff', borderColor: '#F0F4C3', accentBg: warm })}
+    ${_totals(d, { accentColor: orange, borderTop: olive })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${orange};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, olive)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
 }
 
 // ============================================================
