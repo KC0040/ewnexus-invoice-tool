@@ -679,6 +679,49 @@ tailwind.config = {
     </div>
   </div>
 
+  <!-- ============ TEMPLATE GALLERY MODAL ============ -->
+  <div id="modal-template-gallery" class="fixed inset-0 z-[215] bg-black/50 flex flex-col hidden">
+    <div class="bg-surface flex-1 flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between px-5 pt-safe-top pt-5 pb-4 border-b border-outline-variant">
+        <div>
+          <h2 class="text-headline-md text-on-surface">Style Gallery</h2>
+          <p class="text-body-sm text-on-surface-variant mt-0.5">Tap a card to preview full invoice · 19 styles</p>
+        </div>
+        <button onclick="closeTemplateGallery()" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto px-4 py-4">
+        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TEMPLATE FULL PREVIEW MODAL ============ -->
+  <div id="modal-template-full-preview" class="fixed inset-0 z-[220] bg-black/60 flex flex-col hidden">
+    <div class="bg-surface flex-1 flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between px-5 pt-safe-top pt-5 pb-4 border-b border-outline-variant">
+        <div>
+          <h2 id="full-preview-title" class="text-headline-md text-on-surface">Preview</h2>
+          <p id="full-preview-desc" class="text-body-sm text-on-surface-variant mt-0.5"></p>
+        </div>
+        <button onclick="closeTemplateFullPreview()" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto px-4 py-4">
+        <div style="max-width:680px;margin:0 auto;">
+          <div id="full-preview-content" class="rounded-xl overflow-hidden shadow-lg border border-outline-variant/20"></div>
+          <p class="text-body-sm text-on-surface-variant text-center mt-3">↑ Sample invoice with your company info</p>
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-outline-variant bg-surface flex gap-3">
+        <button onclick="closeTemplateFullPreview()" class="flex-1 h-[48px] border border-outline-variant text-on-surface-variant rounded-lg text-label-md">Back to Gallery</button>
+        <button id="full-preview-apply-btn" class="flex-1 h-[48px] bg-primary text-on-primary rounded-lg text-label-md">Use This Style</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ PRESET PICKER MODAL ============ -->
   <div id="modal-preset-picker" class="fixed inset-0 z-[210] bg-black/50 flex flex-col hidden">
     <div class="bg-surface flex-1 flex flex-col overflow-hidden">
@@ -768,7 +811,7 @@ tailwind.config = {
       </section>
 
       <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-3">
           <div>
             <h2 class="text-headline-md text-on-surface">Invoice Visual Style</h2>
             <p id="settings-visual-template-name" class="text-body-md text-on-surface-variant mt-0.5">Clean White</p>
@@ -777,6 +820,10 @@ tailwind.config = {
             <span class="material-symbols-outlined text-[18px]">style</span> Change
           </button>
         </div>
+        <button onclick="openTemplateGallery()" class="w-full h-10 flex items-center justify-center gap-2 rounded-xl bg-primary/8 border border-primary/20 text-primary text-label-md">
+          <span class="material-symbols-outlined text-[18px]">collections</span>
+          Browse Full Gallery — See All 19 Styles
+        </button>
       </section>
 
       <!-- ====== QUICK FILL PRESETS ====== -->

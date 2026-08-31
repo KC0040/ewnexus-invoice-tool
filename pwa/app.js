@@ -2721,6 +2721,126 @@ function tmplSunset(d) {
 }
 
 // ============================================================
+// TEMPLATE GALLERY (full-preview browse & select)
+// ============================================================
+
+function makePreviewData() {
+  const c = COMPANY.invoice_color || '#004ac6';
+  return {
+    invoiceColor: c,
+    fontStyle: getFontStyle(COMPANY.invoice_font || 'inter'),
+    titleLabel: COMPANY.invoice_title_label || 'INVOICE',
+    invoiceNum: '0042',
+    formattedDate: 'Aug 31, 2026',
+    cust: {
+      customer_name: 'John Smith',
+      phone: '(512) 555-0142',
+      email: 'jsmith@email.com',
+      address: '4821 Oak Creek Dr, Austin TX 78745',
+    },
+    items: [
+      { name: 'Labor — 2.5 hrs',    price: 187.50, description: 'On-site diagnosis & repair' },
+      { name: 'Parts & Materials',  price: 64.00,  description: 'Replacement fittings' },
+      { name: 'Service Call Fee',   price: 75.00,  description: 'Trip charge' },
+    ],
+    subtotal: 326.50,
+    discountAmount: 0,
+    taxAmount: 26.92,
+    total: 353.42,
+    discount: null,
+    logoUrl: COMPANY.logo ? `${PB}/api/files/${COMPANY.collectionId}/${COMPANY.id}/${COMPANY.logo}` : '',
+    bannerUrl: null,
+    assetDetails: [],
+    numPrefix: '',
+    footerMsg: COMPANY.invoice_footer_msg || 'Thank you for your business!',
+    hidden: new Set(),
+    L: getLabelSet('en'),
+    iLang: 'en',
+    sigDataUrl: '',
+  };
+}
+
+function openTemplateGallery() {
+  const container = document.getElementById('gallery-grid');
+  if (!container) return;
+  const d = makePreviewData();
+  const groups = [
+    { key: 'general',  label: 'General Styles' },
+    { key: 'regional', label: 'Regional Themes' },
+    { key: 'trade',    label: 'Trade Themes' },
+  ];
+  container.innerHTML = groups.map(g => {
+    const list = VISUAL_TEMPLATES.filter(t => t.group === g.key);
+    if (!list.length) return '';
+    return `
+      <div class="col-span-2 sm:col-span-3 py-2">
+        <span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/60">${g.label}</span>
+      </div>
+      ${list.map(t => {
+        const rendered = renderInvoiceTemplate(t.slug, d);
+        const current = (COMPANY.invoice_visual_template || 'clean-white') === t.slug;
+        return `<div onclick="previewTemplateFull('${t.slug}')"
+          class="rounded-xl border-2 ${current ? 'border-primary' : 'border-outline-variant/30'} overflow-hidden cursor-pointer hover:border-primary/60 transition-all group">
+          <div style="height:160px;overflow:hidden;position:relative;background:#f5f5f7;">
+            <div style="width:680px;transform:scale(0.265);transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none;">
+              ${rendered}
+            </div>
+            ${current ? `<div style="position:absolute;top:6px;right:6px;background:#004ac6;color:#fff;border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px;">Current</div>` : ''}
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:background .15s;" class="group-hover:bg-black/5"></div>
+          </div>
+          <div class="p-3 bg-surface border-t border-outline-variant/20">
+            <div class="font-semibold text-sm text-on-surface">${t.label}</div>
+            <div class="text-xs text-on-surface-variant mt-0.5 mb-2">${t.desc}</div>
+            <button onclick="event.stopPropagation();selectTemplateFromGallery('${t.slug}')"
+              class="w-full h-8 rounded-full text-label-sm border ${current ? 'bg-primary text-on-primary border-primary' : 'bg-primary/10 text-primary border-primary/30'} transition-colors">
+              ${current ? 'Selected ✓' : 'Use This'}
+            </button>
+          </div>
+        </div>`;
+      }).join('')}`;
+  }).join('');
+  document.getElementById('modal-template-gallery').classList.remove('hidden');
+}
+
+function closeTemplateGallery() {
+  document.getElementById('modal-template-gallery').classList.add('hidden');
+}
+
+function previewTemplateFull(slug) {
+  const d = makePreviewData();
+  const t = VISUAL_TEMPLATES.find(v => v.slug === slug);
+  document.getElementById('full-preview-title').textContent = t?.label || slug;
+  document.getElementById('full-preview-desc').textContent = t?.desc || '';
+  document.getElementById('full-preview-content').innerHTML = renderInvoiceTemplate(slug, d);
+  const btn = document.getElementById('full-preview-apply-btn');
+  const current = (COMPANY.invoice_visual_template || 'clean-white') === slug;
+  btn.textContent = current ? 'Currently Selected ✓' : 'Use This Style';
+  btn.onclick = () => selectTemplateFromGallery(slug);
+  document.getElementById('modal-template-full-preview').classList.remove('hidden');
+}
+
+function closeTemplateFullPreview() {
+  document.getElementById('modal-template-full-preview').classList.add('hidden');
+}
+
+async function selectTemplateFromGallery(slug) {
+  const data = await authedFetch(`/api/collections/companies/records/${COMPANY.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ invoice_visual_template: slug })
+  });
+  if (data.id) {
+    COMPANY.invoice_visual_template = slug;
+    const label = VISUAL_TEMPLATES.find(t => t.slug === slug)?.label || slug;
+    const nameEl = document.getElementById('settings-visual-template-name');
+    if (nameEl) nameEl.textContent = label;
+    closeTemplateGallery();
+    closeTemplateFullPreview();
+    const btn = document.getElementById('full-preview-apply-btn');
+    if (btn) { btn.textContent = 'Currently Selected ✓'; }
+  }
+}
+
+// ============================================================
 // VISUAL TEMPLATE PICKER
 // ============================================================
 
