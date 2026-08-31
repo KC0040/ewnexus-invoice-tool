@@ -2472,8 +2472,8 @@ function tmplContractor(d) {
 /* ─── TEMPLATE 5: Modern Minimal ───────────────────────────── */
 function tmplModernMinimal(d) {
   const c = d.invoiceColor;
-  return `<div style="${d.fontStyle}padding:4px;">
-    <div style="position:relative;margin-bottom:32px;padding-bottom:20px;">
+  return `<div style="${d.fontStyle}padding:4px;overflow:hidden;">
+    <div style="position:relative;margin-bottom:32px;padding-bottom:20px;overflow:hidden;">
       <div style="position:absolute;top:0;right:0;font-size:72px;font-weight:900;color:#f0f2fb;line-height:1;letter-spacing:-4px;user-select:none;">${d.titleLabel}</div>
       <div style="position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding-top:8px;">
         <div style="display:flex;gap:14px;align-items:flex-start;">
@@ -3074,9 +3074,9 @@ function tmplReceipt(d) {
 function tmplGeometric(d) {
   const c = d.invoiceColor;
   return `<div style="${d.fontStyle}position:relative;overflow:hidden;background:#fff;">
-    <div style="position:absolute;top:−24px;left:−24px;width:80px;height:80px;background:${c};transform:rotate(20deg);opacity:.9;border-radius:4px;"></div>
-    <div style="position:absolute;top:−12px;left:28px;width:36px;height:36px;background:${c};opacity:.25;transform:rotate(35deg);border-radius:2px;"></div>
-    <div style="position:absolute;bottom:−20px;right:−20px;width:56px;height:56px;background:${c};transform:rotate(20deg);opacity:.3;border-radius:4px;"></div>
+    <div style="position:absolute;top:-24px;left:-24px;width:80px;height:80px;background:${c};transform:rotate(20deg);opacity:.9;border-radius:4px;"></div>
+    <div style="position:absolute;top:-12px;left:28px;width:36px;height:36px;background:${c};opacity:.25;transform:rotate(35deg);border-radius:2px;"></div>
+    <div style="position:absolute;bottom:-20px;right:-20px;width:56px;height:56px;background:${c};transform:rotate(20deg);opacity:.3;border-radius:4px;"></div>
     <div style="padding:28px 24px 20px;display:flex;justify-content:space-between;align-items:flex-start;position:relative;border-bottom:2px solid #dee0f0;margin-bottom:24px;">
       <div style="display:flex;gap:14px;align-items:center;">
         ${_logo(d.logoUrl, 52, '6px')}
@@ -3106,7 +3106,7 @@ function tmplGeometric(d) {
 function tmplGlowCorner(d) {
   const c = d.invoiceColor;
   return `<div style="${d.fontStyle}background:#fff;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:−60px;right:−60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,${c}30 0%,${c}10 40%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,${c}30 0%,${c}10 40%,transparent 70%);pointer-events:none;"></div>
     <div style="padding:28px 24px 20px;display:flex;justify-content:space-between;align-items:flex-start;position:relative;">
       <div style="display:flex;gap:14px;align-items:center;">
         ${_logo(d.logoUrl, 52, '6px')}
@@ -3369,7 +3369,7 @@ function tmplTradePlumbing(d) {
   const blue  = '#1565C0';
   const light = '#E3F2FD';
   return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
-    ${_wm('💧','96','.04','−10px','−20px')}
+    ${_wm('💧','96','.04','-10px','-20px')}
     <div style="background:${navy};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
       <div style="display:flex;gap:14px;align-items:center;">
         ${_logo(d.logoUrl, 52, '6px')}
@@ -3402,7 +3402,7 @@ function tmplTradeHvac(d) {
   const ice   = '#4FC3F7';
   const frost = '#E1F5FE';
   return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
-    ${_wm('❄','110','.04','−8px','−10px')}
+    ${_wm('❄','110','.04','-8px','-10px')}
     <div style="background:${dark};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
       <div style="display:flex;gap:14px;align-items:center;">
         ${_logo(d.logoUrl, 52, '6px')}
@@ -3435,7 +3435,7 @@ function tmplTradeElectrical(d) {
   const amber = '#FFC107';
   const warm  = '#FFF8E1';
   return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
-    ${_wm('⚡','110','.05','4px','−10px')}
+    ${_wm('⚡','110','.05','4px','-10px')}
     <div style="background:${blk};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
       <div style="display:flex;gap:14px;align-items:center;">
         ${_logo(d.logoUrl, 52, '6px')}
@@ -3469,7 +3469,7 @@ function tmplTradeAuto(d) {
   const red      = '#EF5350';
   const light    = '#ECEFF1';
   return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
-    ${_wm('⚙','110','.05','−8px','−12px')}
+    ${_wm('⚙','110','.05','-8px','-12px')}
     <div style="background:${charcoal};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
       <div style="display:flex;gap:14px;align-items:center;">
         ${_logo(d.logoUrl, 52, '6px')}
@@ -3502,7 +3502,7 @@ function tmplTradeLandscape(d) {
   const mid   = '#388E3C';
   const mint  = '#E8F5E9';
   return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
-    ${_wm('🌿','100','.06','−6px','−14px')}
+    ${_wm('🌿','100','.06','-6px','-14px')}
     <div style="background:${dark};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
       <div style="display:flex;gap:14px;align-items:center;">
         ${_logo(d.logoUrl, 52, '6px')}
@@ -3570,7 +3570,7 @@ function tmplTradeHandyman(d) {
   const orange = '#FF6D00';
   const warm   = '#F9FBE7';
   return `<div style="${d.fontStyle}position:relative;overflow:hidden;">
-    ${_wm('🔧','100','.05','2px','−12px')}
+    ${_wm('🔧','100','.05','2px','-12px')}
     <div style="background:${olive};border-radius:8px 8px 0 0;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
       <div style="display:flex;gap:14px;align-items:center;">
         ${_logo(d.logoUrl, 52, '6px')}
