@@ -2150,12 +2150,20 @@ const VISUAL_TEMPLATES = [
   { slug: 'american',       label: 'American',      desc: 'Red · White · Blue patriotic',  group: 'regional' },
   { slug: 'forest',         label: 'Forest',        desc: 'Deep green, outdoor trades',     group: 'regional' },
   { slug: 'sunset',         label: 'Sunset',        desc: 'Warm amber gradient, modern',    group: 'regional' },
-  // ── Research-inspired new styles ──
-  { slug: 'diagonal-slash', label: 'Diagonal Slash', desc: 'Bold diagonal cut header',         group: 'general' },
-  { slug: 'brutalist',      label: 'Brutalist',      desc: 'High contrast, monospace, bold',   group: 'general' },
+  // ── Research-inspired styles ──
+  { slug: 'diagonal-slash', label: 'Diagonal Slash', desc: 'Bold diagonal cut header',          group: 'general' },
+  { slug: 'brutalist',      label: 'Brutalist',      desc: 'High contrast, monospace, bold',    group: 'general' },
   { slug: 'receipt',        label: 'Receipt',        desc: 'Thermal paper, trade ticket feel',  group: 'general' },
   { slug: 'geometric',      label: 'Geometric',      desc: 'Corner accent shapes, clean center',group: 'general' },
   { slug: 'glow-corner',    label: 'Glow Corner',    desc: 'Radial brand glow, soft modern',    group: 'general' },
+  { slug: 'color-blocks',   label: 'Color Blocks',   desc: 'Sections defined by background color',group: 'general' },
+  { slug: 'wash-header',    label: 'Wash Header',    desc: 'Gradient wash fades into white',    group: 'general' },
+  { slug: 'graph-paper',    label: 'Graph Paper',    desc: 'Dashed grid, engineering field notes',group: 'general' },
+  { slug: 'watermark-num',  label: 'Big Number',     desc: 'Giant invoice # watermark behind content',group: 'general' },
+  { slug: 'pastel-soft',    label: 'Pastel Soft',    desc: 'Rounded, friendly, home services',  group: 'general' },
+  { slug: 'industrial',     label: 'Industrial Stamp',desc: 'Rubber stamp, aged paper, trade shop',group: 'general' },
+  { slug: 'dark-mode',      label: 'Dark Mode',      desc: 'Deep dark theme, glowing accents',  group: 'general' },
+  { slug: 'botanical',      label: 'Botanical',      desc: 'Sage green, organic, leaf watermark',group: 'general' },
   // ── Trade themes (auto-bound to industry) ──
   { slug: 'trade-plumbing', label: 'Plumbing',      desc: 'Navy blue + water drop accent',  group: 'trade' },
   { slug: 'trade-hvac',     label: 'HVAC / A/C',    desc: 'Ice blue, snowflake watermark',  group: 'trade' },
@@ -2176,6 +2184,14 @@ function renderInvoiceTemplate(slug, d) {
     case 'sidebar':        return tmplSidebar(d);
     case 'elegant':        return tmplElegant(d);
     case 'diagonal-slash':   return tmplDiagonalSlash(d);
+    case 'color-blocks':     return tmplColorBlocks(d);
+    case 'wash-header':      return tmplWashHeader(d);
+    case 'graph-paper':      return tmplGraphPaper(d);
+    case 'watermark-num':    return tmplWatermarkNum(d);
+    case 'pastel-soft':      return tmplPastelSoft(d);
+    case 'industrial':       return tmplIndustrial(d);
+    case 'dark-mode':        return tmplDarkMode(d);
+    case 'botanical':        return tmplBotanical(d);
     case 'brutalist':        return tmplBrutalist(d);
     case 'receipt':          return tmplReceipt(d);
     case 'geometric':        return tmplGeometric(d);
@@ -2731,6 +2747,203 @@ function tmplSunset(d) {
   </div>`;
 }
 
+/* ─── RESEARCH: Color Blocks ───────────────────────────────── */
+function tmplColorBlocks(d) {
+  const c = d.invoiceColor;
+  const dark = '#0b1c30';
+  return `<div style="${d.fontStyle}">
+    <div style="background:${c};padding:22px 24px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:14px;align-items:center;">${_logo(d.logoUrl,52,'6px')}<div><div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name||''}</div>${_companyContact('rgba(255,255,255,.65)')}</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.65);">${d.titleLabel}</div><div style="font-size:30px;font-weight:900;color:#fff;font-family:monospace;line-height:1;">#${d.invoiceNum}</div><div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;">${d.formattedDate}</div></div>
+    </div>
+    <div style="background:#f0f0f0;padding:14px 24px;">${d.cust&&!d.hidden.has('client')?`<div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:4px;">${d.L.billTo}</div>${_clientRows(d)}`:'&nbsp;'}</div>
+    <div style="background:#fff;padding:0 0 16px;">${_assetRows(d)}${_table(d,{headerBg:dark,headerColor:'#fff',borderColor:'#dee0f0',accentBg:'#f8f9ff'})}</div>
+    <div style="background:${c}dd;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.8);">${d.L.total||'Total Due'}</div>
+      <div style="font-size:28px;font-weight:900;color:#fff;">$${d.total.toFixed(2)}</div>
+    </div>
+    <div style="background:#fff;padding:16px 24px;">${COMPANY.payment_link?`<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>`:''} ${_payment(d,c)}${_sig(d)}${_footer(d)}</div>
+  </div>`;
+}
+
+/* ─── RESEARCH: Wash Header ────────────────────────────────── */
+function tmplWashHeader(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}background:#fff;position:relative;">
+    <div style="position:absolute;top:0;left:0;right:0;height:160px;background:radial-gradient(ellipse at 50% 0%,${c}28 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:relative;padding:28px 24px 20px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;gap:14px;align-items:center;">${_logo(d.logoUrl,52,'6px')}<div><div style="font-weight:900;font-size:18px;color:#0b1c30;">${COMPANY.company_name||''}</div>${_companyContact()}</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#8a8da8;">${d.titleLabel}</div><div style="font-size:30px;font-weight:900;color:#0b1c30;font-family:monospace;line-height:1;">#${d.invoiceNum}</div><div style="font-size:11px;color:#8a8da8;margin-top:4px;">${d.formattedDate}</div></div>
+    </div>
+    <div style="margin:0 24px 24px;height:3px;background:linear-gradient(90deg,${c}60,${c}20,transparent);border-radius:2px;"></div>
+    ${d.cust&&!d.hidden.has('client')?`<div style="margin-bottom:20px;padding:12px 24px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>`:''}
+    ${_assetRows(d)}
+    ${_table(d,{headerBg:`${c}18`,headerColor:c,borderColor:'#dee0f0',accentBg:'#f8f9ff'})}
+    <div style="display:flex;justify-content:flex-end;margin:0 0 20px;"><div style="background:${c}15;border-radius:12px;padding:16px 24px;text-align:right;min-width:200px;">${d.taxAmount>0?`<div style="display:flex;justify-content:space-between;gap:32px;font-size:12px;color:#8a8da8;margin-bottom:6px;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>`:''}${d.discountAmount>0?`<div style="display:flex;justify-content:space-between;gap:32px;font-size:12px;color:#8a8da8;margin-bottom:6px;"><span>Discount</span><span>−$${d.discountAmount.toFixed(2)}</span></div>`:''}<div style="font-size:20px;font-weight:900;color:${c};">$${d.total.toFixed(2)}</div><div style="font-size:10px;color:#8a8da8;text-transform:uppercase;letter-spacing:.1em;">Total Due</div></div></div>
+    ${COMPANY.payment_link?`<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>`:''}
+    ${_payment(d,c)}${_sig(d)}${_footer(d)}
+  </div>`;
+}
+
+/* ─── RESEARCH: Graph Paper ────────────────────────────────── */
+function tmplGraphPaper(d) {
+  const navy = '#0f2744';
+  const accent = d.invoiceColor;
+  const mono = '"Courier New", Courier, monospace';
+  return `<div style="${d.fontStyle}background:radial-gradient(circle,#b8c4cc 1px,transparent 1px) 0 0 / 14px 14px #f8fafc;border:1px solid #c8d0d8;">
+    <div style="background:${navy};padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid ${accent};">
+      <div style="display:flex;gap:12px;align-items:center;">${_logo(d.logoUrl,48,'4px')}<div><div style="font-family:${mono};font-weight:900;font-size:16px;color:#fff;text-transform:uppercase;">${COMPANY.company_name||''}</div>${_companyContact('rgba(255,255,255,.55)',10)}</div></div>
+      <div style="text-align:right;"><div style="font-family:${mono};font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:${accent};">${d.titleLabel}</div><div style="font-family:${mono};font-size:26px;font-weight:900;color:#fff;line-height:1;">#${d.invoiceNum}</div><div style="font-family:${mono};font-size:10px;color:rgba(255,255,255,.45);margin-top:2px;">${d.formattedDate}</div></div>
+    </div>
+    <div style="margin:16px 20px;border:1px dashed #8a8da8;border-radius:4px;padding:12px;">
+      ${d.cust&&!d.hidden.has('client')?`<div style="font-family:${mono};font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}`:'&nbsp;'}
+    </div>
+    ${_assetRows(d)}
+    <div style="margin:0 20px 16px;border:1px dashed #8a8da8;border-radius:4px;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-family:${mono};font-size:12px;">
+        <thead><tr style="background:${navy};"><th style="padding:10px 14px;text-align:left;color:${accent};font-size:9px;text-transform:uppercase;letter-spacing:.12em;">${d.L.description}</th><th style="padding:10px 14px;text-align:right;color:${accent};font-size:9px;text-transform:uppercase;letter-spacing:.12em;">${d.L.amount}</th></tr></thead>
+        <tbody>${d.items.map((item,i)=>`<tr style="border-bottom:1px dashed #aab;background:${i%2===1?'rgba(255,255,255,.5)':'transparent'};"><td style="padding:9px 14px;font-weight:700;">${item.name}${item.description?`<div style="font-weight:400;font-size:11px;color:#6a6a8a;">${item.description}</div>`:''}</td><td style="padding:9px 14px;text-align:right;">$${item.price.toFixed(2)}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div style="margin:0 20px 16px;border:2px dashed #8a8da8;border-radius:4px;padding:12px;font-family:${mono};font-size:12px;">
+      ${d.taxAmount>0?`<div style="display:flex;justify-content:space-between;padding:3px 0;color:#6a6a8a;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:2px solid ${navy};margin-top:4px;font-weight:900;font-size:16px;"><span>${d.L.total||'TOTAL DUE'}</span><span style="color:${accent};">$${d.total.toFixed(2)}</span></div>
+    </div>
+    ${_payment(d,navy)}${_sig(d)}${_footer(d)}
+  </div>`;
+}
+
+/* ─── RESEARCH: Watermark Number ───────────────────────────── */
+function tmplWatermarkNum(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}background:#fff;position:relative;overflow:hidden;">
+    ${_wm(`#${d.invoiceNum}`,'180','.04','50%','50%')}
+    <div style="position:absolute;right:8px;bottom:8px;font-size:120px;font-weight:900;color:rgba(0,0,0,.03);font-family:monospace;line-height:1;pointer-events:none;">#${d.invoiceNum}</div>
+    <div style="position:relative;padding:28px 24px 16px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #dee0f0;margin-bottom:24px;">
+      <div style="display:flex;gap:14px;align-items:center;">${_logo(d.logoUrl,52,'6px')}<div><div style="font-weight:900;font-size:18px;color:#0b1c30;">${COMPANY.company_name||''}</div>${_companyContact()}</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#8a8da8;">${d.titleLabel}</div><div style="font-size:30px;font-weight:900;color:${c};font-family:monospace;line-height:1;">#${d.invoiceNum}</div><div style="font-size:11px;color:#8a8da8;margin-top:4px;">${d.formattedDate}</div></div>
+    </div>
+    ${d.cust&&!d.hidden.has('client')?`<div style="margin-bottom:20px;padding:12px 16px;background:#f8f9ff;border-left:4px solid ${c};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>`:''}
+    ${_assetRows(d)}
+    ${_table(d,{headerBg:c,headerColor:'#fff',borderColor:'#dee0f0',accentBg:'rgba(255,255,255,.7)'})}
+    ${_totals(d,{accentColor:c,borderTop:'#dee0f0'})}
+    ${COMPANY.payment_link?`<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>`:''}
+    ${_payment(d,c)}${_sig(d)}${_footer(d)}
+  </div>`;
+}
+
+/* ─── RESEARCH: Pastel Soft ────────────────────────────────── */
+function tmplPastelSoft(d) {
+  const pastel = '#E8E4F5';
+  const purple = '#6d3fc8';
+  const mid    = '#a78bdb';
+  return `<div style="${d.fontStyle}background:#fafafa;">
+    <div style="background:${pastel};border-radius:16px 16px 0 0;padding:24px;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0;">
+      <div style="display:flex;gap:14px;align-items:center;">${_logo(d.logoUrl,52,'50%')}<div><div style="font-weight:800;font-size:18px;color:${purple};">${COMPANY.company_name||''}</div>${_companyContact('#8878aa')}</div></div>
+      <div style="text-align:right;background:#fff;border-radius:12px;padding:10px 16px;box-shadow:0 2px 8px rgba(109,63,200,.1);"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:${mid};">${d.titleLabel}</div><div style="font-size:24px;font-weight:900;color:${purple};font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div><div style="font-size:11px;color:#8878aa;margin-top:2px;">${d.formattedDate}</div></div>
+    </div>
+    <div style="background:#fff;margin:0;padding:20px 24px 0;border-radius:0;">
+      ${d.cust&&!d.hidden.has('client')?`<div style="margin-bottom:20px;padding:14px 16px;background:${pastel};border-radius:12px;"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${mid};margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>`:''}
+      ${_assetRows(d)}
+      ${_table(d,{headerBg:purple,headerColor:'#fff',borderColor:'#e8e4f5',accentBg:pastel})}
+      <div style="display:flex;justify-content:flex-end;margin-bottom:20px;"><div style="background:${purple};border-radius:14px;padding:16px 24px;text-align:right;box-shadow:0 4px 16px rgba(109,63,200,.25);">${d.taxAmount>0?`<div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:4px;">Tax $${d.taxAmount.toFixed(2)}</div>`:''}<div style="font-size:24px;font-weight:900;color:#fff;">$${d.total.toFixed(2)}</div><div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.12em;margin-top:2px;">Total Due</div></div></div>
+      ${COMPANY.payment_link?`<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${purple};color:#fff;padding:11px 28px;border-radius:20px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>`:''}
+      ${_payment(d,purple)}${_sig(d)}${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── RESEARCH: Industrial Stamp ───────────────────────────── */
+function tmplIndustrial(d) {
+  const rust  = '#B94030';
+  const cream = '#F5F0E8';
+  const dark  = '#1a1a1a';
+  const mono  = '"Courier New", Courier, monospace';
+  return `<div style="${d.fontStyle}background:${cream};font-family:${mono};">
+    <div style="padding:20px 24px;border-bottom:3px solid ${dark};">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.25em;color:${rust};border:2px solid ${rust};display:inline-block;padding:3px 10px;margin-bottom:10px;">WORK ORDER</div>
+          <div style="display:flex;gap:12px;align-items:center;">${_logo(d.logoUrl,44,'0px')}<div><div style="font-weight:900;font-size:16px;color:${dark};text-transform:uppercase;">${COMPANY.company_name||''}</div>${_companyContact('#555',10)}</div></div>
+        </div>
+        <div style="text-align:right;"><div style="background:${rust};color:#fff;font-size:10px;font-weight:900;padding:3px 10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;display:inline-block;">JOB #</div><div style="font-size:28px;font-weight:900;color:${dark};font-family:${mono};line-height:1;">${d.invoiceNum}</div><div style="font-size:11px;color:#555;margin-top:4px;">${d.formattedDate}</div></div>
+      </div>
+    </div>
+    <div style="padding:12px 24px;border-bottom:1px solid #aaa;">
+      ${d.cust&&!d.hidden.has('client')?`<div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#888;margin-bottom:4px;">${d.L.billTo}</div><div style="font-weight:900;font-size:13px;">${d.cust.customer_name}</div>${d.cust.phone?`<div style="font-size:12px;color:#555;">${d.cust.phone}</div>`:''}`:''}
+    </div>
+    ${_assetRows(d)}
+    <table style="width:100%;border-collapse:collapse;font-family:${mono};font-size:12px;">
+      <thead><tr style="border-bottom:2px solid ${dark};border-top:1px solid #aaa;"><th style="padding:8px 24px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.15em;">${d.L.description}</th><th style="padding:8px 24px;text-align:right;font-size:9px;text-transform:uppercase;letter-spacing:.15em;">${d.L.amount}</th></tr></thead>
+      <tbody>${d.items.map((item,i)=>`<tr style="border-bottom:1px ${i%2===0?'solid':'dashed'} #aaa;background:${i%2===1?'rgba(0,0,0,.02)':'transparent'};"><td style="padding:8px 24px;font-weight:700;">${item.name}${item.description?`<div style="font-weight:400;font-size:11px;color:#555;">${item.description}</div>`:''}</td><td style="padding:8px 24px;text-align:right;">$${item.price.toFixed(2)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div style="padding:12px 24px;border-top:2px solid ${dark};background:rgba(0,0,0,.03);font-family:${mono};">
+      ${d.taxAmount>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:#555;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>`:''}
+    </div>
+    <div style="background:${rust};padding:14px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.8);font-weight:900;">TOTAL DUE</div>
+      <div style="font-family:${mono};font-size:28px;font-weight:900;color:#fff;">$${d.total.toFixed(2)}</div>
+    </div>
+    <div style="padding:16px 24px;border-top:1px dashed #aaa;">${_payment(d,rust)}${_sig(d)}</div>
+    <div style="text-align:center;padding:12px 24px;border-top:2px solid ${dark};"><div style="display:inline-flex;align-items:center;justify-content:center;width:80px;height:80px;border-radius:50%;border:3px solid ${dark};font-family:${mono};font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:${dark};text-align:center;line-height:1.3;">${COMPANY.company_name?COMPANY.company_name.split(' ').slice(0,2).join(' '):''}<br/>★★★</div></div>
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── RESEARCH: Dark Mode ───────────────────────────────────── */
+function tmplDarkMode(d) {
+  const bg    = '#111827';
+  const card  = '#1f2937';
+  const c     = d.invoiceColor;
+  const text  = '#f3f4f6';
+  const muted = '#6b7280';
+  return `<div style="${d.fontStyle}background:${bg};color:${text};">
+    <div style="background:${card};padding:24px;border-radius:8px 8px 0 0;border-bottom:3px solid ${c};display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;gap:14px;align-items:center;">${_logo(d.logoUrl,52,'6px')}<div><div style="font-weight:900;font-size:18px;color:${text};">${COMPANY.company_name||''}</div>${_companyContact(muted)}</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:${c};">${d.titleLabel}</div><div style="font-size:30px;font-weight:900;color:${text};font-family:monospace;line-height:1;">#${d.invoiceNum}</div><div style="font-size:11px;color:${muted};margin-top:4px;">${d.formattedDate}</div></div>
+    </div>
+    ${d.cust&&!d.hidden.has('client')?`<div style="margin:16px 20px;padding:14px;background:${card};border-radius:8px;border-left:3px solid ${c};"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${muted};margin-bottom:6px;">${d.L.billTo}</div><div style="font-weight:700;color:${text};">${d.cust.customer_name}</div>${d.cust.phone?`<div style="font-size:12px;color:${muted};">${d.cust.phone}</div>`:''}</div>`:''}
+    ${_assetRows(d,'#374151')}
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin:0 0 16px;">
+      <thead><tr style="background:${card};border-bottom:1px solid #374151;"><th style="padding:12px 20px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:${c};">${d.L.description}</th><th style="padding:12px 20px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:${c};">${d.L.amount}</th></tr></thead>
+      <tbody>${d.items.map((item,i)=>`<tr style="border-bottom:1px solid #374151;background:${i%2===1?card:'transparent'};"><td style="padding:12px 20px;color:${text};font-weight:600;">${item.name}${item.description?`<div style="font-weight:400;font-size:11px;color:${muted};">${item.description}</div>`:''}</td><td style="padding:12px 20px;text-align:right;font-family:monospace;color:${text};">$${item.price.toFixed(2)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div style="margin:0 20px 16px;background:${card};border-radius:8px;padding:16px;">
+      ${d.taxAmount>0?`<div style="display:flex;justify-content:space-between;font-size:12px;color:${muted};padding:4px 0;">  <span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>`:''}
+      ${d.discountAmount>0?`<div style="display:flex;justify-content:space-between;font-size:12px;color:${muted};padding:4px 0;"><span>Discount</span><span>−$${d.discountAmount.toFixed(2)}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;font-size:22px;font-weight:900;padding:8px 0;border-top:1px solid #374151;margin-top:4px;"><span style="color:${text};">Total Due</span><span style="color:${c};box-shadow:0 0 12px ${c}40;">$${d.total.toFixed(2)}</span></div>
+    </div>
+    <div style="padding:0 20px 16px;">${COMPANY.payment_link?`<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>`:''}</div>
+    <div style="padding:0 20px;">${_payment(d,c)}${_sig(d)}</div>
+    ${d.footerMsg?`<div style="text-align:center;padding:16px 24px;border-top:1px solid #374151;font-size:12px;color:${muted};">${d.footerMsg}</div>`:''}
+  </div>`;
+}
+
+/* ─── RESEARCH: Botanical ──────────────────────────────────── */
+function tmplBotanical(d) {
+  const sage  = '#87A878';
+  const dark  = '#3d2b1f';
+  const cream = '#FAF7F2';
+  const earthy= '#d4a96a';
+  return `<div style="${d.fontStyle}background:${cream};position:relative;overflow:hidden;">
+    ${_wm('🌿','160','.06','-10px','-20px')}
+    <div style="padding:24px 24px 16px;display:flex;justify-content:space-between;align-items:flex-start;position:relative;border-bottom:2px solid ${sage};">
+      <div style="display:flex;gap:14px;align-items:center;">${_logo(d.logoUrl,52,'50%')}<div><div style="font-weight:800;font-size:18px;color:${dark};">${COMPANY.company_name||''}</div>${_companyContact('#7a6050')}</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:${sage};">${d.titleLabel}</div><div style="font-size:28px;font-weight:900;color:${dark};font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div><div style="font-size:11px;color:#7a6050;margin-top:4px;">${d.formattedDate}</div></div>
+    </div>
+    ${d.cust&&!d.hidden.has('client')?`<div style="margin:16px 0 20px;padding:12px 24px;background:rgba(135,168,120,.12);border-radius:8px;margin:16px 24px 20px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${sage};margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>`:''}
+    ${_assetRows(d,'#c8dbb8')}
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;">
+      <thead><tr style="background:${sage};"><th style="padding:10px 24px;text-align:left;color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:.1em;">${d.L.description}</th><th style="padding:10px 24px;text-align:right;color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:.1em;">${d.L.amount}</th></tr></thead>
+      <tbody>${d.items.map((item,i)=>`<tr style="border-bottom:1px solid ${i%2===0?'#c8dbb8':'#d8e8c8'};background:${i%2===1?'rgba(135,168,120,.06)':cream};"><td style="padding:10px 24px;font-weight:600;color:${dark};">${item.name}${item.description?`<div style="font-weight:400;font-size:11px;color:#7a6050;">${item.description}</div>`:''}</td><td style="padding:10px 24px;text-align:right;font-family:monospace;color:${dark};">$${item.price.toFixed(2)}</td></tr>`).join('')}</tbody>
+    </table>
+    ${_totals(d,{accentColor:sage,borderTop:'#c8dbb8'})}
+    ${COMPANY.payment_link?`<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${sage};color:#fff;padding:11px 28px;border-radius:20px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>`:''}
+    ${_payment(d,dark)}${_sig(d)}
+    ${d.footerMsg?`<div style="text-align:center;padding:12px 24px;border-top:1px solid #c8dbb8;font-size:12px;color:#7a6050;">✦ ${d.footerMsg} ✦</div>`:''}
+  </div>`;
+}
+
 /* ─── RESEARCH: Diagonal Slash ─────────────────────────────── */
 function tmplDiagonalSlash(d) {
   const c = d.invoiceColor;
@@ -3121,6 +3334,14 @@ function vtThumbnail(slug) {
     'receipt':        `<div style="height:64px;background:#f9f7f5;overflow:hidden;font-family:monospace;"><div style="padding:6px 10px;border-bottom:1px dashed #aaa;display:flex;justify-content:space-between;"><div style="font-size:8px;font-weight:900;color:#1a1a1a;text-transform:uppercase;letter-spacing:.15em;">Receipt</div><div style="font-size:9px;color:#555;">#0042</div></div><div style="padding:4px 10px;"><div style="font-size:8px;color:#555;border-bottom:1px dashed #ccc;padding-bottom:3px;">Labor — 2.5hrs ....... $187</div><div style="font-size:8px;color:#555;padding-top:3px;">Parts ................... $64</div></div><div style="margin:0 10px;height:2px;border-top:2px dashed #aaa;"></div></div>`,
     'geometric':      `<div style="height:64px;background:#fff;position:relative;overflow:hidden;"><div style="position:absolute;top:-10px;left:-10px;width:40px;height:40px;background:${c};transform:rotate(15deg);"></div><div style="position:absolute;bottom:-8px;right:-8px;width:28px;height:28px;background:${c};opacity:.4;transform:rotate(15deg);"></div><div style="position:relative;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:#e8eeff;"></div><div style="text-align:right;"><div style="font-size:7px;color:#8a8da8;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#0b1c30;font-family:monospace;">#0042</div></div></div></div>`,
     'glow-corner':    `<div style="height:64px;background:#fff;position:relative;overflow:hidden;"><div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,${c}40 0%,transparent 70%);"></div><div style="position:relative;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:#e8eeff;"></div><div style="text-align:right;"><div style="font-size:7px;color:#8a8da8;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#0b1c30;font-family:monospace;">#0042</div></div></div><div style="margin:0 12px;height:2px;background:linear-gradient(90deg,transparent,${c}60,${c});"></div></div>`,
+    'color-blocks':   `<div style="height:64px;overflow:hidden;"><div style="background:${c};height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><div style="font-size:7px;font-weight:900;color:#fff;text-transform:uppercase;">Invoice</div><div style="font-size:10px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div><div style="background:#f0f0f0;height:12px;"></div><div style="background:#fff;height:10px;"></div><div style="background:${c}cc;height:16px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;"><div style="font-size:9px;font-weight:900;color:#fff;">TOTAL</div></div></div>`,
+    'wash-header':    `<div style="height:64px;background:#fff;position:relative;overflow:hidden;"><div style="position:absolute;top:-10px;left:0;right:0;height:50px;background:radial-gradient(ellipse at 50% 0%,${c}35 0%,transparent 70%);"></div><div style="position:relative;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:#e8eeff;"></div><div style="text-align:right;"><div style="font-size:7px;color:#8a8da8;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#0b1c30;font-family:monospace;">#0042</div></div></div><div style="margin:4px 10px 0;height:2px;background:linear-gradient(90deg,${c},transparent);border-radius:1px;"></div></div>`,
+    'graph-paper':    `<div style="height:64px;background:radial-gradient(circle,#c8c8c8 1px,transparent 1px) 0 0 / 8px 8px #f8fafc;overflow:hidden;border:1px solid #dee0f0;"><div style="padding:8px 10px;border-bottom:1px dashed #aaa;display:flex;justify-content:space-between;"><div style="font-size:7px;font-weight:900;color:#0f2744;text-transform:uppercase;letter-spacing:.1em;font-family:monospace;">INVOICE</div><div style="font-size:10px;font-weight:900;color:#0f2744;font-family:monospace;">#0042</div></div><div style="padding:4px 10px;display:flex;gap:3px;">${[1,2,3].map(()=>`<div style="height:4px;flex:1;background:#ddd;border:1px dashed #aaa;"></div>`).join('')}</div></div>`,
+    'watermark-num':  `<div style="height:64px;background:#fff;position:relative;overflow:hidden;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900;color:rgba(0,0,0,.05);font-family:monospace;line-height:1;">#0042</div><div style="position:relative;padding:8px 10px;display:flex;justify-content:space-between;align-items:flex-start;"><div style="width:14px;height:14px;border-radius:3px;background:#e8eeff;"></div><div style="text-align:right;"><div style="font-size:7px;color:#8a8da8;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="height:2px;background:${c};margin-top:2px;"></div></div></div></div>`,
+    'pastel-soft':    `<div style="height:64px;background:#E8E4F5;border-radius:0;overflow:hidden;"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:16px;height:16px;border-radius:6px;background:rgba(255,255,255,.5);"></div><div style="text-align:right;"><div style="font-size:7px;color:rgba(80,50,120,.6);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#3d2065;font-family:monospace;">#0042</div></div></div><div style="background:#fff;border-radius:8px 8px 0 0;height:24px;margin:0 8px;padding:4px 8px;"><div style="height:4px;border-radius:2px;background:#E8E4F5;margin-bottom:2px;"></div><div style="height:4px;border-radius:2px;background:#E8E4F5;width:70%;"></div></div></div>`,
+    'industrial':     `<div style="height:64px;background:#F5F0E8;overflow:hidden;font-family:monospace;"><div style="padding:6px 10px;border-bottom:1px solid #aaa;"><div style="font-size:9px;font-weight:900;color:#B94030;text-transform:uppercase;letter-spacing:.15em;border:2px solid #B94030;display:inline-block;padding:1px 5px;">WORK ORDER</div></div><div style="padding:4px 10px;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:8px;color:#555;">Company Name</div><div style="font-size:11px;font-weight:900;color:#1a1a1a;background:#B94030;color:#fff;padding:1px 5px;">#0042</div></div><div style="margin:0 10px;height:1px;border-top:1px dashed #aaa;"></div></div>`,
+    'dark-mode':      `<div style="height:64px;background:#111827;overflow:hidden;"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.1);"></div><div style="text-align:right;"><div style="font-size:7px;color:#6b7280;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:${c};font-family:monospace;">#0042</div></div></div><div style="height:2px;background:linear-gradient(90deg,${c},transparent);margin:0 12px;"></div><div style="padding:4px 12px;"><div style="height:3px;background:#1f2937;border-radius:1px;margin-bottom:2px;"></div><div style="height:3px;background:#1f2937;border-radius:1px;width:70%;"></div></div></div>`,
+    'botanical':      `<div style="height:64px;background:#FAF7F2;overflow:hidden;position:relative;"><div style="position:absolute;right:4px;bottom:-4px;font-size:40px;opacity:.1;line-height:1;">🌿</div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;position:relative;"><div style="width:14px;height:14px;border-radius:3px;background:#c8dbb8;"></div><div style="text-align:right;"><div style="font-size:7px;color:#87A878;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#3d2b1f;font-family:monospace;">#0042</div></div></div><div style="margin:0 12px;height:1px;border-top:1px solid #c8dbb8;"></div></div>`,
     // Trade themes
     'trade-plumbing':   `<div style="height:64px;background:#0d3461;position:relative;overflow:hidden;"><div style="position:absolute;right:-6px;bottom:-8px;font-size:52px;color:rgba(255,255,255,.07);line-height:1;">💧</div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:#90CAF9;text-transform:uppercase;letter-spacing:.1em;">Plumbing Invoice</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:3px;background:linear-gradient(90deg,#1565C0,#42A5F5);margin:0 12px;"></div></div>`,
     'trade-hvac':       `<div style="height:64px;background:#0a1929;position:relative;overflow:hidden;"><div style="position:absolute;right:4px;top:4px;font-size:36px;color:rgba(144,202,249,.12);line-height:1;">❄</div><div style="padding:10px 12px 0;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.15);"></div><div style="text-align:right;"><div style="font-size:7px;color:#4FC3F7;text-transform:uppercase;letter-spacing:.08em;">HVAC Service</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="margin:6px 12px 0;height:2px;background:linear-gradient(90deg,#4FC3F7,rgba(79,195,247,.1));"></div></div>`,
