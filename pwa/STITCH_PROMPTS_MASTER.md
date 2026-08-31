@@ -326,6 +326,205 @@
 
 ---
 
+# INVOICE TEMPLATES — BATCH 2 (from real-world design research)
+
+> These 14 designs are based on analysis of real invoice templates from Dribbble, InvoiceBus,
+> DesignShack, and trade-specific invoice sites. Use as Stitch prompts same way as Batch 1.
+
+---
+
+## INV-21 · Geometric Corner Accent
+**Vibe**: Creative agency meets contractor — bold but uncluttered
+**Palette**: White background, brand color geometric shapes in corners, dark text
+**Design**:
+- Rotated rectangles (20deg) in top-left and bottom-right corners — top-left full opacity, bottom-right 30% opacity.
+- Content area is pure white, wide open.
+- Company info and invoice # in a clean two-column header row.
+- Line items: standard clean table, brand color header row.
+- Total: right-aligned large amount, colored underline only.
+**Unique element**: Two overlapping rotated rectangles in corners — only decorative color on the page.
+
+---
+
+## INV-22 · Diagonal Slash Header
+**Vibe**: Energetic, bold, design-forward — premium print feel
+**Palette**: Brand color left wedge, white right, dark text on white side
+**Design**:
+- Header: CSS clip-path diagonal cut. Left 50% filled with brand color (company info, white text). Right 50% white (invoice number, large dark text).
+- The diagonal line cuts from top-right of color area to bottom-left at 45deg.
+- Body: standard white layout below.
+- Line items: clean minimal table.
+- Total: colored accent box, right-aligned.
+**Unique element**: The diagonal cut is the entire design statement — nothing else needs to be dramatic.
+
+---
+
+## INV-23 · Brutalist / High Contrast
+**Vibe**: Unforgettable — industrial, electric, welding shop, underground credibility
+**Palette**: Pure black `#000`, pure white `#fff`, single accent (red `#D32F2F` or amber `#FFC107`)
+**Design**:
+- Outer border: 3px solid black framing entire document.
+- Header: full black fill, white company name in monospace uppercase. Invoice # right, white monospace.
+- Single accent-color 4px horizontal rule below header.
+- Line items table: black header row (white text), black borders between rows, monospace throughout.
+- Totals block: section bg `#f2f2f2`. Final total: accent color full-width fill, white bold.
+- No softness, no gradients, no rounded corners.
+**Unique element**: Every font is monospace. Entire document reads like a typewriter output.
+
+---
+
+## INV-24 · Receipt / Thermal Paper
+**Vibe**: Auto repair shop ticket, old-school trade authenticity, immediate trust
+**Palette**: Cream/off-white `#f9f7f5`, near-black, optional single red or blue accent
+**Design**:
+- Narrow format (480px, centered). Monospace font throughout.
+- Centered company name at top, dashed border below.
+- Line items: dashed rules between rows, two columns (Description | Amount).
+- Section separators: `- - - - - - - - - - - - -` style dashed rules.
+- Total: centered, large, surrounded by dashed box.
+- Footer: centered text with row of asterisks `* * * * * *` as decoration.
+**Unique element**: The entire invoice reads like it was printed on a receipt printer — authentic, immediate, familiar.
+
+---
+
+## INV-25 · Bold Color Blocks (Sectioned)
+**Vibe**: Modern SaaS / product company invoice — structured, confident
+**Palette**: Header = brand color. Client block = light gray. Items = white. Total block = dark brand.
+**Design**:
+- No border lines — section background color changes ARE the visual dividers.
+- Header block: brand color, white text.
+- Client "Bill To" block: light gray fill `#f5f5f5`.
+- Line items block: white.
+- Total block: darkened brand color (mix with black 20%), white bold total.
+- Payment block: very light tint.
+**Unique element**: Remove ALL borders and rules. Color blocks alone create document structure.
+
+---
+
+## INV-26 · Watercolor Wash Header
+**Vibe**: Premium personal service — high-end home renovation, luxury cleaning, wedding/event
+**Palette**: Soft brand-color radial gradient wash bleeding into white, earth/pastel tones
+**Design**:
+- Header area: CSS radial-gradient — brand color (30% opacity max) at top, fully transparent by 30% down the page. No hard edges anywhere.
+- Company name in a refined light-weight sans (300 weight). Logo floats in the wash.
+- Below the wash: pure white. Extremely clean.
+- Line items: thin horizontal rules only, no fills.
+- Total: soft colored pill shape (rounded, lightly tinted).
+- Payment: light card with very soft shadow.
+**Unique element**: There is no defined "header box" — the color just washes out of the top naturally.
+
+---
+
+## INV-27 · Graph Paper / Dashed Grid
+**Vibe**: Surveyor, engineering inspector, technical precision trades
+**Palette**: White/light gray with grid dot pattern, navy text, orange or yellow accent
+**Design**:
+- Full document background: CSS `radial-gradient` dot pattern (3% opacity dots on white).
+- Company section: sits inside a dashed-border box.
+- Every major section in its own dashed-border container.
+- Line items: dashed column dividers instead of solid.
+- Total: double-lined dashed box, larger text.
+- Section labels all-caps, small letter-spacing, like field survey notation.
+**Unique element**: The dashed grid creates an "engineering field notes" feel across the entire doc.
+
+---
+
+## INV-28 · Large Watermark Number
+**Vibe**: Confident and minimal — Stripe-adjacent, works for any premium trade
+**Palette**: White background, brand color small accents, giant faded invoice number
+**Design**:
+- Center of document: invoice number `#0042` printed at ~200px font size, 4% opacity — fills the entire page as wallpaper.
+- Normal layout sits on top: company info top-left, invoice details top-right.
+- Line items: clean table, no fills.
+- Total: right-aligned, brand color amount only.
+- Footer: small text.
+**Unique element**: The invoice NUMBER itself becomes the decorative element — large, soft, ever-present.
+
+---
+
+## INV-29 · Pastel Soft / Friendly
+**Vibe**: Home cleaning, pet grooming, childcare, personal services — approachable and warm
+**Palette**: Pastel lavender `#E8E4F5` or peach `#FFE8D6` header, white body, soft shadow accents
+**Design**:
+- All corners: 16px+ border-radius. Everything round and soft.
+- Header: pastel fill, brand-color company name, soft drop shadow.
+- Section labels: small pill badges in pastel fill.
+- Line items: rounded rows, alternating pastel/white.
+- Total: pastel-filled rounded box, deeper accent for the number.
+- Signature area: dashed border, friendly "Your Signature:" label.
+**Unique element**: Every element feels "huggable" — rounded, soft, approachable. No sharp edges anywhere.
+
+---
+
+## INV-30 · Industrial Stamp
+**Vibe**: Classic American trade shop — plumbing, electrical, auto, roofing, old-school credibility
+**Palette**: Aged cream/warm white `#F5F0E8`, dark navy or black, rust red `#B94030`
+**Design**:
+- Large "WORK ORDER" or "JOB TICKET" text at top — styled like a rubber stamp (slightly distressed, monospace or stencil font).
+- Invoice number in a red rectangle badge, positioned like a priority sticker.
+- Sections in bordered boxes with typewriter-style labels.
+- Line items: old receipt style, monospace amounts.
+- Footer: large circular stamp outline with company name curving around inside it.
+**Unique element**: The rubber stamp circle in the footer — company name + established year, like a professional seal.
+
+---
+
+## INV-31 · Gradient Corner Glow
+**Vibe**: Modern smart-home installer, premium HVAC, tech-forward trade services
+**Palette**: White background, brand color radial glow from top-right corner only
+**Design**:
+- CSS radial-gradient from top-right corner: brand color at 25% opacity → fully transparent by 35% into the document.
+- The glow creates atmosphere without a defined header.
+- Company name and invoice # float in the glow area.
+- A thin gradient line (brand to transparent) separates the soft header from the body.
+- Body: pure white, light typography.
+- Total: small colored dot or accent line next to large amount.
+**Unique element**: There's no "header" — just a soft glow that establishes the brand area.
+
+---
+
+## INV-32 · Split Page (Full-Height Sidebar)
+**Vibe**: Architecture firm, premium contractor, bold brand identity
+**Palette**: Left 35% = brand color full-height. Right 65% = white content.
+**Design**:
+- Left column (brand color, full page height): company logo top, company name vertical, Zelle QR in center, phone/email stacked. All white text.
+- Right column: client block, line items, totals, payment, signature. Clean white.
+- Left column bleeds to page bottom regardless of content length.
+- The visual weight of the colored sidebar makes even a short invoice look substantial.
+**Unique element**: Left sidebar carries ALL company info + QR. Right is purely for this invoice's content.
+
+---
+
+## INV-33 · Dual Theme — Dark Mode
+**Vibe**: Premium after-hours service, sophisticated, "dark mode" desktop feel
+**Palette**: `#111827` deep blue-gray, brand color as accent, light gray text `#d1d5db`
+**Design**:
+- Same layout as a light template — but dark background throughout.
+- Company name in white, invoice # in brand color.
+- Line items: `#1f2937` alternating rows on `#111827`.
+- Total: brand color large amount, white label.
+- Payment block: `#1f2937` card, brand-colored icon/label accents.
+- Status badge: PAID glows in green, UNPAID glows in red.
+**Unique element**: The status badge has a CSS glow (box-shadow) effect — the only decorative touch in an otherwise minimal layout.
+
+---
+
+## INV-34 · Botanical / Organic
+**Vibe**: Landscaping, organic pest control, garden service, farm-to-table catering
+**Palette**: Sage green `#87A878`, cream `#FAF7F2`, warm white, earth brown accents
+**Design**:
+- Background: very faint botanical line-art (fern fronds, thin leaf branches) as CSS pattern or SVG path at 5% opacity.
+- Section dividers: thin "hand-drawn" style rule (slightly wavy CSS border).
+- Company name in a slightly organic font (or just a light serif).
+- Line items: alternating cream/white, no strong borders — just light rules.
+- Total: sage green rounded box.
+- Footer: a row of small leaf glyphs `✦ ✦ ✦` as decoration.
+**Unique element**: The faint botanical watermark background that makes the document feel rooted in nature.
+
+---
+
+---
+
 # REPORT TEMPLATES (Job Completion Report / Site Report)
 
 > **Shared with Invoice templates**: YES — use the same header/color system.

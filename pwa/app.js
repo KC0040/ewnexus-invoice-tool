@@ -2150,6 +2150,12 @@ const VISUAL_TEMPLATES = [
   { slug: 'american',       label: 'American',      desc: 'Red · White · Blue patriotic',  group: 'regional' },
   { slug: 'forest',         label: 'Forest',        desc: 'Deep green, outdoor trades',     group: 'regional' },
   { slug: 'sunset',         label: 'Sunset',        desc: 'Warm amber gradient, modern',    group: 'regional' },
+  // ── Research-inspired new styles ──
+  { slug: 'diagonal-slash', label: 'Diagonal Slash', desc: 'Bold diagonal cut header',         group: 'general' },
+  { slug: 'brutalist',      label: 'Brutalist',      desc: 'High contrast, monospace, bold',   group: 'general' },
+  { slug: 'receipt',        label: 'Receipt',        desc: 'Thermal paper, trade ticket feel',  group: 'general' },
+  { slug: 'geometric',      label: 'Geometric',      desc: 'Corner accent shapes, clean center',group: 'general' },
+  { slug: 'glow-corner',    label: 'Glow Corner',    desc: 'Radial brand glow, soft modern',    group: 'general' },
   // ── Trade themes (auto-bound to industry) ──
   { slug: 'trade-plumbing', label: 'Plumbing',      desc: 'Navy blue + water drop accent',  group: 'trade' },
   { slug: 'trade-hvac',     label: 'HVAC / A/C',    desc: 'Ice blue, snowflake watermark',  group: 'trade' },
@@ -2169,6 +2175,11 @@ function renderInvoiceTemplate(slug, d) {
     case 'classic':        return tmplClassic(d);
     case 'sidebar':        return tmplSidebar(d);
     case 'elegant':        return tmplElegant(d);
+    case 'diagonal-slash':   return tmplDiagonalSlash(d);
+    case 'brutalist':        return tmplBrutalist(d);
+    case 'receipt':          return tmplReceipt(d);
+    case 'geometric':        return tmplGeometric(d);
+    case 'glow-corner':      return tmplGlowCorner(d);
     case 'texas':            return tmplTexas(d);
     case 'american':         return tmplAmerican(d);
     case 'forest':           return tmplForest(d);
@@ -2720,6 +2731,195 @@ function tmplSunset(d) {
   </div>`;
 }
 
+/* ─── RESEARCH: Diagonal Slash ─────────────────────────────── */
+function tmplDiagonalSlash(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}">
+    <div style="position:relative;height:110px;overflow:hidden;margin-bottom:24px;border-radius:8px 8px 0 0;">
+      <div style="position:absolute;inset:0;background:${c};clip-path:polygon(0 0, 65% 0, 48% 100%, 0 100%);">
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${_logo(d.logoUrl, 44, '6px')}
+            <div style="font-weight:900;font-size:16px;color:#fff;line-height:1.2;">${COMPANY.company_name || ''}</div>
+          </div>
+          ${_companyContact('rgba(255,255,255,.65)',10)}
+        </div>
+      </div>
+      <div style="position:absolute;right:0;top:0;width:50%;height:100%;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding-right:24px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#8a8da8;">${d.titleLabel}</div>
+        <div style="font-size:32px;font-weight:900;color:#0b1c30;font-family:monospace;line-height:1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:#8a8da8;margin-top:2px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:#f8f9ff;border-left:4px solid ${c};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerColor: '#fff', headerBg: c, borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
+    ${_totals(d, { accentColor: c, borderTop: '#dee0f0' })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, c)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── RESEARCH: Brutalist ───────────────────────────────────── */
+function tmplBrutalist(d) {
+  const accent = d.invoiceColor;
+  const mono = '"Courier New", Courier, monospace';
+  return `<div style="${d.fontStyle}border:3px solid #000;">
+    <div style="background:#000;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:12px;align-items:center;">
+        ${_logo(d.logoUrl, 48, '0px')}
+        <div style="font-family:${mono};font-weight:900;font-size:18px;color:#fff;text-transform:uppercase;">${COMPANY.company_name || ''}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:${mono};font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:#aaa;">${d.titleLabel}</div>
+        <div style="font-family:${mono};font-size:28px;font-weight:900;color:#fff;">#${d.invoiceNum}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:${accent};"></div>
+    <div style="padding:0 24px;">
+      <div style="font-family:${mono};font-size:10px;color:#555;padding:8px 0;border-bottom:1px solid #000;">${d.formattedDate}</div>
+      ${d.cust && !d.hidden.has('client') ? `<div style="padding:12px 0;border-bottom:2px solid #000;font-family:${mono};"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#555;margin-bottom:4px;">${d.L.billTo}</div><div style="font-weight:900;font-size:14px;color:#000;">${d.cust.customer_name}</div>${d.cust.phone ? `<div style="font-size:12px;color:#333;">${d.cust.phone}</div>` : ''}</div>` : ''}
+    </div>
+    ${_assetRows(d, '#000')}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-family:${mono};font-size:12px;">
+      <thead><tr style="background:#000;">
+        <th style="padding:10px 24px;text-align:left;color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;">${d.L.description}</th>
+        <th style="padding:10px 24px;text-align:right;color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;">${d.L.amount}</th>
+      </tr></thead><tbody>
+      ${d.items.map((item,i) => `<tr style="border-bottom:${i===d.items.length-1?'2px':'1px'} solid #000;">
+        <td style="padding:10px 24px;font-weight:700;">${item.name}${item.description ? `<div style="font-weight:400;font-size:11px;color:#555;">${item.description}</div>` : ''}</td>
+        <td style="padding:10px 24px;text-align:right;">$${item.price.toFixed(2)}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="padding:12px 24px;background:#f2f2f2;font-family:${mono};">
+      ${d.discount ? `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span>${d.L.subtotal}</span><span>$${d.subtotal.toFixed(2)}</span></div><div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span>Discount</span><span>−$${d.discountAmount.toFixed(2)}</span></div>` : ''}
+      ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-top:1px solid #ccc;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+    </div>
+    <div style="background:${accent};padding:14px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:${mono};font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:#fff;font-weight:900;">TOTAL DUE</div>
+      <div style="font-family:${mono};font-size:28px;font-weight:900;color:#fff;">$${d.total.toFixed(2)}</div>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid #000;">
+      ${_payment(d, '#000')}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── RESEARCH: Receipt / Thermal Paper ────────────────────── */
+function tmplReceipt(d) {
+  const mono  = '"Courier New", Courier, monospace';
+  const cream = '#f9f7f5';
+  const dark  = '#1a1a1a';
+  return `<div style="${d.fontStyle}background:${cream};font-family:${mono};max-width:480px;margin:0 auto;border-left:1px solid #ddd;border-right:1px solid #ddd;">
+    <div style="text-align:center;padding:20px 24px 12px;border-bottom:1px dashed #aaa;">
+      ${_logo(d.logoUrl, 48, '50%')}
+      <div style="font-weight:900;font-size:16px;color:${dark};text-transform:uppercase;letter-spacing:.1em;margin-top:8px;">${COMPANY.company_name || ''}</div>
+      ${_companyContact('#555', 11)}
+    </div>
+    <div style="padding:10px 24px;border-bottom:1px dashed #aaa;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#555;">${d.titleLabel}</span>
+      <span style="font-size:13px;font-weight:900;">#${d.invoiceNum}</span>
+    </div>
+    <div style="padding:6px 24px;font-size:11px;color:#555;border-bottom:1px dashed #aaa;">${d.formattedDate}</div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="padding:8px 24px;border-bottom:1px dashed #aaa;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:3px;">${d.L.billTo}</div><div style="font-weight:700;font-size:13px;">${d.cust.customer_name}</div>${d.cust.phone ? `<div style="font-size:12px;color:#555;">${d.cust.phone}</div>` : ''}</div>` : ''}
+    ${_assetRows(d)}
+    <table style="width:100%;border-collapse:collapse;font-family:${mono};font-size:12px;">
+      <thead><tr style="border-bottom:1px solid ${dark};border-top:1px solid ${dark};">
+        <th style="padding:8px 24px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.description}</th>
+        <th style="padding:8px 24px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.amount}</th>
+      </tr></thead><tbody>
+      ${d.items.map(item => `<tr style="border-bottom:1px dashed #ccc;">
+        <td style="padding:6px 24px;">${item.name}</td>
+        <td style="padding:6px 24px;text-align:right;">$${item.price.toFixed(2)}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="padding:8px 24px;font-family:${mono};font-size:12px;border-top:1px solid ${dark};border-bottom:1px dashed #aaa;">
+      ${d.discount ? `<div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${d.L.subtotal}</span><span>$${d.subtotal.toFixed(2)}</span></div><div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Discount</span><span>−$${d.discountAmount.toFixed(2)}</span></div>` : ''}
+      ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+    </div>
+    <div style="padding:12px 24px;text-align:center;border-bottom:1px dashed #aaa;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#555;">TOTAL DUE</div>
+      <div style="font-size:28px;font-weight:900;color:${dark};">$${d.total.toFixed(2)}</div>
+    </div>
+    ${_payment(d, dark)}
+    ${_sig(d)}
+    <div style="text-align:center;padding:14px 24px;border-top:1px dashed #aaa;">
+      <div style="font-size:11px;color:#888;font-family:${mono};">* * * * * * * * * *</div>
+      ${d.footerMsg ? `<div style="font-size:11px;color:#555;margin-top:4px;">${d.footerMsg}</div>` : ''}
+      <div style="font-size:11px;color:#888;margin-top:4px;">#${d.invoiceNum}</div>
+    </div>
+  </div>`;
+}
+
+/* ─── RESEARCH: Geometric Corner ───────────────────────────── */
+function tmplGeometric(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}position:relative;overflow:hidden;background:#fff;">
+    <div style="position:absolute;top:−24px;left:−24px;width:80px;height:80px;background:${c};transform:rotate(20deg);opacity:.9;border-radius:4px;"></div>
+    <div style="position:absolute;top:−12px;left:28px;width:36px;height:36px;background:${c};opacity:.25;transform:rotate(35deg);border-radius:2px;"></div>
+    <div style="position:absolute;bottom:−20px;right:−20px;width:56px;height:56px;background:${c};transform:rotate(20deg);opacity:.3;border-radius:4px;"></div>
+    <div style="padding:28px 24px 20px;display:flex;justify-content:space-between;align-items:flex-start;position:relative;border-bottom:2px solid #dee0f0;margin-bottom:24px;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#0b1c30;">${COMPANY.company_name || ''}</div>
+          ${_companyContact()}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#8a8da8;">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:${c};font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:#8a8da8;margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:#f8f9ff;border-left:4px solid ${c};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: c, headerColor: '#fff', borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
+    ${_totals(d, { accentColor: c, borderTop: '#dee0f0' })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, c)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── RESEARCH: Glow Corner ────────────────────────────────── */
+function tmplGlowCorner(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}background:#fff;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:−60px;right:−60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,${c}30 0%,${c}10 40%,transparent 70%);pointer-events:none;"></div>
+    <div style="padding:28px 24px 20px;display:flex;justify-content:space-between;align-items:flex-start;position:relative;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#0b1c30;">${COMPANY.company_name || ''}</div>
+          ${_companyContact()}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#8a8da8;">${d.titleLabel}</div>
+        <div style="font-size:32px;font-weight:900;color:${c};font-family:monospace;line-height:1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:#8a8da8;margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="margin:0 24px 24px;height:3px;background:linear-gradient(90deg,${c},${c}60,transparent);border-radius:2px;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin:0 0 20px;padding:12px 24px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d)}
+    ${_table(d, { headerBg: `${c}15`, headerColor: c, borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
+    ${_totals(d, { accentColor: c, borderTop: '#dee0f0' })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, c)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
 // ============================================================
 // TEMPLATE GALLERY (full-preview browse & select)
 // ============================================================
@@ -2915,6 +3115,12 @@ function vtThumbnail(slug) {
     'american':       `<div style="height:64px;overflow:hidden;"><div style="height:32px;background:#B22234;display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><div style="font-size:8px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:11px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div><div style="height:8px;background:#fff;"></div><div style="height:8px;background:#3C3B6E;"></div><div style="height:8px;background:#B22234;"></div><div style="position:absolute;top:4px;left:8px;font-size:11px;color:rgba(255,255,255,.8);">★</div></div>`,
     'forest':         `<div style="height:64px;background:#1B5E20;overflow:hidden;"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:16px;height:16px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:2px;background:rgba(255,255,255,.15);margin:0 12px;"></div><div style="padding:6px 12px;display:flex;gap:3px;">${[1,2,3].map(()=>`<div style="height:4px;flex:1;background:rgba(255,255,255,.15);border-radius:2px;"></div>`).join('')}</div></div>`,
     'sunset':           `<div style="height:64px;overflow:hidden;background:linear-gradient(135deg,#F57F17,#E65100);"><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.25);"></div><div style="text-align:right;"><div style="font-size:7px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:13px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:24px;background:rgba(0,0,0,.1);"></div></div>`,
+    // Research-inspired styles
+    'diagonal-slash': `<div style="height:64px;position:relative;overflow:hidden;background:#fff;"><div style="position:absolute;inset:0;background:${c};clip-path:polygon(0 0, 62% 0, 44% 100%, 0 100%);"></div><div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);"><div style="width:12px;height:12px;border-radius:2px;background:rgba(255,255,255,.3);margin-bottom:3px;"></div><div style="height:2px;width:24px;background:rgba(255,255,255,.4);"></div></div><div style="position:absolute;right:8px;top:8px;text-align:right;"><div style="font-size:7px;color:#8a8da8;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:13px;font-weight:900;color:#0b1c30;font-family:monospace;">#0042</div></div></div>`,
+    'brutalist':      `<div style="height:64px;background:#fff;border:3px solid #000;box-sizing:border-box;overflow:hidden;"><div style="background:#000;height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;"><div style="font-size:7px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.15em;font-family:monospace;">INVOICE</div><div style="font-size:9px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div><div style="margin:4px 6px;border-bottom:2px solid #000;"></div><div style="padding:0 6px;display:flex;gap:2px;">${[1,2].map(()=>`<div style="height:4px;flex:1;background:#e8e8e8;border:1px solid #aaa;"></div>`).join('')}</div></div>`,
+    'receipt':        `<div style="height:64px;background:#f9f7f5;overflow:hidden;font-family:monospace;"><div style="padding:6px 10px;border-bottom:1px dashed #aaa;display:flex;justify-content:space-between;"><div style="font-size:8px;font-weight:900;color:#1a1a1a;text-transform:uppercase;letter-spacing:.15em;">Receipt</div><div style="font-size:9px;color:#555;">#0042</div></div><div style="padding:4px 10px;"><div style="font-size:8px;color:#555;border-bottom:1px dashed #ccc;padding-bottom:3px;">Labor — 2.5hrs ....... $187</div><div style="font-size:8px;color:#555;padding-top:3px;">Parts ................... $64</div></div><div style="margin:0 10px;height:2px;border-top:2px dashed #aaa;"></div></div>`,
+    'geometric':      `<div style="height:64px;background:#fff;position:relative;overflow:hidden;"><div style="position:absolute;top:-10px;left:-10px;width:40px;height:40px;background:${c};transform:rotate(15deg);"></div><div style="position:absolute;bottom:-8px;right:-8px;width:28px;height:28px;background:${c};opacity:.4;transform:rotate(15deg);"></div><div style="position:relative;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:#e8eeff;"></div><div style="text-align:right;"><div style="font-size:7px;color:#8a8da8;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#0b1c30;font-family:monospace;">#0042</div></div></div></div>`,
+    'glow-corner':    `<div style="height:64px;background:#fff;position:relative;overflow:hidden;"><div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,${c}40 0%,transparent 70%);"></div><div style="position:relative;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:#e8eeff;"></div><div style="text-align:right;"><div style="font-size:7px;color:#8a8da8;text-transform:uppercase;letter-spacing:.1em;">Invoice</div><div style="font-size:12px;font-weight:900;color:#0b1c30;font-family:monospace;">#0042</div></div></div><div style="margin:0 12px;height:2px;background:linear-gradient(90deg,transparent,${c}60,${c});"></div></div>`,
     // Trade themes
     'trade-plumbing':   `<div style="height:64px;background:#0d3461;position:relative;overflow:hidden;"><div style="position:absolute;right:-6px;bottom:-8px;font-size:52px;color:rgba(255,255,255,.07);line-height:1;">💧</div><div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.2);"></div><div style="text-align:right;"><div style="font-size:7px;color:#90CAF9;text-transform:uppercase;letter-spacing:.1em;">Plumbing Invoice</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="height:3px;background:linear-gradient(90deg,#1565C0,#42A5F5);margin:0 12px;"></div></div>`,
     'trade-hvac':       `<div style="height:64px;background:#0a1929;position:relative;overflow:hidden;"><div style="position:absolute;right:4px;top:4px;font-size:36px;color:rgba(144,202,249,.12);line-height:1;">❄</div><div style="padding:10px 12px 0;display:flex;justify-content:space-between;align-items:center;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.15);"></div><div style="text-align:right;"><div style="font-size:7px;color:#4FC3F7;text-transform:uppercase;letter-spacing:.08em;">HVAC Service</div><div style="font-size:12px;font-weight:900;color:#fff;font-family:monospace;">#0042</div></div></div><div style="margin:6px 12px 0;height:2px;background:linear-gradient(90deg,#4FC3F7,rgba(79,195,247,.1));"></div></div>`,
