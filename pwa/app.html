@@ -334,7 +334,13 @@ tailwind.config = {
 
       <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
         <h2 class="text-headline-md text-on-surface mb-stack-sm">Customer</h2>
-        <select id="customer-select" class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface"></select>
+        <div class="relative" id="cust-ac-wrap">
+          <input id="customer-search-input" placeholder="Search customer..." autocomplete="off"
+            class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface"
+            oninput="filterCustAC('invoice')" onfocus="openCustAC('invoice')">
+          <input type="hidden" id="customer-select">
+          <div id="cust-ac-dropdown" class="hidden absolute z-50 left-0 right-0 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg max-h-52 overflow-y-auto mt-1 top-full"></div>
+        </div>
         <div class="mt-stack-sm flex justify-end">
           <button onclick="openSheet('sheet-customer')" class="text-primary text-label-md flex items-center gap-1 min-h-[44px] px-2">
             <span class="material-symbols-outlined text-[18px]">add</span> Add new customer
@@ -417,7 +423,13 @@ tailwind.config = {
         <section class="bg-surface-container-lowest rounded-xl p-5 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 space-y-stack-md">
           <div>
             <label class="block text-label-md text-on-surface mb-2">Customer</label>
-            <select id="report-customer-select" class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface" onchange="onReportCustomerChange()"></select>
+            <div class="relative" id="report-cust-ac-wrap">
+              <input id="report-customer-search-input" placeholder="Search customer..." autocomplete="off"
+                class="block w-full py-3 px-3 border border-outline-variant rounded-lg bg-surface"
+                oninput="filterCustAC('report')" onfocus="openCustAC('report')">
+              <input type="hidden" id="report-customer-select">
+              <div id="report-cust-ac-dropdown" class="hidden absolute z-50 left-0 right-0 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg max-h-52 overflow-y-auto mt-1 top-full"></div>
+            </div>
           </div>
           <div>
             <label class="block text-label-md text-on-surface mb-2">Linked Invoice (optional)</label>
@@ -1160,6 +1172,6 @@ tailwind.config = {
   </div>
 </div>
 
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

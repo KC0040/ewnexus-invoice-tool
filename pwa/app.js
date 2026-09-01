@@ -251,25 +251,87 @@ function enterApp() {
 
 // ---------- customers ----------
 async function loadCustomers() {
-  const data = await authedFetch('/api/collections/customers/records?perPage=200&sort=customer_name');
+  const data = await authedFetch('/api/collections/customers/records?perPage=500&sort=customer_name');
   customers = data.items || [];
-  const sel = document.getElementById('customer-select');
-  sel.innerHTML = '<option value="">-- select customer --</option>' +
-    customers.map(c => `<option value="${c.id}">${c.customer_name} (${c.email || c.phone || 'no contact'})</option>`).join('');
 }
 
+// Customer autocomplete helpers
+function _custACCfg(scope) {
+  return scope === 'invoice'
+    ? { searchId: 'customer-search-input', hiddenId: 'customer-select', dropdownId: 'cust-ac-dropdown', onSelect: null }
+    : { searchId: 'report-customer-search-input', hiddenId: 'report-customer-select', dropdownId: 'report-cust-ac-dropdown', onSelect: onReportCustomerChange };
+}
+function _custACRows(scope, q) {
+  const filtered = q ? customers.filter(c =>
+    c.customer_name?.toLowerCase().includes(q) ||
+    c.email?.toLowerCase().includes(q) ||
+    (c.phone||'').includes(q)
+  ) : customers;
+  if (!filtered.length) return '<div class="px-4 py-3 text-on-surface-variant text-body-md">No match</div>';
+  return filtered.map(c => {
+    const contact = c.email || c.phone || '';
+    const nameSafe = (c.customer_name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const contactSafe = contact.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="px-4 py-3 text-body-md text-on-surface hover:bg-primary/10 cursor-pointer border-b border-outline-variant/30 last:border-0"
+      onclick="selectCustAC('${scope}','${c.id}','${nameSafe}','${contactSafe}')">
+      <div class="font-semibold">${c.customer_name}</div>
+      ${contact ? `<div class="text-on-surface-variant text-label-sm">${contact}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+function openCustAC(scope) {
+  const { searchId, dropdownId } = _custACCfg(scope);
+  const drop = document.getElementById(dropdownId); if (!drop) return;
+  drop.innerHTML = _custACRows(scope, document.getElementById(searchId).value.toLowerCase());
+  drop.classList.remove('hidden');
+}
+function filterCustAC(scope) {
+  const { searchId, dropdownId, hiddenId } = _custACCfg(scope);
+  document.getElementById(hiddenId).value = '';
+  const drop = document.getElementById(dropdownId); if (!drop) return;
+  drop.innerHTML = _custACRows(scope, document.getElementById(searchId).value.toLowerCase());
+  drop.classList.remove('hidden');
+}
+function selectCustAC(scope, id, name, contact) {
+  const { searchId, hiddenId, dropdownId, onSelect } = _custACCfg(scope);
+  document.getElementById(searchId).value = name + (contact ? ` (${contact})` : '');
+  document.getElementById(hiddenId).value = id;
+  document.getElementById(dropdownId).classList.add('hidden');
+  if (onSelect) onSelect();
+}
+document.addEventListener('click', e => {
+  [['cust-ac-wrap','invoice'],['report-cust-ac-wrap','report']].forEach(([wrapId, scope]) => {
+    const wrap = document.getElementById(wrapId);
+    if (wrap && !wrap.contains(e.target)) {
+      const { dropdownId } = _custACCfg(scope);
+      document.getElementById(dropdownId)?.classList.add('hidden');
+    }
+  });
+});
+
 async function createCustomer() {
-  const body = {
-    company: COMPANY.id,
-    customer_name: document.getElementById('nc-name').value,
-    phone: document.getElementById('nc-phone').value,
-    email: document.getElementById('nc-email').value,
-    address: document.getElementById('nc-address').value
-  };
+  const name = document.getElementById('nc-name').value.trim();
+  const phone = document.getElementById('nc-phone').value.trim();
+  const email = document.getElementById('nc-email').value.trim();
+  // Duplicate check
+  const dup = customers.find(c =>
+    (c.customer_name?.toLowerCase() === name.toLowerCase()) ||
+    (phone && c.phone === phone) ||
+    (email && c.email?.toLowerCase() === email.toLowerCase())
+  );
+  if (dup) {
+    if (confirm(`"${dup.customer_name}" already exists. Use this existing customer?`)) {
+      selectCustAC('invoice', dup.id, dup.customer_name, dup.email || dup.phone || '');
+      closeSheets();
+      ['nc-name','nc-phone','nc-email','nc-address'].forEach(id => document.getElementById(id).value = '');
+    }
+    return;
+  }
+  const body = { company: COMPANY.id, customer_name: name, phone, email, address: document.getElementById('nc-address').value };
   const data = await authedFetch('/api/collections/customers/records', {method:'POST', body: JSON.stringify(body)});
   if (data.id) {
     await loadCustomers();
-    document.getElementById('customer-select').value = data.id;
+    selectCustAC('invoice', data.id, data.customer_name, data.email || data.phone || '');
     closeSheets();
     ['nc-name','nc-phone','nc-email','nc-address'].forEach(id => document.getElementById(id).value = '');
   } else { alert('Failed: ' + JSON.stringify(data)); }
@@ -277,7 +339,7 @@ async function createCustomer() {
 
 // ---------- service items ----------
 async function loadServiceItems() {
-  const data = await authedFetch('/api/collections/service_items/records?perPage=200');
+  const data = await authedFetch('/api/collections/service_items/records?perPage=500');
   serviceItems = data.items || [];
   const box = document.getElementById('service-items-list');
   box.innerHTML = serviceItems.map(si => `
@@ -867,9 +929,6 @@ async function onGroupPhotoSelected(file) {
 }
 
 function loadReportScreen() {
-  const sel = document.getElementById('report-customer-select');
-  sel.innerHTML = '<option value="">-- select customer --</option>' +
-    customers.map(c => `<option value="${c.id}">${c.customer_name}</option>`).join('');
   const tierNote = document.getElementById('report-tier-note');
   if (tierNote) tierNote.innerText = isPro()
     ? 'Pro: photos are stored for 1 year on Cloudflare R2.'
@@ -1339,7 +1398,8 @@ function closeDetailPanel() { document.getElementById('customerDetailPanel').cla
 function newInvoiceForDetailCustomer() {
   closeDetailPanel();
   switchScreen('invoice');
-  document.getElementById('customer-select').value = detailCustomerId;
+  const dc = customers.find(c => c.id === detailCustomerId);
+  if (dc) selectCustAC('invoice', dc.id, dc.customer_name, dc.email || dc.phone || '');
 }
 
 // ---------- finances ----------
