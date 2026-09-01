@@ -2136,42 +2136,60 @@ const INDUSTRY_VISUAL_MAP = {
 };
 
 const VISUAL_TEMPLATES = [
-  // ── General styles ──
-  { slug: 'clean-white',    label: 'Clean White',   desc: 'Apple-style minimal',            group: 'general' },
-  { slug: 'bold-band',      label: 'Bold Band',     desc: 'Full-width color header',        group: 'general' },
-  { slug: 'dark-pro',       label: 'Dark Pro',      desc: 'Premium dark + gold',            group: 'general' },
-  { slug: 'contractor',     label: 'Contractor',    desc: 'Trade work-order style',         group: 'general' },
-  { slug: 'modern-minimal', label: 'Modern',        desc: 'Large watermark, airy',          group: 'general' },
-  { slug: 'classic',        label: 'Classic',       desc: 'Traditional bordered',           group: 'general' },
-  { slug: 'sidebar',        label: 'Sidebar',       desc: 'Two-column layout',              group: 'general' },
-  { slug: 'elegant',        label: 'Elegant',       desc: 'Serif, fine gold lines',         group: 'general' },
-  // ── Regional themes ──
-  { slug: 'texas',          label: 'Texas Star',    desc: 'Lone Star — navy & burnt orange',group: 'regional' },
-  { slug: 'american',       label: 'American',      desc: 'Red · White · Blue patriotic',  group: 'regional' },
-  { slug: 'forest',         label: 'Forest',        desc: 'Deep green, outdoor trades',     group: 'regional' },
-  { slug: 'sunset',         label: 'Sunset',        desc: 'Warm amber gradient, modern',    group: 'regional' },
-  // ── Research-inspired styles ──
-  { slug: 'diagonal-slash', label: 'Diagonal Slash', desc: 'Bold diagonal cut header',          group: 'general' },
-  { slug: 'brutalist',      label: 'Brutalist',      desc: 'High contrast, monospace, bold',    group: 'general' },
-  { slug: 'receipt',        label: 'Receipt',        desc: 'Thermal paper, trade ticket feel',  group: 'general' },
-  { slug: 'geometric',      label: 'Geometric',      desc: 'Corner accent shapes, clean center',group: 'general' },
-  { slug: 'glow-corner',    label: 'Glow Corner',    desc: 'Radial brand glow, soft modern',    group: 'general' },
-  { slug: 'color-blocks',   label: 'Color Blocks',   desc: 'Sections defined by background color',group: 'general' },
-  { slug: 'wash-header',    label: 'Wash Header',    desc: 'Gradient wash fades into white',    group: 'general' },
-  { slug: 'graph-paper',    label: 'Graph Paper',    desc: 'Dashed grid, engineering field notes',group: 'general' },
-  { slug: 'watermark-num',  label: 'Big Number',     desc: 'Giant invoice # watermark behind content',group: 'general' },
-  { slug: 'pastel-soft',    label: 'Pastel Soft',    desc: 'Rounded, friendly, home services',  group: 'general' },
-  { slug: 'industrial',     label: 'Industrial Stamp',desc: 'Rubber stamp, aged paper, trade shop',group: 'general' },
-  { slug: 'dark-mode',      label: 'Dark Mode',      desc: 'Deep dark theme, glowing accents',  group: 'general' },
-  { slug: 'botanical',      label: 'Botanical',      desc: 'Sage green, organic, leaf watermark',group: 'general' },
-  // ── Trade themes (auto-bound to industry) ──
-  { slug: 'trade-plumbing', label: 'Plumbing',      desc: 'Navy blue + water drop accent',  group: 'trade' },
-  { slug: 'trade-hvac',     label: 'HVAC / A/C',    desc: 'Ice blue, snowflake watermark',  group: 'trade' },
-  { slug: 'trade-electrical',label:'Electrical',    desc: 'Black + amber lightning',        group: 'trade' },
-  { slug: 'trade-auto',     label: 'Auto Repair',   desc: 'Charcoal, gear watermark',       group: 'trade' },
-  { slug: 'trade-landscape',label: 'Landscaping',   desc: 'Leaf green, nature watermark',   group: 'trade' },
-  { slug: 'trade-roofing',  label: 'Roofing',       desc: 'Brick red, roof outline',        group: 'trade' },
-  { slug: 'trade-handyman', label: 'Handyman',      desc: 'Olive + orange, wrench accent',  group: 'trade' },
+  // ── General ──────────────────────────────────────────────────────
+  { slug: 'clean-white',    label: 'Clean White',     desc: 'Apple-style minimal',                   group: 'general',  preview: 'inv_01_ultra_clean_white' },
+  { slug: 'bold-band',      label: 'Bold Band',       desc: 'Full-width color header',               group: 'general',  preview: 'inv_02_bold_full_header' },
+  { slug: 'dark-pro',       label: 'Dark Pro',        desc: 'Premium dark + gold',                   group: 'general',  preview: 'inv_04_dark_premium' },
+  { slug: 'newspaper',      label: 'Newspaper',       desc: 'Editorial grid, sharp columns',         group: 'general',  preview: 'inv_05_newspaper_editorial' },
+  { slug: 'blueprint',      label: 'Blueprint',       desc: 'Technical drawing, grid overlay',       group: 'general',  preview: 'inv_06_blueprint_technical_drawing' },
+  { slug: 'craft-warm',     label: 'Craft Warm',      desc: 'Handmade, warm paper feel',             group: 'general',  preview: 'inv_07_warm_craft_handmade' },
+  { slug: 'neon-night',     label: 'Neon Night',      desc: 'Dark with vibrant neon accents',        group: 'general',  preview: 'inv_08_neon_night' },
+  { slug: 'sports',         label: 'Sports Energy',   desc: 'High energy, bold type, dynamic',       group: 'general',  preview: 'inv_09_sports_high_energy' },
+  { slug: 'gradient-mesh',  label: 'Gradient Mesh',   desc: 'Soft gradient mesh background',         group: 'general',  preview: 'inv_10_gradient_mesh' },
+  { slug: 'contractor',     label: 'Contractor',      desc: 'Trade work-order style',                group: 'general',  preview: null },
+  { slug: 'modern-minimal', label: 'Modern',          desc: 'Large watermark, airy',                 group: 'general',  preview: null },
+  { slug: 'classic',        label: 'Classic',         desc: 'Traditional bordered',                  group: 'general',  preview: null },
+  { slug: 'sidebar',        label: 'Sidebar',         desc: 'Two-column layout',                     group: 'general',  preview: 'inv_03_sidebar_layout' },
+  { slug: 'split-sidebar',  label: 'Split Sidebar',   desc: 'Full-height sidebar accent',            group: 'general',  preview: 'inv_32_split_page_full_height_sidebar' },
+  { slug: 'elegant',        label: 'Elegant',         desc: 'Serif, fine gold lines',                group: 'general',  preview: null },
+  { slug: 'monochrome',     label: 'Monochrome',      desc: 'Pure black & white, sharp',             group: 'general',  preview: 'inv_20_minimal_monochrome' },
+  { slug: 'diagonal-slash', label: 'Diagonal Slash',  desc: 'Bold diagonal cut header',              group: 'general',  preview: 'inv_22_diagonal_slash_header' },
+  { slug: 'brutalist',      label: 'Brutalist',       desc: 'High contrast, monospace, bold',        group: 'general',  preview: 'inv_23_brutalist_high_contrast' },
+  { slug: 'receipt',        label: 'Receipt',         desc: 'Thermal paper, trade ticket feel',      group: 'general',  preview: 'inv_24_receipt_thermal_paper' },
+  { slug: 'geometric',      label: 'Geometric',       desc: 'Corner accent shapes, clean center',    group: 'general',  preview: 'inv_21_geometric_corner_accent' },
+  { slug: 'glow-corner',    label: 'Glow Corner',     desc: 'Radial brand glow, soft modern',        group: 'general',  preview: 'inv_31_gradient_corner_glow' },
+  { slug: 'color-blocks',   label: 'Color Blocks',    desc: 'Sections defined by background color',  group: 'general',  preview: 'inv_25_bold_color_blocks' },
+  { slug: 'wash-header',    label: 'Wash Header',     desc: 'Gradient wash fades into white',        group: 'general',  preview: 'inv_26_watercolor_wash_header' },
+  { slug: 'graph-paper',    label: 'Graph Paper',     desc: 'Dashed grid, engineering notes',        group: 'general',  preview: 'inv_27_graph_paper_dashed_grid' },
+  { slug: 'watermark-num',  label: 'Big Number',      desc: 'Giant invoice # watermark',             group: 'general',  preview: 'inv_28_large_watermark_number' },
+  { slug: 'pastel-soft',    label: 'Pastel Soft',     desc: 'Rounded, friendly, home services',      group: 'general',  preview: 'inv_29_pastel_soft_friendly' },
+  { slug: 'industrial',     label: 'Industrial Stamp',desc: 'Rubber stamp, aged paper',              group: 'general',  preview: 'inv_30_industrial_stamp' },
+  { slug: 'dark-mode',      label: 'Dark Mode',       desc: 'Deep dark theme, glowing accents',      group: 'general',  preview: 'inv_33_dual_theme_dark_mode' },
+  { slug: 'botanical',      label: 'Botanical',       desc: 'Sage green, organic, leaf watermark',   group: 'general',  preview: 'inv_34_botanical_organic' },
+  // ── Regional ─────────────────────────────────────────────────────
+  { slug: 'texas',          label: 'Texas Star',      desc: 'Lone Star — navy & burnt orange',       group: 'regional', preview: 'inv_11_texas_lone_star' },
+  { slug: 'american',       label: 'American',        desc: 'Red · White · Blue patriotic',          group: 'regional', preview: 'inv_12_american_flag_patriotic' },
+  { slug: 'forest',         label: 'Forest',          desc: 'Deep green, outdoor trades',            group: 'regional', preview: 'inv_13_forest_outdoors' },
+  { slug: 'sunset',         label: 'Sunset',          desc: 'Warm amber gradient, modern',           group: 'regional', preview: 'inv_19_sunset_gradient' },
+  // ── Specialty / Creative ──────────────────────────────────────────
+  { slug: 'photography',    label: 'Photography',     desc: 'Film strip accent, creative studio',    group: 'general',  preview: 'inv_35_photography_studio' },
+  { slug: 'restaurant',     label: 'Restaurant',      desc: 'Burgundy + gold, fine dining feel',     group: 'general',  preview: 'inv_36_restaurant_food_service' },
+  { slug: 'real-estate',    label: 'Real Estate',     desc: 'Property address dual columns',         group: 'general',  preview: 'inv_37_real_estate_property' },
+  { slug: 'gold-luxury',    label: 'Gold Luxury',     desc: 'Dark + gold foil, premium service',     group: 'general',  preview: 'inv_38_gold_foil_luxury' },
+  { slug: 'retro-70s',      label: 'Retro 70s',       desc: 'Mustard + burnt orange, vintage',       group: 'general',  preview: 'inv_39_retro_70s_vintage' },
+  { slug: 'timeline',       label: 'Timeline',        desc: 'Project phases timeline layout',        group: 'general',  preview: 'inv_40_timeline_progress_invoice' },
+  { slug: 'handwritten',    label: 'Handwritten',     desc: 'Notebook paper, artisan feel',          group: 'general',  preview: 'inv_41_handwritten_style' },
+  { slug: 'map-jobsite',    label: 'Job Site Map',    desc: 'Location pin, field service',           group: 'general',  preview: 'inv_42_map_job_site' },
+  { slug: 'swiss-type',     label: 'Swiss Typo',      desc: 'Helvetica grid, pure typography',       group: 'general',  preview: 'inv_43_swiss_typographic' },
+  { slug: 'neon-cyber',     label: 'Neon Cyber',      desc: 'Terminal output, cyberpunk dark',       group: 'general',  preview: 'inv_44_neon_cyberpunk' },
+  // ── Trade (auto-bound to industry) ────────────────────────────────
+  { slug: 'trade-plumbing',   label: 'Plumbing',      desc: 'Navy blue + water drop accent',         group: 'trade',    preview: 'inv_14_plumbing_blue' },
+  { slug: 'trade-hvac',       label: 'HVAC / A/C',    desc: 'Ice blue, snowflake watermark',         group: 'trade',    preview: 'inv_15_hvac_ice' },
+  { slug: 'trade-electrical', label: 'Electrical',    desc: 'Black + amber lightning',               group: 'trade',    preview: 'inv_16_electrical_amber' },
+  { slug: 'trade-auto',       label: 'Auto Repair',   desc: 'Charcoal, gear watermark',              group: 'trade',    preview: 'inv_17_auto_repair_garage' },
+  { slug: 'trade-landscape',  label: 'Landscaping',   desc: 'Leaf green, nature watermark',          group: 'trade',    preview: null },
+  { slug: 'trade-roofing',    label: 'Roofing',       desc: 'Brick red, roof outline',               group: 'trade',    preview: 'inv_18_roofing_brick' },
+  { slug: 'trade-handyman',   label: 'Handyman',      desc: 'Olive + orange, wrench accent',         group: 'trade',    preview: null },
 ];
 
 function renderInvoiceTemplate(slug, d) {
@@ -2207,6 +2225,24 @@ function renderInvoiceTemplate(slug, d) {
     case 'trade-landscape':  return tmplTradeLandscape(d);
     case 'trade-roofing':    return tmplTradeRoofing(d);
     case 'trade-handyman':   return tmplTradeHandyman(d);
+    case 'newspaper':      return tmplElegant(d);
+    case 'blueprint':      return tmplGraphPaper(d);
+    case 'craft-warm':     return tmplBotanical(d);
+    case 'neon-night':     return tmplDarkMode(d);
+    case 'sports':         return tmplBoldBand(d);
+    case 'gradient-mesh':  return tmplGlowCorner(d);
+    case 'monochrome':     return tmplBrutalist(d);
+    case 'split-sidebar':  return tmplSidebar(d);
+    case 'photography':    return tmplModernMinimal(d);
+    case 'restaurant':     return tmplElegant(d);
+    case 'real-estate':    return tmplClassic(d);
+    case 'gold-luxury':    return tmplDarkPro(d);
+    case 'retro-70s':      return tmplIndustrial(d);
+    case 'timeline':       return tmplCleanWhite(d);
+    case 'handwritten':    return tmplPastelSoft(d);
+    case 'map-jobsite':    return tmplContractor(d);
+    case 'swiss-type':     return tmplModernMinimal(d);
+    case 'neon-cyber':     return tmplDarkMode(d);
     default:               return tmplCleanWhite(d);
   }
 }
@@ -3190,14 +3226,15 @@ function openTemplateGallery() {
         <span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/60">${g.label}</span>
       </div>
       ${list.map(t => {
-        const rendered = renderInvoiceTemplate(t.slug, d);
+        const rendered = t.preview ? '' : renderInvoiceTemplate(t.slug, d);
         const current = (COMPANY.invoice_visual_template || 'clean-white') === t.slug;
         return `<div onclick="previewTemplateFull('${t.slug}')"
           class="rounded-xl border-2 ${current ? 'border-primary' : 'border-outline-variant/30'} overflow-hidden cursor-pointer hover:border-primary/60 transition-all group">
           <div style="height:160px;overflow:hidden;position:relative;background:#f5f5f7;">
-            <div style="width:680px;transform:scale(0.265);transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none;">
-              ${rendered}
-            </div>
+            ${t.preview
+              ? `<img src="/template-previews/${t.preview}.png" style="width:100%;height:100%;object-fit:cover;object-position:top center;" loading="lazy">`
+              : `<div style="width:680px;transform:scale(0.265);transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none;">${rendered}</div>`
+            }
             ${current ? `<div style="position:absolute;top:6px;right:6px;background:#004ac6;color:#fff;border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px;">Current</div>` : ''}
             <div style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:background .15s;" class="group-hover:bg-black/5"></div>
           </div>
