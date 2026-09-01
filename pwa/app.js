@@ -31,6 +31,7 @@ function updateTrialBadge() {
 }
 
 async function doPostLogin() {
+  ['screen-login','screen-register'].forEach(id => document.getElementById(id)?.classList.remove('active'));
   document.getElementById('brand-name').innerText = COMPANY.company_name || 'EWNexus';
   // Check paywall
   if (isFree() && (COMPANY.trial_invoices_left ?? 5) <= 0) {
