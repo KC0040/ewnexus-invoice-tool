@@ -2247,6 +2247,857 @@ function renderInvoiceTemplate(slug, d) {
   }
 }
 
+/* ─── Newspaper Editorial ─────────────────────────────────── */
+function tmplNewspaper(d) {
+  const serif = 'Georgia, "Times New Roman", serif';
+  const mono  = '"Courier New", Courier, monospace';
+  const c     = d.invoiceColor;
+  return `<div style="${d.fontStyle}background:#fff;border:1px solid #ccc;padding:32px 36px;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        ${_logo(d.logoUrl, 36, '4px')}
+        <span style="font-size:11px;font-family:${mono};color:#555;text-transform:uppercase;letter-spacing:.1em;">${d.formattedDate}</span>
+      </div>
+      <span style="font-family:${mono};font-size:11px;color:#555;">VOL.1 · #${d.invoiceNum}</span>
+    </div>
+    <div style="border-top:3px solid #000;margin-bottom:2px;"></div>
+    <div style="border-top:1px solid #000;margin-bottom:6px;"></div>
+    <h1 style="font-family:${serif};font-size:48px;font-weight:900;text-align:center;letter-spacing:-2px;line-height:1;text-transform:uppercase;color:#000;margin-bottom:4px;">${COMPANY.company_name || ''}</h1>
+    <div style="border-bottom:3px solid #000;margin-bottom:2px;"></div>
+    <div style="border-bottom:1px solid #000;margin-bottom:16px;"></div>
+    <div style="display:flex;justify-content:space-between;font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#333;margin-bottom:20px;">
+      <span>${d.titleLabel}</span>
+      <span style="color:${c};font-weight:700;">ISSUE #${d.invoiceNum}</span>
+      <span>${d.formattedDate}</span>
+    </div>
+    ${d.cust && !d.hidden.has('client') ? `
+      <div style="border:1px solid #ccc;padding:10px 14px;margin-bottom:20px;background:#f9f9f9;">
+        <div style="font-family:${mono};font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>
+        ${_clientRows(d)}
+      </div>` : ''}
+    ${_assetRows(d, '#ccc')}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px;font-family:${serif};">
+      <thead>
+        <tr style="border-top:2px solid #000;border-bottom:2px solid #000;">
+          <th style="padding:8px 0;text-align:left;font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;">${d.L.description}</th>
+          <th style="padding:8px 0;text-align:right;font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;">${d.L.amount}</th>
+        </tr>
+      </thead><tbody>
+      ${d.items.map(item => `<tr style="border-bottom:1px solid #ddd;">
+        <td style="padding:9px 0;">${item.name}${item.description ? `<div style="font-size:11px;color:#666;font-family:${mono};margin-top:2px;">${item.description}</div>` : ''}</td>
+        <td style="padding:9px 0;text-align:right;font-family:${mono};">$${item.price.toFixed(2)}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="border-top:2px solid #000;margin-top:0;"></div>
+    <div style="display:flex;justify-content:flex-end;margin:12px 0 20px;">
+      <div style="background:#000;color:#fff;padding:12px 24px;text-align:right;min-width:200px;">
+        ${d.taxAmount > 0 ? `<div style="font-family:${mono};font-size:11px;display:flex;justify-content:space-between;gap:32px;opacity:.75;margin-bottom:4px;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+        <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.65;margin-bottom:2px;">Total Due</div>
+        <div style="font-family:${serif};font-size:28px;font-weight:900;">$${d.total.toFixed(2)}</div>
+      </div>
+    </div>
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:#000;color:#fff;padding:11px 28px;font-family:${mono};font-size:12px;text-transform:uppercase;letter-spacing:.1em;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, '#000')}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── Blueprint Technical Drawing ────────────────────────── */
+function tmplBlueprint(d) {
+  const navy = '#0f2744';
+  const cyan = '#29b6f6';
+  const mono = '"Courier New", Courier, monospace';
+  const grid = `background-color:${navy};background-image:radial-gradient(circle,rgba(255,255,255,.15) 1px,transparent 1px);background-size:20px 20px`;
+  return `<div style="${d.fontStyle}${grid};padding:28px 28px 24px;color:#fff;overflow:hidden;">
+    <div style="border:2px solid ${cyan};border-radius:4px;padding:20px 24px;">
+      <div style="border-top:4px solid ${cyan};margin-bottom:18px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+        <div>
+          ${_logo(d.logoUrl, 52, '4px')}
+          <div style="font-family:${mono};font-weight:900;font-size:16px;color:#fff;text-transform:uppercase;letter-spacing:.1em;margin-top:10px;">${COMPANY.company_name || ''}</div>
+          <div style="font-family:${mono};font-size:10px;color:${cyan};text-transform:uppercase;letter-spacing:.15em;margin-top:2px;">Technical Specifications</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:${cyan};margin-bottom:4px;">${d.titleLabel}</div>
+          <div style="font-family:${mono};font-size:28px;font-weight:900;color:#fff;line-height:1;">#${d.invoiceNum}</div>
+          <div style="font-family:${mono};font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;">${d.formattedDate}</div>
+        </div>
+      </div>
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="background:rgba(41,182,246,.1);border:1px solid ${cyan}55;border-radius:4px;padding:10px 14px;margin-bottom:18px;">
+          <div style="font-family:${mono};font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${cyan};margin-bottom:6px;">${d.L.billTo}</div>
+          <div style="font-family:${mono};font-size:13px;font-weight:700;color:#fff;">${d.cust.customer_name}</div>
+          ${d.cust.phone ? `<div style="font-family:${mono};font-size:11px;color:rgba(255,255,255,.6);">${d.cust.phone}</div>` : ''}
+        </div>` : ''}
+      ${_assetRows(d, cyan + '55')}
+      <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-family:${mono};font-size:12px;">
+        <thead>
+          <tr style="border-bottom:2px solid ${cyan};">
+            <th style="padding:8px 0;text-align:left;color:${cyan};font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.description}</th>
+            <th style="padding:8px 0;text-align:right;color:${cyan};font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.amount}</th>
+          </tr>
+        </thead><tbody>
+        ${d.items.map(item => `<tr style="border-bottom:1px solid rgba(255,255,255,.1);">
+          <td style="padding:9px 0;color:#fff;">${item.name}${item.description ? `<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;">${item.description}</div>` : ''}</td>
+          <td style="padding:9px 0;text-align:right;color:#fff;">$${item.price.toFixed(2)}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="border-top:2px solid ${cyan};margin-top:0;"></div>
+      <div style="display:flex;justify-content:flex-end;margin:12px 0 18px;">
+        <div style="background:${cyan};color:${navy};padding:12px 24px;text-align:right;border-radius:4px;min-width:200px;">
+          ${d.taxAmount > 0 ? `<div style="font-family:${mono};font-size:11px;display:flex;justify-content:space-between;gap:32px;margin-bottom:4px;opacity:.8;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+          <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;opacity:.7;">Total Due</div>
+          <div style="font-family:${mono};font-size:28px;font-weight:900;">$${d.total.toFixed(2)}</div>
+        </div>
+      </div>
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${cyan};color:${navy};padding:11px 28px;border-radius:4px;font-family:${mono};font-size:12px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, cyan)}
+      ${_sig(d)}
+      <div style="border-top:1px solid ${cyan}55;margin-top:16px;padding-top:12px;font-family:${mono};font-size:10px;color:rgba(255,255,255,.4);display:flex;justify-content:space-between;">
+        <span>REF: INV-${d.invoiceNum}</span>
+        <span>${d.formattedDate}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ─── Craft Warm / Handmade ───────────────────────────────── */
+function tmplCraftWarm(d) {
+  const cream  = '#fdf6e3';
+  const brown  = '#5c3d2e';
+  const orange = '#e07b39';
+  const tan    = '#c4956a';
+  return `<div style="${d.fontStyle}background:${cream};padding:32px 28px;border:2px dashed ${tan};border-radius:8px;overflow:hidden;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="display:inline-block;background:${orange};color:#fff;padding:8px 32px;border-radius:0 0 16px 16px;margin-bottom:12px;">
+        <div style="font-weight:900;font-size:18px;letter-spacing:.05em;">${COMPANY.company_name || ''}</div>
+      </div>
+      ${_logo(d.logoUrl, 48, '50%')}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;border-top:2px dashed ${tan};border-bottom:2px dashed ${tan};padding:10px 0;margin-bottom:20px;">
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:${tan};margin-bottom:2px;">${d.titleLabel}</div>
+        <div style="font-size:20px;font-weight:900;color:${brown};">#${d.invoiceNum}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:${tan};margin-bottom:2px;">Date</div>
+        <div style="font-size:13px;color:${brown};">${d.formattedDate}</div>
+      </div>
+    </div>
+    ${d.cust && !d.hidden.has('client') ? `
+      <div style="background:#fff8ec;border:1px dashed ${tan};border-radius:8px;padding:12px 16px;margin-bottom:18px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${tan};margin-bottom:6px;">${d.L.billTo}</div>
+        ${_clientRows(d)}
+      </div>` : ''}
+    ${_assetRows(d, tan)}
+    ${_table(d, { headerBg: orange, headerColor: '#fff', borderColor: tan, accentBg: '#fff8ec' })}
+    ${_totals(d, { accentColor: orange, borderTop: tan })}
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${orange};color:#fff;padding:11px 28px;border-radius:20px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, orange)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── Neon Night ──────────────────────────────────────────── */
+function tmplNeonNight(d) {
+  const c    = d.invoiceColor;
+  const bg   = '#0d0d0d';
+  const card = '#1a1a1a';
+  const mono = '"Courier New", Courier, monospace';
+  const glow = `text-shadow:0 0 8px ${c},0 0 20px ${c}55`;
+  return `<div style="${d.fontStyle}background:${bg};padding:28px 28px 24px;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:20px;color:#fff;">${COMPANY.company_name || ''}</div>
+          <div style="font-size:11px;color:${c};font-family:${mono};letter-spacing:.1em;margin-top:2px;${glow}">${d.titleLabel}</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:${mono};font-size:32px;font-weight:900;color:${c};line-height:1;${glow}">#${d.invoiceNum}</div>
+        <div style="font-family:${mono};font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:2px;background:linear-gradient(90deg,${c},${c}44,transparent);margin-bottom:20px;box-shadow:0 0 8px ${c}66;"></div>
+    ${d.cust && !d.hidden.has('client') ? `
+      <div style="background:${card};border-left:3px solid ${c};border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;box-shadow:inset 0 0 20px ${c}08;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${c};margin-bottom:6px;font-family:${mono};">${d.L.billTo}</div>
+        <div style="color:#fff;font-size:14px;font-weight:700;">${d.cust.customer_name}</div>
+        ${d.cust.phone ? `<div style="font-size:12px;color:rgba(255,255,255,.5);font-family:${mono};">${d.cust.phone}</div>` : ''}
+      </div>` : ''}
+    ${_assetRows(d, c + '44')}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px;">
+      <thead>
+        <tr style="border-bottom:1px solid ${c}66;">
+          <th style="padding:10px 0;text-align:left;color:${c};font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.description}</th>
+          <th style="padding:10px 0;text-align:right;color:${c};font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.amount}</th>
+        </tr>
+      </thead><tbody>
+      ${d.items.map((item,i) => `<tr style="border-bottom:1px solid rgba(255,255,255,.06);background:${i%2===1?card:'transparent'};">
+        <td style="padding:10px 0;color:#e0e0e0;">${item.name}${item.description ? `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;">${item.description}</div>` : ''}</td>
+        <td style="padding:10px 0;text-align:right;color:#fff;font-family:${mono};">$${item.price.toFixed(2)}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="height:2px;background:linear-gradient(90deg,${c},transparent);margin-top:0;margin-bottom:16px;"></div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+      <div style="background:${card};border:1px solid ${c}66;border-radius:8px;padding:14px 24px;text-align:right;min-width:200px;box-shadow:0 0 20px ${c}22;">
+        ${d.taxAmount > 0 ? `<div style="font-family:${mono};font-size:11px;color:rgba(255,255,255,.5);display:flex;justify-content:space-between;gap:32px;margin-bottom:6px;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+        <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${c};margin-bottom:4px;">${d.L.total}</div>
+        <div style="font-size:30px;font-weight:900;color:${c};${glow}">$${d.total.toFixed(2)}</div>
+      </div>
+    </div>
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:transparent;color:${c};border:2px solid ${c};padding:11px 28px;border-radius:8px;font-family:${mono};font-size:13px;font-weight:700;text-decoration:none;display:inline-block;${glow}">${d.L.payNow}</a></div>` : ''}
+    ${_payment(d, c)}
+    ${_sig(d)}
+    ${_footer(d)}
+  </div>`;
+}
+
+/* ─── Sports High Energy ──────────────────────────────────── */
+function tmplSports(d) {
+  const c    = d.invoiceColor;
+  const dark = '#0a0a0a';
+  return `<div style="${d.fontStyle}background:#fff;overflow:hidden;">
+    <div style="background:${dark};position:relative;padding:28px 28px 40px;overflow:hidden;">
+      <div style="position:absolute;top:0;right:0;bottom:0;width:45%;background:${c};clip-path:polygon(18% 0,100% 0,100% 100%,0 100%);opacity:.9;"></div>
+      <div style="position:relative;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          ${_logo(d.logoUrl, 52, '4px')}
+          <div style="font-weight:900;font-size:22px;color:#fff;text-transform:uppercase;letter-spacing:.05em;margin-top:10px;line-height:1;">${COMPANY.company_name || ''}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.15em;margin-top:4px;">${d.titleLabel}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:48px;font-weight:900;color:#fff;font-family:monospace;line-height:1;letter-spacing:-2px;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:4px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:6px;background:linear-gradient(90deg,${dark},${c});"></div>
+    <div style="padding:24px 28px;">
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="background:#f8f8f8;border-left:4px solid ${c};padding:12px 16px;margin-bottom:20px;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>
+          ${_clientRows(d)}
+        </div>` : ''}
+      ${_assetRows(d)}
+      ${_table(d, { headerBg: dark, headerColor: '#fff', borderColor: '#e8e8e8', accentBg: '#f8f8f8' })}
+      ${_totals(d, { accentColor: c, borderTop: dark })}
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:13px 32px;border-radius:4px;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, dark)}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── Gradient Mesh ───────────────────────────────────────── */
+function tmplGradientMesh(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}background:#fff;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,${c}22 0%,${c}0d 45%,transparent 70%);padding:28px 28px 24px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          ${_logo(d.logoUrl, 56, '12px')}
+          <div>
+            <div style="font-weight:800;font-size:20px;color:#1a1a2e;">${COMPANY.company_name || ''}</div>
+          </div>
+        </div>
+        <div style="text-align:right;background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-radius:12px;padding:12px 18px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:4px;">${d.titleLabel}</div>
+          <div style="font-size:22px;font-weight:800;color:${c};font-family:monospace;">#${d.invoiceNum}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 28px 24px;">
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="background:#fff;border-radius:12px;padding:14px 18px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid ${c}22;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>
+          ${_clientRows(d)}
+        </div>` : ''}
+      ${_assetRows(d)}
+      <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.06);margin-bottom:4px;">
+        ${_table(d, { headerBg: `${c}18`, headerColor: c, borderColor: `${c}22`, accentBg: `${c}08` })}
+      </div>
+      ${_totals(d, { accentColor: c, borderTop: `${c}44` })}
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:24px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;box-shadow:0 4px 14px ${c}44;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, c)}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── STITCH BATCH B: 6 new template functions ─────────────────── */
+
+/* ─── Monochrome ────────────────────────────────────────────────── */
+function tmplMonochrome(d) {
+  return `<div style="${d.fontStyle}background:#fff;color:#111;">
+    <div style="border-bottom:4px solid #111;padding:28px 24px 20px;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '4px')}
+        <div>
+          <div style="font-weight:900;font-size:20px;color:#111;letter-spacing:-.5px;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('#888')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:monospace;font-size:36px;font-weight:900;color:#111;line-height:1;letter-spacing:-2px;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:.12em;">${d.titleLabel}</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="padding:16px 24px;border-bottom:1px solid #ddd;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d, '#ddd')}
+    <div style="padding:0 24px;">
+      ${_table(d, { headerBg: '#111', headerColor: '#fff', borderColor: '#ddd', accentBg: '#f8f8f8' })}
+    </div>
+    <div style="padding:0 24px;">
+      ${_totals(d, { accentColor: '#111', borderTop: '#111' })}
+    </div>
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin:0 24px 16px;"><a href="${COMPANY.payment_link}" style="background:#111;color:#fff;padding:11px 28px;border-radius:4px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    <div style="padding:0 24px;">
+      ${_payment(d, '#111')}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── Split Sidebar ─────────────────────────────────────────────── */
+function tmplSplitSidebar(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}display:flex;min-height:520px;overflow:hidden;">
+    <div style="width:140px;min-width:140px;background:${c};padding:24px 12px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;">
+      <div>${_logo(d.logoUrl, 40, '50%')}</div>
+      <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-weight:900;font-size:13px;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.2em;line-height:1;">${COMPANY.company_name || ''}</div>
+      <div style="text-align:center;">
+        <div style="font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;">${d.titleLabel}</div>
+        <div style="font-family:monospace;font-size:13px;font-weight:900;color:#fff;">#${d.invoiceNum}</div>
+      </div>
+    </div>
+    <div style="flex:1;background:#fff;padding:24px 22px;border:1px solid #dee0f0;border-left:none;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #dee0f0;">
+        <div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#8a8da8;margin-bottom:4px;">Date</div>
+          <div style="font-size:13px;font-weight:600;">${d.formattedDate}</div>
+        </div>
+        ${d.cust && !d.hidden.has('client') ? `<div style="text-align:right;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#8a8da8;margin-bottom:4px;">${d.L.billTo}</div>
+          ${_clientRows(d)}
+        </div>` : ''}
+      </div>
+      ${_assetRows(d)}
+      ${_table(d, { headerBg: `${c}18`, headerColor: c, borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
+      ${_totals(d, { accentColor: c, borderTop: c })}
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, c)}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── Photography Studio ────────────────────────────────────────── */
+function tmplPhotography(d) {
+  const gold = '#c9a84c';
+  const near = '#161616';
+  const cream = '#faf9f6';
+  const filmStrip = [1,2,3,4,5].map((i) =>
+    `<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);background:${i===3?'rgba(255,255,255,.2)':'transparent'};border-radius:2px;"></div>`
+  ).join('');
+  return `<div style="${d.fontStyle}background:${cream};overflow:hidden;">
+    <div style="background:${near};padding:28px 28px 22px;position:relative;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          ${_logo(d.logoUrl, 44, '50%')}
+          <div style="font-weight:300;font-size:18px;color:#fff;letter-spacing:.2em;text-transform:uppercase;">${COMPANY.company_name || ''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.45);">${d.titleLabel}</div>
+          <div style="font-family:monospace;font-size:22px;font-weight:700;color:${gold};line-height:1.1;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;">${d.formattedDate}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:center;">${filmStrip}</div>
+    </div>
+    <div style="padding:24px 28px;">
+      ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:#fff;border-left:3px solid ${gold};border-radius:0 6px 6px 0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+      ${_assetRows(d, '#e0d8c8')}
+      ${_table(d, { headerBg: near, headerColor: gold, borderColor: '#e8e4dc', accentBg: '#fff' })}
+      <div style="text-align:right;margin:12px 0 20px;">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:#888;margin-bottom:4px;">Total Due</div>
+        <div style="font-size:28px;font-weight:700;color:${gold};">$${d.total.toFixed(2)}</div>
+        ${d.taxAmount > 0 ? `<div style="font-size:11px;color:#888;">incl. tax $${d.taxAmount.toFixed(2)}</div>` : ''}
+      </div>
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${near};color:${gold};padding:11px 28px;border-radius:4px;font-size:13px;font-weight:600;text-decoration:none;display:inline-block;letter-spacing:.08em;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, near)}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── Restaurant / Food Service ─────────────────────────────────── */
+function tmplRestaurant(d) {
+  const burg  = '#5c1e1e';
+  const cream = '#fff8f0';
+  const gold  = '#d4a853';
+  const rule  = `<div style="height:1px;background:${gold};margin:16px 0;opacity:.6;"></div>`;
+  return `<div style="${d.fontStyle}background:${cream};overflow:hidden;">
+    <div style="background:${burg};padding:24px 28px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          ${_logo(d.logoUrl, 48, '50%')}
+          <div>
+            <div style="font-weight:700;font-size:18px;color:#fff;letter-spacing:.04em;">${COMPANY.company_name || ''}</div>
+            ${_companyContact('rgba(255,255,255,.55)', 11)}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);">${d.titleLabel}</div>
+          <div style="font-family:monospace;font-size:24px;font-weight:900;color:${gold};line-height:1.1;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:2px;background:linear-gradient(90deg,${gold},rgba(212,168,83,.1));"></div>
+    <div style="padding:20px 28px;">
+      ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:4px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${burg};font-variant:small-caps;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+      ${rule}
+      ${_assetRows(d, gold)}
+      ${_table(d, { headerBg: burg, headerColor: gold, borderColor: '#e8ddd0', accentBg: '#fffaf4' })}
+      ${rule}
+      ${_totals(d, { accentColor: gold, borderTop: burg })}
+      <div style="background:${burg};padding:12px 20px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.6);">Total Due</div>
+        <div style="font-size:24px;font-weight:900;color:${gold};">$${d.total.toFixed(2)}</div>
+      </div>
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${gold};color:${burg};padding:11px 28px;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, burg)}
+      ${_sig(d)}
+      <div style="text-align:center;font-style:italic;color:${burg};font-size:13px;margin-top:12px;opacity:.7;">Thank you for your business.</div>
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── Real Estate / Property ────────────────────────────────────── */
+function tmplRealEstate(d) {
+  const charcoal = '#2c2c2c';
+  const slate    = '#607d8b';
+  const light    = '#eceff1';
+  const propAddr = (d.assetDetails && (d.assetDetails['Property Address'] || d.assetDetails['Address'])) || '';
+  return `<div style="${d.fontStyle}background:#fff;overflow:hidden;">
+    <div style="padding:24px 28px 18px;border-bottom:3px solid ${charcoal};">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          ${_logo(d.logoUrl, 52, '6px')}
+          <div>
+            <div style="font-weight:900;font-size:18px;color:${charcoal};">${COMPANY.company_name || ''}</div>
+            ${_companyContact(slate)}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${slate};margin-bottom:4px;">${d.titleLabel}</div>
+          <div style="font-family:monospace;font-size:24px;font-weight:900;color:${charcoal};line-height:1;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:${slate};margin-top:3px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0;margin:0;border-bottom:1px solid ${light};">
+      ${d.cust && !d.hidden.has('client') ? `<div style="flex:1;padding:14px 28px;border-right:1px solid ${light};">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${slate};margin-bottom:6px;">${d.L.billTo}</div>
+        ${_clientRows(d)}
+      </div>` : ''}
+      ${propAddr ? `<div style="flex:1;padding:14px 28px;">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${slate};margin-bottom:6px;">Property Address</div>
+        <div style="font-size:13px;font-weight:600;color:${charcoal};">${propAddr}</div>
+      </div>` : ''}
+    </div>
+    <div style="padding:0 28px;">
+      ${_assetRows(d, light)}
+      ${_table(d, { headerBg: charcoal, headerColor: '#fff', borderColor: light, accentBg: '#f8fafb' })}
+      ${_totals(d, { accentColor: slate, borderTop: charcoal })}
+    </div>
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin:0 28px 16px;"><a href="${COMPANY.payment_link}" style="background:${charcoal};color:#fff;padding:11px 28px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+    <div style="padding:0 28px;">
+      ${_payment(d, charcoal)}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+    <div style="padding:10px 28px;border-top:1px solid ${light};">
+      <div style="font-size:10px;color:#aaa;">License: ${COMPANY.license_number || 'Licensed & Insured'}</div>
+    </div>
+  </div>`;
+}
+
+/* ─── Gold Foil Luxury ──────────────────────────────────────────── */
+function tmplGoldLuxury(d) {
+  const gold = '#b8953f';
+  const bg   = '#0d0d0d';
+  const card = '#141414';
+  return `<div style="${d.fontStyle}background:${bg};color:#e8e8e8;overflow:hidden;">
+    <div style="padding:36px 28px 24px;border-bottom:1px solid ${gold}40;">
+      <div style="margin-bottom:20px;">${_logo(d.logoUrl, 44, '4px')}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div style="font-weight:300;font-size:20px;color:${gold};text-transform:uppercase;letter-spacing:.3em;line-height:1.2;">${COMPANY.company_name || ''}</div>
+          ${_companyContact(`${gold}80`, 11)}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:${gold}80;">${d.titleLabel}</div>
+          <div style="font-family:monospace;font-size:26px;font-weight:700;color:${gold};line-height:1.1;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:#555;margin-top:2px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:1px;background:linear-gradient(90deg,${gold},rgba(184,149,63,.1));margin:0;"></div>
+    ${d.cust && !d.hidden.has('client') ? `<div style="margin:20px 28px;padding:14px 16px;background:${card};border-left:3px solid ${gold};border-radius:0 6px 6px 0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:${gold}80;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+    ${_assetRows(d, `${gold}40`)}
+    <div style="margin:0 28px;">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px;">
+        <thead><tr style="border-bottom:1px solid ${gold}60;">
+          <th style="padding:10px 0;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.18em;font-weight:600;color:${gold};">${d.L.description}</th>
+          <th style="padding:10px 0;text-align:right;font-size:9px;text-transform:uppercase;letter-spacing:.18em;font-weight:600;color:${gold};">${d.L.amount}</th>
+        </tr></thead><tbody>
+        ${d.items.map(item => `<tr style="border-bottom:1px solid #222;">
+          <td style="padding:10px 0;color:#ccc;">${item.name}${item.description ? `<div style="font-size:11px;color:#666;margin-top:2px;">${item.description}</div>` : ''}</td>
+          <td style="padding:10px 0;text-align:right;font-family:monospace;color:#e8e8e8;">$${item.price.toFixed(2)}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin:16px 28px;padding:16px;background:${card};border-left:3px solid ${gold};">
+      ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#666;padding:3px 0;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+      ${d.discount ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#666;padding:3px 0;"><span>Discount</span><span>-$${d.discountAmount?.toFixed(2)||'0.00'}</span></div>` : ''}
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;margin-top:4px;border-top:1px solid ${gold}40;">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:${gold};font-variant:small-caps;">Amount Due</div>
+        <div style="font-size:28px;font-weight:700;color:${gold};">$${d.total.toFixed(2)}</div>
+      </div>
+    </div>
+    ${COMPANY.payment_link ? `<div style="text-align:center;margin:0 28px 16px;"><a href="${COMPANY.payment_link}" style="background:${gold};color:${bg};padding:12px 32px;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:.1em;">${d.L.payNow}</a></div>` : ''}
+    <div style="padding:0 28px;">
+      ${_payment(d, gold)}
+    </div>
+    ${d.sigDataUrl ? `<div style="margin:16px 28px;padding:16px;background:${card};border:1px solid ${gold}40;border-radius:4px;"><div style="font-size:9px;color:${gold}80;margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em;">Customer Signature</div><img src="${d.sigDataUrl}" style="height:50px;max-width:100%;"></div>` : ''}
+    <div style="padding:0 28px 16px;">
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── STITCH BATCH C: 6 new template functions ─────────────────── */
+
+/* ─── Retro 70s / Vintage ───────────────────────────────────���─ */
+function tmplRetro70s(d) {
+  const mustard = '#d4a017';
+  const orange  = '#c4500a';
+  const cream   = '#f7f0e3';
+  const brown   = '#3b2a1a';
+  const serif   = 'Georgia,"Times New Roman",serif';
+  return `<div style="${d.fontStyle}background:${cream};color:${brown};">
+    <div style="background:${mustard};padding:22px 24px 18px;border-bottom:4px solid ${orange};">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          ${_logo(d.logoUrl, 52, '8px')}
+          <div>
+            <div style="font-family:${serif};font-weight:900;font-size:20px;color:#fff;text-transform:uppercase;letter-spacing:.04em;">${COMPANY.company_name || ''}</div>
+            ${_companyContact('rgba(255,255,255,.75)', 11)}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:${serif};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.65);">${d.titleLabel}</div>
+          <div style="font-family:${serif};font-size:28px;font-weight:900;color:#fff;line-height:1.1;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:4px;background:repeating-linear-gradient(90deg,${orange} 0,${orange} 6px,transparent 6px,transparent 12px);"></div>
+    <div style="padding:22px 24px 0;">
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="margin-bottom:18px;padding:12px 16px;background:rgba(212,160,23,.12);border-left:4px solid ${mustard};border-radius:0 6px 6px 0;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${orange};margin-bottom:5px;font-weight:700;">${d.L.billTo}</div>
+          ${_clientRows(d)}
+        </div>` : ''}
+      ${_assetRows(d, `${mustard}60`)}
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px;">
+      <thead><tr style="background:${orange};">
+        <th style="padding:10px 24px;text-align:left;color:#fff;font-family:${serif};font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;">${d.L.description}</th>
+        <th style="padding:10px 24px;text-align:right;color:#fff;font-family:${serif};font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;">${d.L.amount}</th>
+      </tr></thead><tbody>
+      ${d.items.map((item, i) => `<tr style="border-bottom:1px dashed ${mustard}60;background:${i%2===1 ? `rgba(212,160,23,.07)` : 'transparent'};">
+        <td style="padding:10px 24px;font-weight:600;">${item.name}${item.description ? `<div style="font-weight:400;font-size:11px;color:#7a6048;margin-top:2px;">${item.description}</div>` : ''}</td>
+        <td style="padding:10px 24px;text-align:right;font-family:monospace;font-weight:700;">$${item.price.toFixed(2)}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="height:2px;background:repeating-linear-gradient(90deg,${orange} 0,${orange} 6px,transparent 6px,transparent 12px);"></div>
+    <div style="padding:0 24px;">
+      ${_totals(d, { accentColor: orange, borderTop: `${mustard}60` })}
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${orange};color:${cream};padding:11px 28px;border-radius:24px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;font-family:${serif};">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, orange)}
+      ${_sig(d)}
+    </div>
+    <div style="background:${mustard}22;border-top:2px dashed ${mustard};padding:10px 24px;text-align:center;">
+      ${d.footerMsg ? `<div style="font-size:11px;color:${brown};margin-top:3px;font-style:italic;">${d.footerMsg}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+/* ─── Timeline / Progress Invoice ──────────────────────────── */
+function tmplTimeline(d) {
+  const teal  = '#00796b';
+  const light = '#e0f2f1';
+  return `<div style="${d.fontStyle}background:#fff;">
+    <div style="background:${teal};padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;border-radius:8px 8px 0 0;">
+      <div style="display:flex;gap:12px;align-items:center;">
+        ${_logo(d.logoUrl, 52, '6px')}
+        <div>
+          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
+          ${_companyContact('rgba(255,255,255,.6)')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.65);">${d.titleLabel}</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,${teal},#80cbc4,rgba(0,121,107,.1));margin-bottom:24px;"></div>
+    <div style="padding:0 24px;">
+      ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${light};border-left:4px solid ${teal};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
+      ${_assetRows(d)}
+      ${_table(d, { headerBg: teal, headerColor: '#fff', borderColor: '#b2dfdb', accentBg: light })}
+      ${_totals(d, { accentColor: teal, borderTop: '#b2dfdb' })}
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${teal};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, teal)}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── Handwritten / Notebook Paper ─────────────────────────── */
+function tmplHandwritten(d) {
+  const navy  = '#2b3a67';
+  const red   = '#c0392b';
+  const cream = '#fffef5';
+  return `<div style="${d.fontStyle}background:${cream};background-image:repeating-linear-gradient(transparent,transparent 27px,rgba(0,0,0,.06) 27px,rgba(0,0,0,.06) 28px);color:${navy};">
+    <div style="border-bottom:2px dashed rgba(43,58,103,.25);padding:24px 24px 18px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          ${_logo(d.logoUrl, 52, '50%')}
+          <div>
+            <div style="font-weight:500;font-size:22px;color:${navy};letter-spacing:.01em;">${COMPANY.company_name || ''}</div>
+            ${_companyContact(`${navy}90`, 11)}
+          </div>
+        </div>
+        <div style="text-align:right;border:2px dashed rgba(43,58,103,.3);border-radius:8px;padding:10px 16px;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${navy}80;margin-bottom:3px;">${d.titleLabel}</div>
+          <div style="font-size:22px;font-weight:700;font-family:monospace;color:${navy};">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:${navy}80;margin-top:2px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:18px 24px 0;">
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="margin-bottom:18px;padding:10px 14px;border:1px dashed rgba(43,58,103,.3);border-radius:6px;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${navy}70;margin-bottom:5px;">${d.L.billTo}</div>
+          ${_clientRows(d)}
+        </div>` : ''}
+      ${_assetRows(d, `${navy}30`)}
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px;">
+        <thead><tr style="border-top:2px dashed ${navy}50;border-bottom:2px dashed ${navy}50;">
+          <th style="padding:8px 4px;text-align:left;color:${navy}80;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;">${d.L.description}</th>
+          <th style="padding:8px 4px;text-align:right;color:${navy}80;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;">${d.L.amount}</th>
+        </tr></thead><tbody>
+        ${d.items.map(item => `<tr style="border-bottom:1px dashed rgba(43,58,103,.2);">
+          <td style="padding:9px 4px;font-weight:500;">${item.name}${item.description ? `<div style="font-size:11px;color:${navy}70;margin-top:1px;">${item.description}</div>` : ''}</td>
+          <td style="padding:9px 4px;text-align:right;font-family:monospace;font-weight:600;">$${item.price.toFixed(2)}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+      ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:flex-end;gap:24px;font-size:12px;color:${navy}80;margin-bottom:4px;border-top:1px dashed ${navy}30;padding-top:8px;"><span>${d.L.subtotal}</span><span style="font-family:monospace;">$${d.subtotal.toFixed(2)}</span></div>
+      <div style="display:flex;justify-content:flex-end;gap:24px;font-size:12px;color:${navy}80;margin-bottom:8px;"><span>Tax</span><span style="font-family:monospace;">$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-bottom:20px;">
+        <span style="font-size:13px;color:${navy};font-weight:600;">Total Due</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;background:transparent;border:2px solid ${red};border-radius:50%;width:80px;height:80px;font-size:16px;font-weight:900;color:${red};font-family:monospace;">$${d.total.toFixed(0)}</span>
+      </div>
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${red};color:#fff;padding:11px 28px;border-radius:24px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, navy)}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── Map / Job Site ────────────────────────────────────────── */
+function tmplMapJobsite(d) {
+  const blue  = '#4285f4';
+  const light = '#e8f0fe';
+  return `<div style="${d.fontStyle}background:#fff;">
+    <div style="background:#fff;border-bottom:3px solid ${blue};padding:22px 24px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          ${_logo(d.logoUrl, 52, '8px')}
+          <div>
+            <div style="font-weight:900;font-size:18px;color:#0b1c30;">${COMPANY.company_name || ''}</div>
+            ${_companyContact('#5a5e7a')}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#8a8da8;">${d.titleLabel}</div>
+          <div style="font-size:28px;font-weight:900;color:${blue};font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
+          <div style="font-size:11px;color:#8a8da8;margin-top:4px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:20px 24px 0;">
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:160px;">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#8a8da8;margin-bottom:5px;">${d.L.billTo}</div>
+            ${_clientRows(d)}
+          </div>
+          <div style="flex:1;min-width:160px;background:${light};border-left:4px solid ${blue};border-radius:0 8px 8px 0;padding:10px 14px;">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${blue};margin-bottom:5px;font-weight:700;">Job Site</div>
+            <div style="font-size:13px;font-weight:700;color:#0b1c30;">${d.cust.address || 'Job site address'}</div>
+          </div>
+        </div>` : `
+        <div style="background:${light};border-left:4px solid ${blue};border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:16px;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${blue};margin-bottom:4px;font-weight:700;">Job Site</div>
+          <div style="font-size:13px;font-weight:700;color:#0b1c30;">Field Service Location</div>
+        </div>`}
+      ${_assetRows(d, '#BBDEFB')}
+      ${_table(d, { headerBg: blue, headerColor: '#fff', borderColor: '#BBDEFB', accentBg: light })}
+      ${_totals(d, { accentColor: blue, borderTop: '#BBDEFB' })}
+      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${blue};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, blue)}
+      ${_sig(d)}
+      ${_footer(d)}
+    </div>
+  </div>`;
+}
+
+/* ─── Swiss Typographic ─────────────────────────────────────── */
+function tmplSwissType(d) {
+  const c = d.invoiceColor;
+  return `<div style="${d.fontStyle}background:#fff;color:#000;">
+    <div style="padding:32px 32px 24px;border-bottom:2px solid #000;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        ${_logo(d.logoUrl, 48, '0')}
+        <div style="font-size:36px;font-weight:900;color:#000;line-height:1;margin-top:8px;letter-spacing:-.5px;">${COMPANY.company_name || ''}</div>
+        ${_companyContact('#555', 12)}
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:36px;font-weight:900;color:${c};line-height:1;letter-spacing:-.5px;">${d.titleLabel}</div>
+        <div style="font-size:14px;font-family:monospace;color:#000;margin-top:6px;">#${d.invoiceNum}</div>
+        <div style="font-size:12px;color:#555;margin-top:2px;">${d.formattedDate}</div>
+      </div>
+    </div>
+    <div style="padding:20px 32px 0;">
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="display:flex;gap:32px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #e0e0e0;">
+          <div style="flex:1;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#999;margin-bottom:6px;">From</div>
+            <div style="font-size:13px;font-weight:500;">${COMPANY.company_name || ''}</div></div>
+          <div style="flex:1;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#999;margin-bottom:6px;">${d.L.billTo}</div>
+            ${_clientRows(d)}</div>
+        </div>` : ''}
+      ${_assetRows(d, '#e0e0e0')}
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:13px;">
+        <thead><tr style="border-top:2px solid #000;border-bottom:1px solid #000;">
+          <th style="padding:8px 0;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.15em;font-weight:600;color:#555;">${d.L.description}</th>
+          <th style="padding:8px 0;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.15em;font-weight:600;color:#555;">${d.L.amount}</th>
+        </tr></thead><tbody>
+        ${d.items.map(item => `<tr style="border-bottom:1px solid #e0e0e0;">
+          <td style="padding:10px 0;font-weight:400;">${item.name}${item.description ? `<div style="font-size:11px;color:#777;margin-top:2px;">${item.description}</div>` : ''}</td>
+          <td style="padding:10px 0;text-align:right;font-family:monospace;">$${item.price.toFixed(2)}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="border-top:2px solid #000;padding-top:12px;">
+        ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:flex-end;gap:40px;font-size:12px;color:#555;margin-bottom:4px;"><span>Tax</span><span style="font-family:monospace;">$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+        <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:40px;margin-bottom:20px;">
+          <span style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#555;">Total</span>
+          <span style="font-size:36px;font-weight:900;color:${c};font-family:monospace;line-height:1;">$${d.total.toFixed(2)}</span>
+        </div>
+      </div>
+      ${COMPANY.payment_link ? `<div style="margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:#000;color:#fff;padding:11px 28px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:.1em;">${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, '#000')}
+      ${_sig(d)}
+      <div style="border-top:1px solid #e0e0e0;margin-top:16px;padding-top:10px;">
+        ${_footer(d)}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ─── Neon Cyberpunk ────────────────────────────────────────── */
+function tmplNeonCyber(d) {
+  const neon  = '#00ff41';
+  const mono  = '"Courier New",Courier,monospace';
+  const dark  = '#0a0a0a';
+  const panel = '#111';
+  return `<div style="${d.fontStyle}background:${dark};color:${neon};font-family:${mono};">
+    <div style="background:${panel};border-bottom:1px solid ${neon};padding:18px 24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          ${_logo(d.logoUrl, 44, '4px')}
+          <div>
+            <div style="font-weight:900;font-size:16px;color:${neon};text-shadow:0 0 8px ${neon};text-transform:uppercase;letter-spacing:.08em;">${COMPANY.company_name || ''}</div>
+            ${_companyContact(`${neon}99`, 11)}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:${neon}80;text-transform:uppercase;letter-spacing:.15em;">&gt; ${d.titleLabel}</div>
+          <div style="font-size:11px;font-weight:900;color:${neon};text-shadow:0 0 6px ${neon};margin-top:2px;">&gt; INVOICE_${d.invoiceNum}.EXE</div>
+          <div style="font-size:10px;color:${neon}70;margin-top:2px;">${d.formattedDate}</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:2px;background:linear-gradient(90deg,${neon},transparent);"></div>
+    <div style="padding:18px 24px 0;">
+      ${d.cust && !d.hidden.has('client') ? `
+        <div style="border:1px solid ${neon}60;border-radius:2px;padding:10px 14px;margin-bottom:16px;position:relative;">
+          <div style="position:absolute;top:-8px;left:10px;background:${dark};padding:0 6px;font-size:9px;color:${neon};text-transform:uppercase;letter-spacing:.15em;">SYS.CLIENT</div>
+          ${_clientRows(d)}
+        </div>` : ''}
+      ${_assetRows(d, `${neon}40`)}
+      <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:12px;border:1px solid ${neon}60;">
+        <thead><tr style="background:${neon}18;border-bottom:1px solid ${neon}60;">
+          <th style="padding:8px 14px;text-align:left;color:${neon};font-size:10px;text-transform:uppercase;letter-spacing:.15em;">&gt; ${d.L.description}</th>
+          <th style="padding:8px 14px;text-align:right;color:${neon};font-size:10px;text-transform:uppercase;letter-spacing:.15em;">${d.L.amount}</th>
+        </tr></thead><tbody>
+        ${d.items.map((item, i) => `<tr style="border-bottom:1px solid ${neon}30;background:${i%2===1 ? `${neon}06` : 'transparent'};">
+          <td style="padding:9px 14px;color:#ccc;">${item.name}${item.description ? `<div style="font-size:10px;color:${neon}70;margin-top:1px;">${item.description}</div>` : ''}</td>
+          <td style="padding:9px 14px;text-align:right;color:${neon};">$${item.price.toFixed(2)}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="border:1px solid ${neon}60;border-top:none;padding:10px 14px;background:${neon}08;">
+        ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:3px;"><span>TAX</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
+        <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:900;color:${neon};text-shadow:0 0 10px ${neon};">
+          <span>&gt; TOTAL_DUE</span>
+          <span>$${d.total.toFixed(2)}</span>
+        </div>
+      </div>
+      <div style="margin:14px 0;height:1px;background:linear-gradient(90deg,${neon}40,transparent);"></div>
+      ${COMPANY.payment_link ? `<div style="margin-bottom:14px;"><a href="${COMPANY.payment_link}" style="background:${neon};color:${dark};padding:10px 24px;font-size:13px;font-weight:900;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:.1em;font-family:${mono};">&gt; ${d.L.payNow}</a></div>` : ''}
+      ${_payment(d, neon)}
+      ${_sig(d)}
+      ${d.footerMsg ? `<div style="font-size:11px;color:${neon}70;margin-top:6px;">&gt; ${d.footerMsg}</div>` : ''}
+    </div>
+  </div>`;
+}
+
 /* ─── shared micro-helpers ─────────────────────────────────── */
 function _logo(url, size = 48, radius = '8px') {
   return url
@@ -3633,877 +4484,6 @@ function tmplTradeHandyman(d) {
     ${_footer(d)}
   </div>`;
 }
-
-/* ─── Newspaper Editorial ─────────────────────────────────── */
-function tmplNewspaper(d) {
-  const serif = 'Georgia, "Times New Roman", serif';
-  const mono  = '"Courier New", Courier, monospace';
-  const c     = d.invoiceColor;
-  return `<div style="${d.fontStyle}background:#fff;border:1px solid #ccc;padding:32px 36px;overflow:hidden;">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        ${_logo(d.logoUrl, 36, '4px')}
-        <span style="font-size:11px;font-family:${mono};color:#555;text-transform:uppercase;letter-spacing:.1em;">${d.formattedDate}</span>
-      </div>
-      <span style="font-family:${mono};font-size:11px;color:#555;">VOL.1 · #${d.invoiceNum}</span>
-    </div>
-    <div style="border-top:3px solid #000;margin-bottom:2px;"></div>
-    <div style="border-top:1px solid #000;margin-bottom:6px;"></div>
-    <h1 style="font-family:${serif};font-size:48px;font-weight:900;text-align:center;letter-spacing:-2px;line-height:1;text-transform:uppercase;color:#000;margin-bottom:4px;">${COMPANY.company_name || ''}</h1>
-    <div style="border-bottom:3px solid #000;margin-bottom:2px;"></div>
-    <div style="border-bottom:1px solid #000;margin-bottom:16px;"></div>
-    <div style="display:flex;justify-content:space-between;font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#333;margin-bottom:20px;">
-      <span>${d.titleLabel}</span>
-      <span style="color:${c};font-weight:700;">ISSUE #${d.invoiceNum}</span>
-      <span>${d.formattedDate}</span>
-    </div>
-    ${d.cust && !d.hidden.has('client') ? `
-      <div style="border:1px solid #ccc;padding:10px 14px;margin-bottom:20px;background:#f9f9f9;">
-        <div style="font-family:${mono};font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>
-        ${_clientRows(d)}
-      </div>` : ''}
-    ${_assetRows(d, '#ccc')}
-    <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px;font-family:${serif};">
-      <thead>
-        <tr style="border-top:2px solid #000;border-bottom:2px solid #000;">
-          <th style="padding:8px 0;text-align:left;font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;">${d.L.description}</th>
-          <th style="padding:8px 0;text-align:right;font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;">${d.L.amount}</th>
-        </tr>
-      </thead><tbody>
-      ${d.items.map(item => `<tr style="border-bottom:1px solid #ddd;">
-        <td style="padding:9px 0;">${item.name}${item.description ? `<div style="font-size:11px;color:#666;font-family:${mono};margin-top:2px;">${item.description}</div>` : ''}</td>
-        <td style="padding:9px 0;text-align:right;font-family:${mono};">$${item.price.toFixed(2)}</td>
-      </tr>`).join('')}
-      </tbody>
-    </table>
-    <div style="border-top:2px solid #000;margin-top:0;"></div>
-    <div style="display:flex;justify-content:flex-end;margin:12px 0 20px;">
-      <div style="background:#000;color:#fff;padding:12px 24px;text-align:right;min-width:200px;">
-        ${d.taxAmount > 0 ? `<div style="font-family:${mono};font-size:11px;display:flex;justify-content:space-between;gap:32px;opacity:.75;margin-bottom:4px;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
-        <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.65;margin-bottom:2px;">Total Due</div>
-        <div style="font-family:${serif};font-size:28px;font-weight:900;">$${d.total.toFixed(2)}</div>
-      </div>
-    </div>
-    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:#000;color:#fff;padding:11px 28px;font-family:${mono};font-size:12px;text-transform:uppercase;letter-spacing:.1em;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-    ${_payment(d, '#000')}
-    ${_sig(d)}
-    ${_footer(d)}
-  </div>`;
-}
-
-/* ─── Blueprint Technical Drawing ────────────────────────── */
-function tmplBlueprint(d) {
-  const navy = '#0f2744';
-  const cyan = '#29b6f6';
-  const mono = '"Courier New", Courier, monospace';
-  const grid = `background-color:${navy};background-image:radial-gradient(circle,rgba(255,255,255,.15) 1px,transparent 1px);background-size:20px 20px`;
-  return `<div style="${d.fontStyle}${grid};padding:28px 28px 24px;color:#fff;overflow:hidden;">
-    <div style="border:2px solid ${cyan};border-radius:4px;padding:20px 24px;">
-      <div style="border-top:4px solid ${cyan};margin-bottom:18px;"></div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
-        <div>
-          ${_logo(d.logoUrl, 52, '4px')}
-          <div style="font-family:${mono};font-weight:900;font-size:16px;color:#fff;text-transform:uppercase;letter-spacing:.1em;margin-top:10px;">${COMPANY.company_name || ''}</div>
-          <div style="font-family:${mono};font-size:10px;color:${cyan};text-transform:uppercase;letter-spacing:.15em;margin-top:2px;">Technical Specifications</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:${cyan};margin-bottom:4px;">${d.titleLabel}</div>
-          <div style="font-family:${mono};font-size:28px;font-weight:900;color:#fff;line-height:1;">#${d.invoiceNum}</div>
-          <div style="font-family:${mono};font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;">${d.formattedDate}</div>
-        </div>
-      </div>
-      ${d.cust && !d.hidden.has('client') ? `
-        <div style="background:rgba(41,182,246,.1);border:1px solid ${cyan}55;border-radius:4px;padding:10px 14px;margin-bottom:18px;">
-          <div style="font-family:${mono};font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${cyan};margin-bottom:6px;">${d.L.billTo}</div>
-          <div style="font-family:${mono};font-size:13px;font-weight:700;color:#fff;">${d.cust.customer_name}</div>
-          ${d.cust.phone ? `<div style="font-family:${mono};font-size:11px;color:rgba(255,255,255,.6);">${d.cust.phone}</div>` : ''}
-        </div>` : ''}
-      ${_assetRows(d, cyan + '55')}
-      <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-family:${mono};font-size:12px;">
-        <thead>
-          <tr style="border-bottom:2px solid ${cyan};">
-            <th style="padding:8px 0;text-align:left;color:${cyan};font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.description}</th>
-            <th style="padding:8px 0;text-align:right;color:${cyan};font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.amount}</th>
-          </tr>
-        </thead><tbody>
-        ${d.items.map(item => `<tr style="border-bottom:1px solid rgba(255,255,255,.1);">
-          <td style="padding:9px 0;color:#fff;">${item.name}${item.description ? `<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;">${item.description}</div>` : ''}</td>
-          <td style="padding:9px 0;text-align:right;color:#fff;">$${item.price.toFixed(2)}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table>
-      <div style="border-top:2px solid ${cyan};margin-top:0;"></div>
-      <div style="display:flex;justify-content:flex-end;margin:12px 0 18px;">
-        <div style="background:${cyan};color:${navy};padding:12px 24px;text-align:right;border-radius:4px;min-width:200px;">
-          ${d.taxAmount > 0 ? `<div style="font-family:${mono};font-size:11px;display:flex;justify-content:space-between;gap:32px;margin-bottom:4px;opacity:.8;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
-          <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;opacity:.7;">Total Due</div>
-          <div style="font-family:${mono};font-size:28px;font-weight:900;">$${d.total.toFixed(2)}</div>
-        </div>
-      </div>
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${cyan};color:${navy};padding:11px 28px;border-radius:4px;font-family:${mono};font-size:12px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, cyan)}
-      ${_sig(d)}
-      <div style="border-top:1px solid ${cyan}55;margin-top:16px;padding-top:12px;font-family:${mono};font-size:10px;color:rgba(255,255,255,.4);display:flex;justify-content:space-between;">
-        <span>REF: INV-${d.invoiceNum}</span>
-        <span>${d.formattedDate}</span>
-      </div>
-    </div>
-  </div>`;
-}
-
-/* ─── Craft Warm / Handmade ───────────────────────────────── */
-function tmplCraftWarm(d) {
-  const cream  = '#fdf6e3';
-  const brown  = '#5c3d2e';
-  const orange = '#e07b39';
-  const tan    = '#c4956a';
-  return `<div style="${d.fontStyle}background:${cream};padding:32px 28px;border:2px dashed ${tan};border-radius:8px;overflow:hidden;">
-    <div style="text-align:center;margin-bottom:20px;">
-      <div style="display:inline-block;background:${orange};color:#fff;padding:8px 32px;border-radius:0 0 16px 16px;margin-bottom:12px;">
-        <div style="font-weight:900;font-size:18px;letter-spacing:.05em;">${COMPANY.company_name || ''}</div>
-      </div>
-      ${_logo(d.logoUrl, 48, '50%')}
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;border-top:2px dashed ${tan};border-bottom:2px dashed ${tan};padding:10px 0;margin-bottom:20px;">
-      <div>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:${tan};margin-bottom:2px;">${d.titleLabel}</div>
-        <div style="font-size:20px;font-weight:900;color:${brown};">#${d.invoiceNum}</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:${tan};margin-bottom:2px;">Date</div>
-        <div style="font-size:13px;color:${brown};">${d.formattedDate}</div>
-      </div>
-    </div>
-    ${d.cust && !d.hidden.has('client') ? `
-      <div style="background:#fff8ec;border:1px dashed ${tan};border-radius:8px;padding:12px 16px;margin-bottom:18px;">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${tan};margin-bottom:6px;">${d.L.billTo}</div>
-        ${_clientRows(d)}
-      </div>` : ''}
-    ${_assetRows(d, tan)}
-    ${_table(d, { headerBg: orange, headerColor: '#fff', borderColor: tan, accentBg: '#fff8ec' })}
-    ${_totals(d, { accentColor: orange, borderTop: tan })}
-    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${orange};color:#fff;padding:11px 28px;border-radius:20px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-    ${_payment(d, orange)}
-    ${_sig(d)}
-    ${_footer(d)}
-  </div>`;
-}
-
-/* ─── Neon Night ──────────────────────────────────────────── */
-function tmplNeonNight(d) {
-  const c    = d.invoiceColor;
-  const bg   = '#0d0d0d';
-  const card = '#1a1a1a';
-  const mono = '"Courier New", Courier, monospace';
-  const glow = `text-shadow:0 0 8px ${c},0 0 20px ${c}55`;
-  return `<div style="${d.fontStyle}background:${bg};padding:28px 28px 24px;overflow:hidden;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-      <div style="display:flex;gap:14px;align-items:center;">
-        ${_logo(d.logoUrl, 52, '6px')}
-        <div>
-          <div style="font-weight:900;font-size:20px;color:#fff;">${COMPANY.company_name || ''}</div>
-          <div style="font-size:11px;color:${c};font-family:${mono};letter-spacing:.1em;margin-top:2px;${glow}">${d.titleLabel}</div>
-        </div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-family:${mono};font-size:32px;font-weight:900;color:${c};line-height:1;${glow}">#${d.invoiceNum}</div>
-        <div style="font-family:${mono};font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${d.formattedDate}</div>
-      </div>
-    </div>
-    <div style="height:2px;background:linear-gradient(90deg,${c},${c}44,transparent);margin-bottom:20px;box-shadow:0 0 8px ${c}66;"></div>
-    ${d.cust && !d.hidden.has('client') ? `
-      <div style="background:${card};border-left:3px solid ${c};border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;box-shadow:inset 0 0 20px ${c}08;">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${c};margin-bottom:6px;font-family:${mono};">${d.L.billTo}</div>
-        <div style="color:#fff;font-size:14px;font-weight:700;">${d.cust.customer_name}</div>
-        ${d.cust.phone ? `<div style="font-size:12px;color:rgba(255,255,255,.5);font-family:${mono};">${d.cust.phone}</div>` : ''}
-      </div>` : ''}
-    ${_assetRows(d, c + '44')}
-    <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px;">
-      <thead>
-        <tr style="border-bottom:1px solid ${c}66;">
-          <th style="padding:10px 0;text-align:left;color:${c};font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.description}</th>
-          <th style="padding:10px 0;text-align:right;color:${c};font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.12em;">${d.L.amount}</th>
-        </tr>
-      </thead><tbody>
-      ${d.items.map((item,i) => `<tr style="border-bottom:1px solid rgba(255,255,255,.06);background:${i%2===1?card:'transparent'};">
-        <td style="padding:10px 0;color:#e0e0e0;">${item.name}${item.description ? `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;">${item.description}</div>` : ''}</td>
-        <td style="padding:10px 0;text-align:right;color:#fff;font-family:${mono};">$${item.price.toFixed(2)}</td>
-      </tr>`).join('')}
-      </tbody>
-    </table>
-    <div style="height:2px;background:linear-gradient(90deg,${c},transparent);margin-top:0;margin-bottom:16px;"></div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
-      <div style="background:${card};border:1px solid ${c}66;border-radius:8px;padding:14px 24px;text-align:right;min-width:200px;box-shadow:0 0 20px ${c}22;">
-        ${d.taxAmount > 0 ? `<div style="font-family:${mono};font-size:11px;color:rgba(255,255,255,.5);display:flex;justify-content:space-between;gap:32px;margin-bottom:6px;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
-        <div style="font-family:${mono};font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${c};margin-bottom:4px;">${d.L.total}</div>
-        <div style="font-size:30px;font-weight:900;color:${c};${glow}">$${d.total.toFixed(2)}</div>
-      </div>
-    </div>
-    ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:transparent;color:${c};border:2px solid ${c};padding:11px 28px;border-radius:8px;font-family:${mono};font-size:13px;font-weight:700;text-decoration:none;display:inline-block;${glow}">${d.L.payNow}</a></div>` : ''}
-    ${_payment(d, c)}
-    ${_sig(d)}
-    ${_footer(d)}
-  </div>`;
-}
-
-/* ─── Sports High Energy ──────────────────────────────────── */
-function tmplSports(d) {
-  const c    = d.invoiceColor;
-  const dark = '#0a0a0a';
-  return `<div style="${d.fontStyle}background:#fff;overflow:hidden;">
-    <div style="background:${dark};position:relative;padding:28px 28px 40px;overflow:hidden;">
-      <div style="position:absolute;top:0;right:0;bottom:0;width:45%;background:${c};clip-path:polygon(18% 0,100% 0,100% 100%,0 100%);opacity:.9;"></div>
-      <div style="position:relative;display:flex;justify-content:space-between;align-items:flex-start;">
-        <div>
-          ${_logo(d.logoUrl, 52, '4px')}
-          <div style="font-weight:900;font-size:22px;color:#fff;text-transform:uppercase;letter-spacing:.05em;margin-top:10px;line-height:1;">${COMPANY.company_name || ''}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.15em;margin-top:4px;">${d.titleLabel}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:48px;font-weight:900;color:#fff;font-family:monospace;line-height:1;letter-spacing:-2px;">#${d.invoiceNum}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:4px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="height:6px;background:linear-gradient(90deg,${dark},${c});"></div>
-    <div style="padding:24px 28px;">
-      ${d.cust && !d.hidden.has('client') ? `
-        <div style="background:#f8f8f8;border-left:4px solid ${c};padding:12px 16px;margin-bottom:20px;">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>
-          ${_clientRows(d)}
-        </div>` : ''}
-      ${_assetRows(d)}
-      ${_table(d, { headerBg: dark, headerColor: '#fff', borderColor: '#e8e8e8', accentBg: '#f8f8f8' })}
-      ${_totals(d, { accentColor: c, borderTop: dark })}
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:13px 32px;border-radius:4px;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, dark)}
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-
-/* ─── Gradient Mesh ───────────────────────────────────────── */
-function tmplGradientMesh(d) {
-  const c = d.invoiceColor;
-  return `<div style="${d.fontStyle}background:#fff;overflow:hidden;">
-    <div style="background:linear-gradient(135deg,${c}22 0%,${c}0d 45%,transparent 70%);padding:28px 28px 24px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div style="display:flex;gap:14px;align-items:center;">
-          ${_logo(d.logoUrl, 56, '12px')}
-          <div>
-            <div style="font-weight:800;font-size:20px;color:#1a1a2e;">${COMPANY.company_name || ''}</div>
-            <div style="font-size:12px;color:#666;margin-top:2px;">${_companyContact()}</div>
-          </div>
-        </div>
-        <div style="text-align:right;background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-radius:12px;padding:12px 18px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:4px;">${d.titleLabel}</div>
-          <div style="font-size:22px;font-weight:800;color:${c};font-family:monospace;">#${d.invoiceNum}</div>
-          <div style="font-size:12px;color:#888;margin-top:2px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="padding:0 28px 24px;">
-      ${d.cust && !d.hidden.has('client') ? `
-        <div style="background:#fff;border-radius:12px;padding:14px 18px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid ${c}22;">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>
-          ${_clientRows(d)}
-        </div>` : ''}
-      ${_assetRows(d)}
-      <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.06);margin-bottom:4px;">
-        ${_table(d, { headerBg: `${c}18`, headerColor: c, borderColor: `${c}22`, accentBg: `${c}08` })}
-      </div>
-      ${_totals(d, { accentColor: c, borderTop: `${c}44` })}
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:11px 28px;border-radius:24px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;box-shadow:0 4px 14px ${c}44;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, c)}
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-/* ─── STITCH BATCH B: 6 new template functions ─────────────────── */
-
-/* ─── Monochrome ────────────────────────────────────────────────── */
-function tmplMonochrome(d) {
-  return `<div style="${d.fontStyle}background:#fff;color:#111;">
-    <div style="border-bottom:4px solid #111;padding:28px 24px 20px;display:flex;justify-content:space-between;align-items:flex-end;">
-      <div style="display:flex;gap:14px;align-items:center;">
-        ${_logo(d.logoUrl, 52, '4px')}
-        <div>
-          <div style="font-weight:900;font-size:20px;color:#111;letter-spacing:-.5px;">${COMPANY.company_name || ''}</div>
-          ${_companyContact('#888')}
-        </div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-family:monospace;font-size:36px;font-weight:900;color:#111;line-height:1;letter-spacing:-2px;">#${d.invoiceNum}</div>
-        <div style="font-size:11px;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:.12em;">${d.titleLabel}</div>
-        <div style="font-size:11px;color:#888;margin-top:2px;">${d.formattedDate}</div>
-      </div>
-    </div>
-    ${d.cust && !d.hidden.has('client') ? `<div style="padding:16px 24px;border-bottom:1px solid #ddd;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
-    ${_assetRows(d, '#ddd')}
-    <div style="padding:0 24px;">
-      ${_table(d, { headerBg: '#111', headerColor: '#fff', borderColor: '#ddd', accentBg: '#f8f8f8' })}
-    </div>
-    <div style="padding:0 24px;">
-      ${_totals(d, { accentColor: '#111', borderTop: '#111' })}
-    </div>
-    ${COMPANY.payment_link ? `<div style="text-align:center;margin:0 24px 16px;"><a href="${COMPANY.payment_link}" style="background:#111;color:#fff;padding:11px 28px;border-radius:4px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-    <div style="padding:0 24px;">
-      ${_payment(d, '#111')}
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-
-/* ─── Split Sidebar ─────────────────────────────────────────────── */
-function tmplSplitSidebar(d) {
-  const c = d.invoiceColor;
-  return `<div style="${d.fontStyle}display:flex;min-height:520px;overflow:hidden;">
-    <div style="width:140px;min-width:140px;background:${c};padding:24px 12px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;">
-      <div>${_logo(d.logoUrl, 40, '50%')}</div>
-      <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-weight:900;font-size:13px;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.2em;line-height:1;">${COMPANY.company_name || ''}</div>
-      <div style="text-align:center;">
-        <div style="font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;">${d.titleLabel}</div>
-        <div style="font-family:monospace;font-size:13px;font-weight:900;color:#fff;">#${d.invoiceNum}</div>
-      </div>
-    </div>
-    <div style="flex:1;background:#fff;padding:24px 22px;border:1px solid #dee0f0;border-left:none;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #dee0f0;">
-        <div>
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#8a8da8;margin-bottom:4px;">Date</div>
-          <div style="font-size:13px;font-weight:600;">${d.formattedDate}</div>
-        </div>
-        ${d.cust && !d.hidden.has('client') ? `<div style="text-align:right;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#8a8da8;margin-bottom:4px;">${d.L.billTo}</div>
-          ${_clientRows(d)}
-        </div>` : ''}
-      </div>
-      ${_assetRows(d)}
-      ${_table(d, { headerBg: `${c}18`, headerColor: c, borderColor: '#dee0f0', accentBg: '#f8f9ff' })}
-      ${_totals(d, { accentColor: c, borderTop: c })}
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${c};color:#fff;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, c)}
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-
-/* ─── Photography Studio ────────────────────────────────────────── */
-function tmplPhotography(d) {
-  const gold = '#c9a84c';
-  const near = '#161616';
-  const cream = '#faf9f6';
-  const filmStrip = [1,2,3,4,5].map((i) =>
-    `<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);background:${i===3?'rgba(255,255,255,.2)':'transparent'};border-radius:2px;"></div>`
-  ).join('');
-  return `<div style="${d.fontStyle}background:${cream};overflow:hidden;">
-    <div style="background:${near};padding:28px 28px 22px;position:relative;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <div style="display:flex;gap:14px;align-items:center;">
-          ${_logo(d.logoUrl, 44, '50%')}
-          <div style="font-weight:300;font-size:18px;color:#fff;letter-spacing:.2em;text-transform:uppercase;">${COMPANY.company_name || ''}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.45);">${d.titleLabel}</div>
-          <div style="font-family:monospace;font-size:22px;font-weight:700;color:${gold};line-height:1.1;">#${d.invoiceNum}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;">${d.formattedDate}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;justify-content:center;">${filmStrip}</div>
-    </div>
-    <div style="padding:24px 28px;">
-      ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:#fff;border-left:3px solid ${gold};border-radius:0 6px 6px 0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#888;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
-      ${_assetRows(d, '#e0d8c8')}
-      ${_table(d, { headerBg: near, headerColor: gold, borderColor: '#e8e4dc', accentBg: '#fff' })}
-      <div style="text-align:right;margin:12px 0 20px;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:#888;margin-bottom:4px;">Total Due</div>
-        <div style="font-size:28px;font-weight:700;color:${gold};">$${d.total.toFixed(2)}</div>
-        ${d.taxAmount > 0 ? `<div style="font-size:11px;color:#888;">incl. tax $${d.taxAmount.toFixed(2)}</div>` : ''}
-      </div>
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${near};color:${gold};padding:11px 28px;border-radius:4px;font-size:13px;font-weight:600;text-decoration:none;display:inline-block;letter-spacing:.08em;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, near)}
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-
-/* ─── Restaurant / Food Service ─────────────────────────────────── */
-function tmplRestaurant(d) {
-  const burg  = '#5c1e1e';
-  const cream = '#fff8f0';
-  const gold  = '#d4a853';
-  const rule  = `<div style="height:1px;background:${gold};margin:16px 0;opacity:.6;"></div>`;
-  return `<div style="${d.fontStyle}background:${cream};overflow:hidden;">
-    <div style="background:${burg};padding:24px 28px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="display:flex;gap:14px;align-items:center;">
-          ${_logo(d.logoUrl, 48, '50%')}
-          <div>
-            <div style="font-weight:700;font-size:18px;color:#fff;letter-spacing:.04em;">${COMPANY.company_name || ''}</div>
-            ${_companyContact('rgba(255,255,255,.55)', 11)}
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);">${d.titleLabel}</div>
-          <div style="font-family:monospace;font-size:24px;font-weight:900;color:${gold};line-height:1.1;">#${d.invoiceNum}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="height:2px;background:linear-gradient(90deg,${gold},rgba(212,168,83,.1));"></div>
-    <div style="padding:20px 28px;">
-      ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:4px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${burg};font-variant:small-caps;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
-      ${rule}
-      ${_assetRows(d, gold)}
-      ${_table(d, { headerBg: burg, headerColor: gold, borderColor: '#e8ddd0', accentBg: '#fffaf4' })}
-      ${rule}
-      ${_totals(d, { accentColor: gold, borderTop: burg })}
-      <div style="background:${burg};padding:12px 20px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.6);">Total Due</div>
-        <div style="font-size:24px;font-weight:900;color:${gold};">$${d.total.toFixed(2)}</div>
-      </div>
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${gold};color:${burg};padding:11px 28px;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, burg)}
-      ${_sig(d)}
-      <div style="text-align:center;font-style:italic;color:${burg};font-size:13px;margin-top:12px;opacity:.7;">Thank you for your business.</div>
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-
-/* ─── Real Estate / Property ────────────────────────────────────── */
-function tmplRealEstate(d) {
-  const charcoal = '#2c2c2c';
-  const slate    = '#607d8b';
-  const light    = '#eceff1';
-  const propAddr = (d.assetDetails && (d.assetDetails['Property Address'] || d.assetDetails['Address'])) || '';
-  return `<div style="${d.fontStyle}background:#fff;overflow:hidden;">
-    <div style="padding:24px 28px 18px;border-bottom:3px solid ${charcoal};">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div style="display:flex;gap:14px;align-items:center;">
-          ${_logo(d.logoUrl, 52, '6px')}
-          <div>
-            <div style="font-weight:900;font-size:18px;color:${charcoal};">${COMPANY.company_name || ''}</div>
-            ${_companyContact(slate)}
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${slate};margin-bottom:4px;">${d.titleLabel}</div>
-          <div style="font-family:monospace;font-size:24px;font-weight:900;color:${charcoal};line-height:1;">#${d.invoiceNum}</div>
-          <div style="font-size:11px;color:${slate};margin-top:3px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;gap:0;margin:0;border-bottom:1px solid ${light};">
-      ${d.cust && !d.hidden.has('client') ? `<div style="flex:1;padding:14px 28px;border-right:1px solid ${light};">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${slate};margin-bottom:6px;">${d.L.billTo}</div>
-        ${_clientRows(d)}
-      </div>` : ''}
-      ${propAddr ? `<div style="flex:1;padding:14px 28px;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${slate};margin-bottom:6px;">Property Address</div>
-        <div style="font-size:13px;font-weight:600;color:${charcoal};">${propAddr}</div>
-      </div>` : ''}
-    </div>
-    <div style="padding:0 28px;">
-      ${_assetRows(d, light)}
-      ${_table(d, { headerBg: charcoal, headerColor: '#fff', borderColor: light, accentBg: '#f8fafb' })}
-      ${_totals(d, { accentColor: slate, borderTop: charcoal })}
-    </div>
-    ${COMPANY.payment_link ? `<div style="text-align:center;margin:0 28px 16px;"><a href="${COMPANY.payment_link}" style="background:${charcoal};color:#fff;padding:11px 28px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-    <div style="padding:0 28px;">
-      ${_payment(d, charcoal)}
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-    <div style="padding:10px 28px;border-top:1px solid ${light};">
-      <div style="font-size:10px;color:#aaa;">License: ${COMPANY.license_number || 'Licensed & Insured'}</div>
-    </div>
-  </div>`;
-}
-
-/* ─── Gold Foil Luxury ──────────────────────────────────────────── */
-function tmplGoldLuxury(d) {
-  const gold = '#b8953f';
-  const bg   = '#0d0d0d';
-  const card = '#141414';
-  return `<div style="${d.fontStyle}background:${bg};color:#e8e8e8;overflow:hidden;">
-    <div style="padding:36px 28px 24px;border-bottom:1px solid ${gold}40;">
-      <div style="margin-bottom:20px;">${_logo(d.logoUrl, 44, '4px')}</div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
-        <div>
-          <div style="font-weight:300;font-size:20px;color:${gold};text-transform:uppercase;letter-spacing:.3em;line-height:1.2;">${COMPANY.company_name || ''}</div>
-          ${_companyContact(`${gold}80`, 11)}
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:${gold}80;">${d.titleLabel}</div>
-          <div style="font-family:monospace;font-size:26px;font-weight:700;color:${gold};line-height:1.1;">#${d.invoiceNum}</div>
-          <div style="font-size:11px;color:#555;margin-top:2px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="height:1px;background:linear-gradient(90deg,${gold},rgba(184,149,63,.1));margin:0;"></div>
-    ${d.cust && !d.hidden.has('client') ? `<div style="margin:20px 28px;padding:14px 16px;background:${card};border-left:3px solid ${gold};border-radius:0 6px 6px 0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:${gold}80;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
-    ${_assetRows(d, `${gold}40`)}
-    <div style="margin:0 28px;">
-      <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px;">
-        <thead><tr style="border-bottom:1px solid ${gold}60;">
-          <th style="padding:10px 0;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.18em;font-weight:600;color:${gold};">${d.L.description}</th>
-          <th style="padding:10px 0;text-align:right;font-size:9px;text-transform:uppercase;letter-spacing:.18em;font-weight:600;color:${gold};">${d.L.amount}</th>
-        </tr></thead><tbody>
-        ${d.items.map(item => `<tr style="border-bottom:1px solid #222;">
-          <td style="padding:10px 0;color:#ccc;">${item.name}${item.description ? `<div style="font-size:11px;color:#666;margin-top:2px;">${item.description}</div>` : ''}</td>
-          <td style="padding:10px 0;text-align:right;font-family:monospace;color:#e8e8e8;">$${item.price.toFixed(2)}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
-    <div style="margin:16px 28px;padding:16px;background:${card};border-left:3px solid ${gold};">
-      ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#666;padding:3px 0;"><span>Tax</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
-      ${d.discount ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#666;padding:3px 0;"><span>Discount</span><span>-$${d.discountAmount?.toFixed(2)||'0.00'}</span></div>` : ''}
-      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;margin-top:4px;border-top:1px solid ${gold}40;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:${gold};font-variant:small-caps;">Amount Due</div>
-        <div style="font-size:28px;font-weight:700;color:${gold};">$${d.total.toFixed(2)}</div>
-      </div>
-    </div>
-    ${COMPANY.payment_link ? `<div style="text-align:center;margin:0 28px 16px;"><a href="${COMPANY.payment_link}" style="background:${gold};color:${bg};padding:12px 32px;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:.1em;">${d.L.payNow}</a></div>` : ''}
-    <div style="padding:0 28px;">
-      ${_payment(d, gold)}
-    </div>
-    ${d.sigDataUrl ? `<div style="margin:16px 28px;padding:16px;background:${card};border:1px solid ${gold}40;border-radius:4px;"><div style="font-size:9px;color:${gold}80;margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em;">Customer Signature</div><img src="${d.sigDataUrl}" style="height:50px;max-width:100%;"></div>` : ''}
-    <div style="padding:0 28px 16px;">
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-/* ─── Retro 70s / Vintage ───────────────────────────────────── */
-function tmplRetro70s(d) {
-  const mustard = '#d4a017';
-  const orange  = '#c4500a';
-  const cream   = '#f7f0e3';
-  const brown   = '#3b2a1a';
-  const serif   = 'Georgia,"Times New Roman",serif';
-  return `<div style="${d.fontStyle}background:${cream};color:${brown};">
-    <div style="background:${mustard};padding:22px 24px 18px;border-bottom:4px solid ${orange};">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div style="display:flex;gap:12px;align-items:center;">
-          ${_logo(d.logoUrl, 52, '8px')}
-          <div>
-            <div style="font-family:${serif};font-weight:900;font-size:20px;color:#fff;text-transform:uppercase;letter-spacing:.04em;">${COMPANY.company_name || ''}</div>
-            ${_companyContact('rgba(255,255,255,.75)', 11)}
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-family:${serif};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.65);">${d.titleLabel}</div>
-          <div style="font-family:${serif};font-size:28px;font-weight:900;color:#fff;line-height:1.1;">#${d.invoiceNum}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="height:4px;background:repeating-linear-gradient(90deg,${orange} 0,${orange} 6px,transparent 6px,transparent 12px);"></div>
-    <div style="padding:22px 24px 0;">
-      ${d.cust && !d.hidden.has('client') ? `
-        <div style="margin-bottom:18px;padding:12px 16px;background:rgba(212,160,23,.12);border-left:4px solid ${mustard};border-radius:0 6px 6px 0;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${orange};margin-bottom:5px;font-weight:700;">${d.L.billTo}</div>
-          ${_clientRows(d)}
-        </div>` : ''}
-      ${_assetRows(d, `${mustard}60`)}
-    </div>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px;">
-      <thead><tr style="background:${orange};">
-        <th style="padding:10px 24px;text-align:left;color:#fff;font-family:${serif};font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;">${d.L.description}</th>
-        <th style="padding:10px 24px;text-align:right;color:#fff;font-family:${serif};font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;">${d.L.amount}</th>
-      </tr></thead><tbody>
-      ${d.items.map((item, i) => `<tr style="border-bottom:1px dashed ${mustard}60;background:${i%2===1 ? `rgba(212,160,23,.07)` : 'transparent'};">
-        <td style="padding:10px 24px;font-weight:600;">${item.name}${item.description ? `<div style="font-weight:400;font-size:11px;color:#7a6048;margin-top:2px;">${item.description}</div>` : ''}</td>
-        <td style="padding:10px 24px;text-align:right;font-family:monospace;font-weight:700;">$${item.price.toFixed(2)}</td>
-      </tr>`).join('')}
-      </tbody>
-    </table>
-    <div style="height:2px;background:repeating-linear-gradient(90deg,${orange} 0,${orange} 6px,transparent 6px,transparent 12px);"></div>
-    <div style="padding:0 24px;">
-      ${_totals(d, { accentColor: orange, borderTop: `${mustard}60` })}
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${orange};color:${cream};padding:11px 28px;border-radius:24px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;font-family:${serif};">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, orange)}
-      ${_sig(d)}
-    </div>
-    <div style="background:${mustard}22;border-top:2px dashed ${mustard};padding:10px 24px;text-align:center;">
-      <span style="font-family:${serif};font-size:10px;font-weight:700;color:${orange};text-transform:uppercase;letter-spacing:.15em;">★ EST. ${new Date().getFullYear()} ★</span>
-      ${d.footerMsg ? `<div style="font-size:11px;color:${brown};margin-top:3px;font-style:italic;">${d.footerMsg}</div>` : ''}
-    </div>
-  </div>`;
-}
-
-/* ─── Timeline / Progress Invoice ──────────────────────────── */
-function tmplTimeline(d) {
-  const teal  = '#00796b';
-  const light = '#e0f2f1';
-  const phases = [
-    { label: 'Phase 1 — Assessment', done: true },
-    { label: 'Phase 2 — Execution',  done: true },
-    { label: 'Phase 3 — Completion', done: false },
-  ];
-  return `<div style="${d.fontStyle}background:#fff;">
-    <div style="background:${teal};padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;border-radius:8px 8px 0 0;">
-      <div style="display:flex;gap:12px;align-items:center;">
-        ${_logo(d.logoUrl, 52, '6px')}
-        <div>
-          <div style="font-weight:900;font-size:18px;color:#fff;">${COMPANY.company_name || ''}</div>
-          ${_companyContact('rgba(255,255,255,.6)')}
-        </div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.65);">${d.titleLabel}</div>
-        <div style="font-size:28px;font-weight:900;color:#fff;font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;">${d.formattedDate}</div>
-      </div>
-    </div>
-    <div style="height:4px;background:linear-gradient(90deg,${teal},#80cbc4,rgba(0,121,107,.1));margin-bottom:24px;"></div>
-    <div style="padding:0 24px;">
-      ${d.cust && !d.hidden.has('client') ? `<div style="margin-bottom:20px;padding:12px 16px;background:${light};border-left:4px solid ${teal};border-radius:0 8px 8px 0;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8a8da8;margin-bottom:6px;">${d.L.billTo}</div>${_clientRows(d)}</div>` : ''}
-      ${_assetRows(d)}
-      ${_table(d, { headerBg: teal, headerColor: '#fff', borderColor: '#b2dfdb', accentBg: light })}
-      ${_totals(d, { accentColor: teal, borderTop: '#b2dfdb' })}
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${teal};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, teal)}
-      <div style="margin:20px 0;padding:18px;background:${light};border-radius:10px;border:1px solid #b2dfdb;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${teal};margin-bottom:14px;">Project Progress</div>
-        <div style="position:relative;padding-left:28px;">
-          <div style="position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:#b2dfdb;border-radius:1px;"></div>
-          ${phases.map(p => `<div style="position:relative;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-            <div style="position:absolute;left:-21px;width:14px;height:14px;border-radius:50%;border:2px solid ${teal};background:${p.done ? teal : '#fff'};display:flex;align-items:center;justify-content:center;">
-              ${p.done ? `<div style="width:6px;height:6px;border-radius:50%;background:#fff;"></div>` : ''}
-            </div>
-            <div style="font-size:13px;color:${p.done ? '#0b1c30' : teal};font-weight:${p.done ? '400' : '700'};">${p.label}${p.done ? ' <span style="color:'+teal+';font-size:11px;">✓</span>' : ' <span style="font-size:10px;background:'+teal+';color:#fff;border-radius:10px;padding:1px 7px;margin-left:4px;">Current</span>'}</div>
-          </div>`).join('')}
-        </div>
-      </div>
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-
-/* ─── Handwritten / Notebook Paper ─────────────────────────── */
-function tmplHandwritten(d) {
-  const navy  = '#2b3a67';
-  const red   = '#c0392b';
-  const cream = '#fffef5';
-  return `<div style="${d.fontStyle}background:${cream};background-image:repeating-linear-gradient(transparent,transparent 27px,rgba(0,0,0,.06) 27px,rgba(0,0,0,.06) 28px);color:${navy};">
-    <div style="border-bottom:2px dashed rgba(43,58,103,.25);padding:24px 24px 18px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div style="display:flex;gap:12px;align-items:center;">
-          ${_logo(d.logoUrl, 52, '50%')}
-          <div>
-            <div style="font-weight:500;font-size:22px;color:${navy};letter-spacing:.01em;">${COMPANY.company_name || ''}</div>
-            ${_companyContact(`${navy}90`, 11)}
-          </div>
-        </div>
-        <div style="text-align:right;border:2px dashed rgba(43,58,103,.3);border-radius:8px;padding:10px 16px;">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${navy}80;margin-bottom:3px;">${d.titleLabel}</div>
-          <div style="font-size:22px;font-weight:700;font-family:monospace;color:${navy};">#${d.invoiceNum}</div>
-          <div style="font-size:11px;color:${navy}80;margin-top:2px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="padding:18px 24px 0;">
-      ${d.cust && !d.hidden.has('client') ? `
-        <div style="margin-bottom:18px;padding:10px 14px;border:1px dashed rgba(43,58,103,.3);border-radius:6px;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${navy}70;margin-bottom:5px;">${d.L.billTo}</div>
-          ${_clientRows(d)}
-        </div>` : ''}
-      ${_assetRows(d, `${navy}30`)}
-      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px;">
-        <thead><tr style="border-top:2px dashed ${navy}50;border-bottom:2px dashed ${navy}50;">
-          <th style="padding:8px 4px;text-align:left;color:${navy}80;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;">${d.L.description}</th>
-          <th style="padding:8px 4px;text-align:right;color:${navy}80;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;">${d.L.amount}</th>
-        </tr></thead><tbody>
-        ${d.items.map(item => `<tr style="border-bottom:1px dashed rgba(43,58,103,.2);">
-          <td style="padding:9px 4px;font-weight:500;">${item.name}${item.description ? `<div style="font-size:11px;color:${navy}70;margin-top:1px;">${item.description}</div>` : ''}</td>
-          <td style="padding:9px 4px;text-align:right;font-family:monospace;font-weight:600;">$${item.price.toFixed(2)}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table>
-      ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:flex-end;gap:24px;font-size:12px;color:${navy}80;margin-bottom:4px;border-top:1px dashed ${navy}30;padding-top:8px;"><span>${d.L.subtotal}</span><span style="font-family:monospace;">$${d.subtotal.toFixed(2)}</span></div>
-      <div style="display:flex;justify-content:flex-end;gap:24px;font-size:12px;color:${navy}80;margin-bottom:8px;"><span>Tax</span><span style="font-family:monospace;">$${d.taxAmount.toFixed(2)}</span></div>` : ''}
-      <div style="display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-bottom:20px;">
-        <span style="font-size:13px;color:${navy};font-weight:600;">Total Due</span>
-        <span style="display:inline-block;background:transparent;border:2px solid ${red};border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:${red};font-family:monospace;">$${d.total.toFixed(0)}</span>
-      </div>
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${red};color:#fff;padding:11px 28px;border-radius:24px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, navy)}
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-
-/* ─── Map / Job Site ────────────────────────────────────────── */
-function tmplMapJobsite(d) {
-  const blue  = '#4285f4';
-  const light = '#e8f0fe';
-  return `<div style="${d.fontStyle}background:#fff;">
-    <div style="background:#fff;border-bottom:3px solid ${blue};padding:22px 24px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div style="display:flex;gap:12px;align-items:center;">
-          ${_logo(d.logoUrl, 52, '8px')}
-          <div>
-            <div style="font-weight:900;font-size:18px;color:#0b1c30;">${COMPANY.company_name || ''}</div>
-            ${_companyContact('#5a5e7a')}
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#8a8da8;">${d.titleLabel}</div>
-          <div style="font-size:28px;font-weight:900;color:${blue};font-family:monospace;line-height:1.1;">#${d.invoiceNum}</div>
-          <div style="font-size:11px;color:#8a8da8;margin-top:4px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="padding:20px 24px 0;">
-      ${d.cust && !d.hidden.has('client') ? `
-        <div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:160px;">
-            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#8a8da8;margin-bottom:5px;">${d.L.billTo}</div>
-            ${_clientRows(d)}
-          </div>
-          <div style="flex:1;min-width:160px;background:${light};border-left:4px solid ${blue};border-radius:0 8px 8px 0;padding:10px 14px;">
-            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${blue};margin-bottom:5px;font-weight:700;">📍 Job Site</div>
-            <div style="font-size:13px;font-weight:700;color:#0b1c30;">${d.cust.address || 'Job site address'}</div>
-            <div style="font-size:11px;color:${blue};margin-top:4px;">◉ Field Service Location</div>
-          </div>
-        </div>` : `
-        <div style="background:${light};border-left:4px solid ${blue};border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:16px;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:${blue};margin-bottom:4px;font-weight:700;">📍 Job Site</div>
-          <div style="font-size:13px;font-weight:700;color:#0b1c30;">Field Service Location</div>
-        </div>`}
-      ${_assetRows(d, '#BBDEFB')}
-      ${_table(d, { headerBg: blue, headerColor: '#fff', borderColor: '#BBDEFB', accentBg: light })}
-      ${_totals(d, { accentColor: blue, borderTop: '#BBDEFB' })}
-      ${COMPANY.payment_link ? `<div style="text-align:center;margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:${blue};color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, blue)}
-      ${_sig(d)}
-      ${_footer(d)}
-    </div>
-  </div>`;
-}
-
-/* ─── Swiss Typographic ─────────────────────────────────────── */
-function tmplSwissType(d) {
-  const c = d.invoiceColor;
-  return `<div style="${d.fontStyle}background:#fff;color:#000;">
-    <div style="padding:32px 32px 24px;border-bottom:2px solid #000;display:flex;justify-content:space-between;align-items:flex-end;">
-      <div>
-        ${_logo(d.logoUrl, 48, '0')}
-        <div style="font-size:36px;font-weight:900;color:#000;line-height:1;margin-top:8px;letter-spacing:-.5px;">${COMPANY.company_name || ''}</div>
-        ${_companyContact('#555', 12)}
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:36px;font-weight:900;color:${c};line-height:1;letter-spacing:-.5px;">${d.titleLabel}</div>
-        <div style="font-size:14px;font-family:monospace;color:#000;margin-top:6px;">#${d.invoiceNum}</div>
-        <div style="font-size:12px;color:#555;margin-top:2px;">${d.formattedDate}</div>
-      </div>
-    </div>
-    <div style="padding:20px 32px 0;">
-      ${d.cust && !d.hidden.has('client') ? `
-        <div style="display:flex;gap:32px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #e0e0e0;">
-          <div style="flex:1;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#999;margin-bottom:6px;">From</div>
-            <div style="font-size:13px;font-weight:500;">${COMPANY.company_name || ''}</div></div>
-          <div style="flex:1;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#999;margin-bottom:6px;">${d.L.billTo}</div>
-            ${_clientRows(d)}</div>
-        </div>` : ''}
-      ${_assetRows(d, '#e0e0e0')}
-      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:13px;">
-        <thead><tr style="border-top:2px solid #000;border-bottom:1px solid #000;">
-          <th style="padding:8px 0;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.15em;font-weight:600;color:#555;">${d.L.description}</th>
-          <th style="padding:8px 0;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.15em;font-weight:600;color:#555;">${d.L.amount}</th>
-        </tr></thead><tbody>
-        ${d.items.map(item => `<tr style="border-bottom:1px solid #e0e0e0;">
-          <td style="padding:10px 0;font-weight:400;">${item.name}${item.description ? `<div style="font-size:11px;color:#777;margin-top:2px;">${item.description}</div>` : ''}</td>
-          <td style="padding:10px 0;text-align:right;font-family:monospace;">$${item.price.toFixed(2)}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table>
-      <div style="border-top:2px solid #000;padding-top:12px;">
-        ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:flex-end;gap:40px;font-size:12px;color:#555;margin-bottom:4px;"><span>Tax</span><span style="font-family:monospace;">$${d.taxAmount.toFixed(2)}</span></div>` : ''}
-        <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:40px;margin-bottom:20px;">
-          <span style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#555;">Total</span>
-          <span style="font-size:36px;font-weight:900;color:${c};font-family:monospace;line-height:1;">$${d.total.toFixed(2)}</span>
-        </div>
-      </div>
-      ${COMPANY.payment_link ? `<div style="margin-bottom:16px;"><a href="${COMPANY.payment_link}" style="background:#000;color:#fff;padding:11px 28px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:.1em;">${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, '#000')}
-      ${_sig(d)}
-      <div style="border-top:1px solid #e0e0e0;margin-top:16px;padding-top:10px;">
-        ${_footer(d)}
-      </div>
-    </div>
-  </div>`;
-}
-
-/* ─── Neon Cyberpunk ────────────────────────────────────────── */
-function tmplNeonCyber(d) {
-  const neon  = '#00ff41';
-  const mono  = '"Courier New",Courier,monospace';
-  const dark  = '#0a0a0a';
-  const panel = '#111';
-  const glitchChars = '░▒▓█▀▄▌▐■□▪▫◘○●◙♦♣♠♥';
-  const noise = Array.from({length: 60}, () => glitchChars[Math.floor(Math.random() * glitchChars.length)]).join('');
-  return `<div style="${d.fontStyle}background:${dark};color:${neon};font-family:${mono};">
-    <div style="background:${panel};border-bottom:1px solid ${neon};padding:18px 24px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="display:flex;gap:12px;align-items:center;">
-          ${_logo(d.logoUrl, 44, '4px')}
-          <div>
-            <div style="font-weight:900;font-size:16px;color:${neon};text-shadow:0 0 8px ${neon};text-transform:uppercase;letter-spacing:.08em;">${COMPANY.company_name || ''}</div>
-            ${_companyContact(`${neon}99`, 11)}
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:10px;color:${neon}80;text-transform:uppercase;letter-spacing:.15em;">&gt; ${d.titleLabel}</div>
-          <div style="font-size:11px;font-weight:900;color:${neon};text-shadow:0 0 6px ${neon};margin-top:2px;">&gt; INVOICE_${d.invoiceNum}.EXE</div>
-          <div style="font-size:10px;color:${neon}70;margin-top:2px;">${d.formattedDate}</div>
-        </div>
-      </div>
-    </div>
-    <div style="height:2px;background:linear-gradient(90deg,${neon},transparent);"></div>
-    <div style="padding:18px 24px 0;">
-      ${d.cust && !d.hidden.has('client') ? `
-        <div style="border:1px solid ${neon}60;border-radius:2px;padding:10px 14px;margin-bottom:16px;position:relative;">
-          <div style="position:absolute;top:-8px;left:10px;background:${dark};padding:0 6px;font-size:9px;color:${neon};text-transform:uppercase;letter-spacing:.15em;">SYS.CLIENT</div>
-          ${_clientRows(d)}
-        </div>` : ''}
-      ${_assetRows(d, `${neon}40`)}
-      <table style="width:100%;border-collapse:collapse;margin-bottom:0;font-size:12px;border:1px solid ${neon}60;">
-        <thead><tr style="background:${neon}18;border-bottom:1px solid ${neon}60;">
-          <th style="padding:8px 14px;text-align:left;color:${neon};font-size:10px;text-transform:uppercase;letter-spacing:.15em;">&gt; ${d.L.description}</th>
-          <th style="padding:8px 14px;text-align:right;color:${neon};font-size:10px;text-transform:uppercase;letter-spacing:.15em;">${d.L.amount}</th>
-        </tr></thead><tbody>
-        ${d.items.map((item, i) => `<tr style="border-bottom:1px solid ${neon}30;background:${i%2===1 ? `${neon}06` : 'transparent'};">
-          <td style="padding:9px 14px;color:#ccc;">${item.name}${item.description ? `<div style="font-size:10px;color:${neon}70;margin-top:1px;">${item.description}</div>` : ''}</td>
-          <td style="padding:9px 14px;text-align:right;color:${neon};">$${item.price.toFixed(2)}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table>
-      <div style="border:1px solid ${neon}60;border-top:none;padding:10px 14px;background:${neon}08;">
-        ${d.taxAmount > 0 ? `<div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:3px;"><span>TAX</span><span>$${d.taxAmount.toFixed(2)}</span></div>` : ''}
-        <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:900;color:${neon};text-shadow:0 0 10px ${neon};">
-          <span>&gt; TOTAL_DUE</span>
-          <span>$${d.total.toFixed(2)}</span>
-        </div>
-      </div>
-      <div style="margin:14px 0;height:1px;background:linear-gradient(90deg,${neon}40,transparent);"></div>
-      ${COMPANY.payment_link ? `<div style="margin-bottom:14px;"><a href="${COMPANY.payment_link}" style="background:${neon};color:${dark};padding:10px 24px;font-size:13px;font-weight:900;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:.1em;font-family:${mono};">&gt; ${d.L.payNow}</a></div>` : ''}
-      ${_payment(d, neon)}
-      ${_sig(d)}
-      ${d.footerMsg ? `<div style="font-size:11px;color:${neon}70;margin-top:6px;">&gt; ${d.footerMsg}</div>` : ''}
-      <div style="margin-top:12px;padding-top:8px;border-top:1px solid ${neon}20;font-size:10px;color:${neon};opacity:.15;overflow:hidden;white-space:nowrap;">${noise}</div>
-    </div>
-  </div>`;
-}
-
 
 // ============================================================
 // QUICK FILL PRESETS
